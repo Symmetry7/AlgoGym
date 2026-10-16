@@ -4,9 +4,10 @@ import { ThemeProvider } from "next-themes";
 
 interface LayoutProps {
   children: ReactNode;
+  onOpenHandleModal?: () => void;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, onOpenHandleModal }: LayoutProps) {
   return (
     <ThemeProvider
       attribute="class"
@@ -15,7 +16,7 @@ export function Layout({ children }: LayoutProps) {
       disableTransitionOnChange
     >
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header onOpenHandleModal={onOpenHandleModal} />
         <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{children}</main>
         <footer className="w-full text-center py-4 text-muted-foreground text-sm flex flex-col items-center gap-1">
           <span>

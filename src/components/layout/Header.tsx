@@ -27,16 +27,39 @@ import {
   TrendingUp,
   Dices,
   Menu,
+  LogIn,
+  LogOut,
+  LoaderCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-export function Header() {
+export function Header({ onOpenHandleModal }: { onOpenHandleModal?: () => void }) {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const isMobile = useIsMobile();
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Google sign-in could not be started.");
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("You have been signed out.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Sign-out failed. Please try again.");
+    }
+  };
 
   const navigationItems = [
     {
@@ -99,6 +122,42 @@ export function Header() {
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
+
+          {/* Add handle modal open button */}
+          {onOpenHandleModal && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onOpenHandleModal}
+              className="h-9 w-9"
+              title="Set Handles"
+            >
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Set Handles</span>
+            </Button>
+          )}
+
+          {authLoading ? (
+            <Button variant="outline" size="sm" disabled aria-label="Loading account">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            </Button>
+          ) : user ? (
+            <>
+              <span className="hidden lg:block max-w-40 truncate text-sm text-muted-foreground">
+                {user.user_metadata.full_name || user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button variant="outline" size="sm" onClick={handleGoogleSignIn}>
+              <LogIn className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Sign in with Google</span>
+              <span className="sm:hidden">Sign in</span>
+            </Button>
+          )}
 
           <Badge
             variant="outline"

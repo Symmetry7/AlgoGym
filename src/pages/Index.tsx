@@ -24,7 +24,7 @@ import {
 
 const PROBLEMS_PER_PAGE = 20;
 
-const Index = () => {
+const Index = ({ onOpenHandleModal }: { onOpenHandleModal?: () => void }) => {
   const [state, setState] = useState<ProblemState>(problemStore.getState());
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -79,7 +79,7 @@ const Index = () => {
   };
 
   return (
-    <Layout>
+    <Layout onOpenHandleModal={onOpenHandleModal}>
       <div className="space-y-6 sm:space-y-8">
         {/* Hero Section */}
         <section className="relative">

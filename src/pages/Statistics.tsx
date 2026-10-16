@@ -65,6 +65,7 @@ import {
 } from "chart.js";
 import { Radar, Line, Doughnut, Bar, Pie } from "react-chartjs-2";
 import { SiLeetcode, SiCodeforces } from "react-icons/si";
+import usePersistentState from "../hooks/usePersistentState";
 
 // Register Chart.js components
 ChartJS.register(
@@ -81,11 +82,21 @@ ChartJS.register(
 );
 
 const Statistics = () => {
-  const [leetcodeHandle, setLeetcodeHandle] = useState("");
-  const [codeforcesHandle, setCodeforcesHandle] = useState("");
+  const [persistentLeetCodeHandle, setPersistentLeetCodeHandle] = usePersistentState<string>("lcHandle", "");
+  const [persistentCodeforcesHandle, setPersistentCodeforcesHandle] = usePersistentState<string>("cfHandle", "");
+  const [leetcodeHandle, setLeetcodeHandle] = useState(persistentLeetCodeHandle);
+  const [codeforcesHandle, setCodeforcesHandle] = useState(persistentCodeforcesHandle);
   const [stats, setStats] = useState<UserPerformanceStats>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // When persistent handle changes, update local state
+  useEffect(() => {
+    setLeetcodeHandle(persistentLeetCodeHandle);
+  }, [persistentLeetCodeHandle]);
+  useEffect(() => {
+    setCodeforcesHandle(persistentCodeforcesHandle);
+  }, [persistentCodeforcesHandle]);
 
   const handleSearch = async () => {
     if (!leetcodeHandle && !codeforcesHandle) {
@@ -425,8 +436,11 @@ const Statistics = () => {
                   <Input
                     id="leetcode-handle"
                     placeholder="Enter LeetCode username"
-                    value={leetcodeHandle}
-                    onChange={(e) => setLeetcodeHandle(e.target.value)}
+                    value={leetcodeHandle || persistentLeetCodeHandle || ""}
+                    onChange={(e) => {
+                      setLeetcodeHandle(e.target.value);
+                      setPersistentLeetCodeHandle(e.target.value);
+                    }}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   />
                 </div>
@@ -438,8 +452,11 @@ const Statistics = () => {
                   <Input
                     id="codeforces-handle"
                     placeholder="Enter Codeforces handle"
-                    value={codeforcesHandle}
-                    onChange={(e) => setCodeforcesHandle(e.target.value)}
+                    value={codeforcesHandle || persistentCodeforcesHandle || ""}
+                    onChange={(e) => {
+                      setCodeforcesHandle(e.target.value);
+                      setPersistentCodeforcesHandle(e.target.value);
+                    }}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   />
                 </div>

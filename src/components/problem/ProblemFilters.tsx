@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProblemFilters as IFilters } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Search, Filter, X, Check, Settings, ChevronDown, Type, Hash } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import usePersistentState from "@/hooks/usePersistentState";
 
 interface ProblemFiltersProps {
   filters: IFilters;
@@ -65,6 +66,19 @@ export function ProblemFilters({
   const [isTagsOpen, setIsTagsOpen] = useState(false);
   const [manualRatingMode, setManualRatingMode] = useState(false);
   const isMobile = useIsMobile();
+  const [persistentLeetCodeHandle, setPersistentLeetCodeHandle] = usePersistentState<string>("lcHandle", "");
+  const [persistentCodeforcesHandle, setPersistentCodeforcesHandle] = usePersistentState<string>("cfHandle", "");
+
+  // When the persistent handle changes, update the filters
+  useEffect(() => {
+    if (persistentLeetCodeHandle && filters.leetcodeHandle !== persistentLeetCodeHandle) {
+      onFiltersChange({ leetcodeHandle: persistentLeetCodeHandle });
+    }
+    if (persistentCodeforcesHandle && filters.codeforcesHandle !== persistentCodeforcesHandle) {
+      onFiltersChange({ codeforcesHandle: persistentCodeforcesHandle });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistentLeetCodeHandle, persistentCodeforcesHandle]);
 
   const handleTagToggle = (tag: string) => {
     const newTags = selectedTags.includes(tag)
@@ -395,8 +409,11 @@ export function ProblemFilters({
                       <Input
                         id="leetcodeHandle"
                         placeholder="Enter your LeetCode username"
-                        value={filters.leetcodeHandle || ""}
-                        onChange={(e) => onFiltersChange({ leetcodeHandle: e.target.value })}
+                        value={filters.leetcodeHandle || persistentLeetCodeHandle || ""}
+                        onChange={(e) => {
+                          setPersistentLeetCodeHandle(e.target.value);
+                          onFiltersChange({ leetcodeHandle: e.target.value });
+                        }}
                       />
                     </div>
                     <div>
@@ -409,8 +426,11 @@ export function ProblemFilters({
                       <Input
                         id="codeforcesHandle"
                         placeholder="Enter your Codeforces handle"
-                        value={filters.codeforcesHandle || ""}
-                        onChange={(e) => onFiltersChange({ codeforcesHandle: e.target.value })}
+                        value={filters.codeforcesHandle || persistentCodeforcesHandle || ""}
+                        onChange={(e) => {
+                          setPersistentCodeforcesHandle(e.target.value);
+                          onFiltersChange({ codeforcesHandle: e.target.value });
+                        }}
                       />
                     </div>
                   </div>

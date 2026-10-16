@@ -22,13 +22,15 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProblemCard } from "@/components/problem/ProblemCard";
-import { Dices, Zap, Timer, Play, Pause, StopCircle, Eye, EyeOff, ExternalLink, Info, Code2, Target, BookOpen, Sparkles, CheckCircle, RefreshCw } from "lucide-react";
+import { Dices, Zap, Timer, Play, Pause, StopCircle, Eye, EyeOff, ExternalLink, Info, Code2, Target, BookOpen, Sparkles, CheckCircle, RefreshCw, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layout } from "@/components/layout/Layout";
 import { Input } from "@/components/ui/input";
+import usePersistentState from "../hooks/usePersistentState";
+import { Textarea } from "@/components/ui/textarea";
 
 function getRandomElement<T>(arr: T[]): T | undefined {
   if (arr.length === 0) return undefined;
@@ -52,28 +54,29 @@ const leetcodeTrainingLevels = [
 ];
 
 export function TrainingGymPage() {
-  const [platform, setPlatform] = useState<"codeforces" | "leetcode">("codeforces");
-  const [level, setLevel] = useState<number>(1);
-  const [generatedProblems, setGeneratedProblems] = useState<Problem[]>([]);
+  const [platform, setPlatform] = usePersistentState<'codeforces' | 'leetcode'>("trainingPlatform", 'codeforces');
+  const [level, setLevel] = usePersistentState<number>("trainingLevel", 1);
+  const [generatedProblems, setGeneratedProblems] = usePersistentState<Problem[]>("trainingProblems", []);
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-
-  const [timeRemaining, setTimeRemaining] = useState(TOTAL_TIME);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [isTimerPaused, setIsTimerPaused] = useState(false);
-
-  // New state for scoring system
-  const [solvedProblems, setSolvedProblems] = useState<Set<string>>(new Set());
-  const [score, setScore] = useState(0);
+  const [timeRemaining, setTimeRemaining] = usePersistentState<number>("trainingTimeRemaining", TOTAL_TIME);
+  const [isTimerRunning, setIsTimerRunning] = usePersistentState<boolean>("trainingTimerRunning", false);
+  const [isTimerPaused, setIsTimerPaused] = usePersistentState<boolean>("trainingTimerPaused", false);
+  const [solvedProblems, setSolvedProblems] = usePersistentState<Set<string>>("trainingSolvedProblems", new Set());
+  const [score, setScore] = usePersistentState<number>("trainingScore", 0);
   const [isCheckingSubmission, setIsCheckingSubmission] = useState<string | null>(null);
-  const [leetcodeHandle, setLeetcodeHandle] = useState("");
-  const [codeforcesHandle, setCodeforcesHandle] = useState("");
+  const [leetcodeHandle, setLeetcodeHandle] = usePersistentState<string>("lcHandle", "");
+  const [codeforcesHandle, setCodeforcesHandle] = usePersistentState<string>("cfHandle", "");
+  const [timerHours, setTimerHours] = useState(2);
+  const [timerMinutes, setTimerMinutes] = useState(0);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isTimerRunning && !isTimerPaused && timeRemaining > 0) {
       interval = setInterval(() => {
-        setTimeRemaining((prevTime) => prevTime - 1);
+        const newTime = (typeof timeRemaining === 'number' ? timeRemaining : TOTAL_TIME) - 1;
+        setTimeRemaining(newTime);
+        localStorage.setItem("trainingTimeRemaining", newTime.toString());
       }, 1000);
     } else if (timeRemaining === 0) {
       setIsTimerRunning(false);
@@ -82,15 +85,7 @@ export function TrainingGymPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerRunning, isTimerPaused, timeRemaining]);
-  
-  const handlePlatformChange = (newPlatform: "codeforces" | "leetcode") => {
-    setPlatform(newPlatform);
-    setLevel(1); // Reset level on platform change
-    setGeneratedProblems([]); // Clear problems
-    setSolvedProblems(new Set());
-    setScore(0);
-  };
+  }, [isTimerRunning, isTimerPaused, timeRemaining, setIsTimerRunning, setTimeRemaining]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -99,66 +94,48 @@ export function TrainingGymPage() {
     return `${h}:${m}:${s}`;
   };
 
+  const getTotalSeconds = () => timerHours * 3600 + timerMinutes * 60;
+
   const handleGenerateProblems = () => {
     setIsLoading(true);
     setGeneratedProblems([]);
-
     const allProblems = problemStore.getState().problems;
     const newProblems: Problem[] = [];
     const usedProblemIds = new Set<string>();
-
-    if (platform === "codeforces") {
+    if (platform === 'codeforces') {
       const selectedLevelData = trainingLevels.find((l) => l.level === level);
       if (!selectedLevelData) {
         toast.error("Invalid level selected.");
         setIsLoading(false);
         return;
       }
-
-      // Filter Codeforces problems and prioritize fresh problems (after 2021)
-      // Contest IDs after ~1650 are generally from 2022 onwards
       const cfProblems = allProblems
         .filter((p) => p.platform === "codeforces" && p.rating)
         .sort((a, b) => {
-          // Sort by contest ID in descending order (newer contests first)
           const contestIdA = typeof a.contestId === 'number' ? a.contestId : parseInt(a.contestId as string) || 0;
           const contestIdB = typeof b.contestId === 'number' ? b.contestId : parseInt(b.contestId as string) || 0;
-          return contestIdB - contestIdA; // Descending order for newer contests
+          return contestIdB - contestIdA;
         });
-
-      // Prioritize fresh problems (contest ID >= 1650, which is roughly after 2021)
       const freshProblems = cfProblems.filter(p => {
         const contestId = typeof p.contestId === 'number' ? p.contestId : parseInt(p.contestId as string) || 0;
-        return contestId >= 1650; // After 2021 contests
+        return contestId >= 1650;
       });
-
       const targetRatings = [selectedLevelData.p1, selectedLevelData.p2, selectedLevelData.p3, selectedLevelData.p4];
-
       for (const rating of targetRatings) {
-        // First try to find exact rating match from fresh contests (after 2021)
         let potentialProblems = freshProblems.filter((p) => !usedProblemIds.has(p.id) && p.rating === rating);
-        
-        // If no fresh problems with exact rating, try fresh problems with nearby ratings
         if (potentialProblems.length === 0) {
           potentialProblems = freshProblems.filter((p) => !usedProblemIds.has(p.id) && p.rating && Math.abs(p.rating - rating) <= 50);
         }
-        
-        // If still no fresh problems, fall back to older problems but still prioritize newer ones
         if (potentialProblems.length === 0) {
           potentialProblems = cfProblems.filter((p) => !usedProblemIds.has(p.id) && p.rating === rating);
         }
-        
-        // Final fallback: any available problem with nearby rating
         if (potentialProblems.length === 0) {
           potentialProblems = cfProblems.filter((p) => !usedProblemIds.has(p.id) && p.rating && Math.abs(p.rating - rating) <= 50);
         }
-
         const randomProblem = getRandomElement(potentialProblems);
         if (randomProblem) {
           newProblems.push(randomProblem);
           usedProblemIds.add(randomProblem.id);
-        } else {
-          toast.warning(`Could not find a suitable problem for rating ~${rating}.`);
         }
       }
     } else {
@@ -168,44 +145,30 @@ export function TrainingGymPage() {
         setIsLoading(false);
         return;
       }
-
-      // Filter LeetCode problems and sort by contest ID (newer first) to prioritize fresh problems
-      const lcProblems = allProblems
-        .filter((p) => p.platform === "leetcode" && p.difficulty)
-        .sort((a, b) => {
-          // Sort by contest ID in descending order (newer contests first)
-          const contestIdA = typeof a.contestId === 'number' ? a.contestId : parseInt(a.contestId as string) || 0;
-          const contestIdB = typeof b.contestId === 'number' ? b.contestId : parseInt(b.contestId as string) || 0;
-          return contestIdB - contestIdA; // Descending order for newer contests
-        });
-
-      const targetDifficulties = selectedLevelData.questions;
-
-      for (const difficulty of targetDifficulties) {
-        const potentialProblems = lcProblems.filter((p) => !usedProblemIds.has(p.id) && p.difficulty?.toLowerCase() === difficulty.toLowerCase());
+      const lcProblems = allProblems.filter((p) => p.platform === "leetcode");
+      for (const difficulty of selectedLevelData.questions) {
+        const potentialProblems = lcProblems.filter((p) => !usedProblemIds.has(p.id) && p.difficulty === difficulty);
         const randomProblem = getRandomElement(potentialProblems);
         if (randomProblem) {
           newProblems.push(randomProblem);
           usedProblemIds.add(randomProblem.id);
-        } else {
-          toast.warning(`Could not find a suitable problem for difficulty ${difficulty}.`);
         }
       }
     }
-
-    if (newProblems.length < 4) {
-      toast.error("Could not generate a full set of 4 problems. The problem database may be too small.");
-    }
-
     setGeneratedProblems(newProblems);
-    setIsLoading(false);
-    setShowDetails(false);
-    setTimeRemaining(TOTAL_TIME);
-    setIsTimerRunning(true);
-    setIsTimerPaused(false);
     setSolvedProblems(new Set());
     setScore(0);
-
+    setIsLoading(false);
+    setShowDetails(false);
+    setTimeRemaining(getTotalSeconds());
+    setIsTimerRunning(true);
+    setIsTimerPaused(false);
+    localStorage.setItem("trainingProblems", JSON.stringify(newProblems));
+    localStorage.setItem("trainingSolvedProblems", JSON.stringify([]));
+    localStorage.setItem("trainingScore", "0");
+    localStorage.setItem("trainingTimeRemaining", getTotalSeconds().toString());
+    localStorage.setItem("trainingTimerRunning", "true");
+    localStorage.setItem("trainingTimerPaused", "false");
     if (newProblems.length > 0) {
       const platformText = platform === "codeforces" ? "Codeforces (fresh contests after 2021)" : "LeetCode";
       toast.success(`Generated a fresh set of ${newProblems.length} problems for ${platformText} Level ${level}! Timer started.`);
@@ -266,8 +229,8 @@ export function TrainingGymPage() {
       }
 
       if (isSolved) {
-        setSolvedProblems(prev => new Set([...prev, problem.id]));
-        setScore(prev => prev + 100);
+        setSolvedProblems(new Set([...solvedProblems, problem.id]));
+        setScore(0);
         toast.success(`🎉 Problem solved! +100 points! Total: ${score + 100}/400`);
         
         // Check if all problems are solved
@@ -374,258 +337,137 @@ export function TrainingGymPage() {
     return platform === "codeforces" ? trainingLevels : leetcodeTrainingLevels;
   };
 
+  // Remove all Tabs and tab logic. Render a single panel UI as in the screenshot.
   return (
     <Layout>
-      <div className="space-y-6 sm:space-y-8">
-        {/* Hero Section */}
-        <section className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-code-500/10 to-primary/10 rounded-2xl" />
-          <div className="relative bg-card/50 backdrop-blur-sm border rounded-2xl p-6 sm:p-8 md:p-12">
-            <div className="max-w-4xl">
-              <div className="flex items-center gap-2 mb-4">
-                <Badge
-                  variant="outline"
-                  className="bg-primary/10 text-primary border-primary/20"
-                >
-                  <Dices className="h-3 w-3 mr-1" />
-                  <span className="hidden sm:inline">Skill Enhancement Zone</span>
-                  <span className="sm:hidden">Training Zone</span>
-                </Badge>
+      <div className="w-full max-w-6xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Left: Session Setup */}
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Start a New Session</CardTitle>
+              <CardDescription>Choose your platform and difficulty level, then generate your problem set.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* 1. Select Platform */}
+              <div>
+                <div className="font-semibold mb-2">1. Select Platform</div>
+                <div className="flex gap-2">
+                  <Button variant={platform === 'codeforces' ? 'default' : 'outline'} onClick={() => setPlatform('codeforces')}><Zap className="h-4 w-4 mr-1" /> Codeforces</Button>
+                  <Button variant={platform === 'leetcode' ? 'default' : 'outline'} onClick={() => setPlatform('leetcode')}><Target className="h-4 w-4 mr-1" /> LeetCode</Button>
+                </div>
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-                The <span className="gradient-text">Training Gym</span>
-              </h1>
-              <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-3xl">
-                Sharpen your competitive programming skills. Select a platform and level to generate a timed problem set. Good luck!
-              </p>
+              {/* 2. Select Level */}
+              <div>
+                <div className="font-semibold mb-2">2. Select Level</div>
+                <div className="flex gap-2 items-center">
+                  <Select value={level.toString()} onValueChange={v => setLevel(Number(v))}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(platform === 'codeforces' ? trainingLevels : leetcodeTrainingLevels).map(l => (
+                        <SelectItem key={l.level} value={l.level.toString()}>{`Level ${l.level}`}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">View Levels</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Level Details</DialogTitle>
+                        <DialogDescription>
+                          {platform === 'codeforces' ? (
+                            <ul className="list-disc ml-6 mt-2">
+                              {trainingLevels.map(l => (
+                                <li key={l.level}>{`Level ${l.level}: ${l.p1}, ${l.p2}, ${l.p3}, ${l.p4}`}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <ul className="list-disc ml-6 mt-2">
+                              {leetcodeTrainingLevels.map(l => (
+                                <li key={l.level}>{`Level ${l.level}: ${l.text}`}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+              {/* 3. Enter Handles */}
+              <div>
+                <div className="font-semibold mb-2">3. Enter Your Handles (Optional)</div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Your LeetCode username"
+                    value={leetcodeHandle}
+                    onChange={e => setLeetcodeHandle(e.target.value)}
+                    className="w-1/2"
+                  />
+                  <Input
+                    placeholder="Your Codeforces handle"
+                    value={codeforcesHandle}
+                    onChange={e => setCodeforcesHandle(e.target.value)}
+                    className="w-1/2"
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Add your handles to verify solved problems and earn points</div>
+              </div>
+              {/* 4. Start Training */}
+              <div>
+                <div className="font-semibold mb-2">4. Start Training</div>
+                <Button onClick={handleGenerateProblems} disabled={isLoading} className="w-full">
+                  {isLoading ? 'Generating...' : 'Generate & Start Timer'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          {/* Generated Problems List */}
+          {generatedProblems.length > 0 && (
+            <div className="mt-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Generated Problems</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {generatedProblems.map(problem => (
+                      <ProblemCard key={problem.id} problem={problem} isSolved={solvedProblems.has(problem.id)} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </section>
-
-        {/* Controls and Timer Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Controls */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Start a New Session</CardTitle>
-                <CardDescription>
-                  Choose your platform and difficulty level, then generate your problem set.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">1. Select Platform</label>
-                  <Tabs
-                    value={platform}
-                    onValueChange={(value) => handlePlatformChange(value as "codeforces" | "leetcode")}
-                    className="w-full"
-                  >
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="codeforces">
-                        <Zap className="h-4 w-4 mr-2" /> Codeforces
-                      </TabsTrigger>
-                      <TabsTrigger value="leetcode">
-                        <Target className="h-4 w-4 mr-2" /> LeetCode
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">2. Select Level</label>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Select
-                      value={level.toString()}
-                      onValueChange={(value) => setLevel(Number(value))}
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getCurrentLevels().map((l) => (
-                          <SelectItem key={l.level} value={l.level.toString()}>
-                            Level {l.level}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {platform === "codeforces" && (
-                       <a href="https://docs.google.com/spreadsheets/d/1gdD-syEpfy10Vz1f5UAm5eKiV_UAEdG-C4jrouN57bs/edit?gid=1667320122#gid=1667320122" target="_blank" rel="noopener noreferrer">
-                         <Button variant="outline" className="h-full w-full sm:w-auto">
-                           <ExternalLink className="h-4 w-4 mr-2" />
-                           View Levels
-                         </Button>
-                       </a>
-                    )}
-                     {platform === "leetcode" && (
-                       <Dialog>
-                         <DialogTrigger asChild>
-                           <Button variant="outline" className="w-full sm:w-auto">
-                             <BookOpen className="h-4 w-4 mr-2" />
-                             View Levels
-                           </Button>
-                         </DialogTrigger>
-                         <DialogContent>
-                           <DialogHeader>
-                             <DialogTitle>LeetCode Training Levels</DialogTitle>
-                             <DialogDescription>
-                               Each level consists of 4 problems with a specific difficulty combination (Q1=Easy, Q2=Medium, Q3/Q4=Hard).
-                             </DialogDescription>
-                           </DialogHeader>
-                           <div className="space-y-4 py-4">
-                             {leetcodeTrainingLevels.map(l => (
-                               <div key={l.level} className="flex items-center justify-between">
-                                 <span className="font-bold">Level {l.level}</span>
-                                 <Badge variant="secondary">{l.text}</Badge>
-                               </div>
-                             ))}
-                           </div>
-                         </DialogContent>
-                       </Dialog>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">3. Enter Your Handles (Optional)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground block mb-1">LeetCode Username</label>
-                      <Input
-                        placeholder="Your LeetCode username"
-                        value={leetcodeHandle}
-                        onChange={(e) => setLeetcodeHandle(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground block mb-1">Codeforces Handle</label>
-                      <Input
-                        placeholder="Your Codeforces handle"
-                        value={codeforcesHandle}
-                        onChange={(e) => setCodeforcesHandle(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Add your handles to verify solved problems and earn points
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">4. Start Training</label>
-                   <Button
-                    onClick={handleGenerateProblems}
-                    disabled={isLoading}
-                    className="w-full"
-                    size="lg"
-                  >
-                    <Play className="h-5 w-5 mr-2" />
-                    {isLoading ? "Generating..." : `Generate & Start Timer`}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Timer */}
-          <div className="lg:col-span-1">
-            <Card className="h-full flex flex-col justify-between">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Timer className="h-5 w-5" />
-                  Session Timer
-                </CardTitle>
-                <CardDescription>A 2-hour timer for your focused practice session.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow flex flex-col items-center justify-center">
-                <div className="text-4xl sm:text-6xl font-bold tracking-tighter text-center my-4 font-mono bg-muted p-4 rounded-lg">
-                  {formatTime(timeRemaining)}
-                </div>
-                
-                {/* Score Display */}
-                {generatedProblems.length > 0 && (
-                  <div className="text-center mb-4">
-                    <div className="text-2xl font-bold text-primary">
-                      {score} / 400 pts
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {solvedProblems.size} of {generatedProblems.length} solved
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex flex-col sm:flex-row gap-2 mt-4 w-full">
-                  <Button
-                    onClick={handleTimerToggle}
-                    disabled={!isTimerRunning}
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    {isTimerPaused ? <Play className="h-4 w-4 mr-2" /> : <Pause className="h-4 w-4 mr-2" />}
-                    {isTimerPaused ? "Resume" : "Pause"}
-                  </Button>
-                  <Button
-                    onClick={handleTimerStop}
-                    disabled={!isTimerRunning}
-                    variant="destructive"
-                    className="w-full sm:w-auto"
-                  >
-                    <StopCircle className="h-4 w-4 mr-2" />
-                    Stop & Reset
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Generated Problems Section */}
-        {generatedProblems.length > 0 && (
-          <section>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-              <h2 className="text-2xl font-bold">Your Problem Set</h2>
-              <Button onClick={() => setShowDetails(!showDetails)} variant="outline">
-                {showDetails ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-                {showDetails ? "Hide Details" : "Show Details"}
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {generatedProblems.map((problem) => {
-                const currentFilters = problemStore.getState().filters;
-                return (
-                  <div key={problem.id} className="bg-card border rounded-lg p-4">
-                    <ProblemCard 
-                      problem={problem} 
-                      contestMode={true}
-                      isSolved={isProblemSolved(
-                        problem.id,
-                        problem.platform,
-                        currentFilters.leetcodeHandle,
-                        currentFilters.codeforcesHandle
-                      )}
-                    />
-                    {renderProblemDetails(problem)}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* Placeholder for when no problems are generated */}
-        {!isLoading && generatedProblems.length === 0 && (
-          <section>
-            <Alert className="border-dashed">
-               <Zap className="h-4 w-4" />
-              <AlertTitle>Ready to Train?</AlertTitle>
-              <AlertDescription>
-                Your personalized problem set will appear here once you generate it.
-              </AlertDescription>
-            </Alert>
-          </section>
-        )}
+          )}
+        </div>
+        {/* Right: Session Timer */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Session Timer</CardTitle>
+              <CardDescription>A 2-hour timer for your focused practice session.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <div className="text-5xl font-mono mb-2">{formatTime(timeRemaining)}</div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setIsTimerPaused(!isTimerPaused)} disabled={!isTimerRunning}>
+                  {isTimerPaused ? 'Resume' : 'Pause'}
+                </Button>
+                <Button variant="destructive" onClick={() => { setIsTimerRunning(false); setTimeRemaining(TOTAL_TIME); setGeneratedProblems([]); setSolvedProblems(new Set()); setScore(0); localStorage.setItem("trainingProblems", JSON.stringify([])); localStorage.setItem("trainingSolvedProblems", JSON.stringify([])); localStorage.setItem("trainingScore", "0"); localStorage.setItem("trainingTimeRemaining", TOTAL_TIME.toString()); localStorage.setItem("trainingTimerRunning", "false"); localStorage.setItem("trainingTimerPaused", "false"); }} disabled={!isTimerRunning}>
+                  Stop & Reset
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Layout>
   );
-} 
+}
 
 export default TrainingGymPage; 
+
