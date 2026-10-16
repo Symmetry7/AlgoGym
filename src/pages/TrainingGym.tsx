@@ -53,7 +53,7 @@ const leetcodeTrainingLevels = [
   { level: 10, questions: ["Hard", "Hard", "Hard", "Hard"], text: "Q4, Q4, Q4, Q4" },
 ];
 
-export function TrainingGymPage() {
+export function TrainingGymPage({ onOpenHandleModal }: { onOpenHandleModal?: () => void }) {
   const [platform, setPlatform] = usePersistentState<'codeforces' | 'leetcode'>("trainingPlatform", 'codeforces');
   const [level, setLevel] = usePersistentState<number>("trainingLevel", 1);
   const [generatedProblems, setGeneratedProblems] = usePersistentState<Problem[]>("trainingProblems", []);
@@ -339,7 +339,7 @@ export function TrainingGymPage() {
 
   // Remove all Tabs and tab logic. Render a single panel UI as in the screenshot.
   return (
-    <Layout>
+    <Layout onOpenHandleModal={onOpenHandleModal}>
       <div className="w-full max-w-6xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left: Session Setup */}
         <div className="md:col-span-2">

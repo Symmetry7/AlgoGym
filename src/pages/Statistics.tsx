@@ -81,7 +81,7 @@ ChartJS.register(
   Filler
 );
 
-const Statistics = () => {
+const Statistics = ({ onOpenHandleModal }: { onOpenHandleModal?: () => void }) => {
   const [persistentLeetCodeHandle, setPersistentLeetCodeHandle] = usePersistentState<string>("lcHandle", "");
   const [persistentCodeforcesHandle, setPersistentCodeforcesHandle] = usePersistentState<string>("cfHandle", "");
   const [leetcodeHandle, setLeetcodeHandle] = useState(persistentLeetCodeHandle);
@@ -388,7 +388,7 @@ const Statistics = () => {
   }, [stats.leetcode]);
 
   return (
-    <Layout>
+    <Layout onOpenHandleModal={onOpenHandleModal}>
       <div className="space-y-6 sm:space-y-8">
         {/* Hero Section */}
         <section className="relative">

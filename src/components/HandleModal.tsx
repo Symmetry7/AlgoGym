@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import usePersistentState from "../hooks/usePersistentState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,13 @@ const HandleModal: React.FC<HandleModalProps> = ({ isOpen, onClose }) => {
   const [lcHandle, setLcHandle] = usePersistentState<string>("lcHandle", "");
   const [cfInput, setCfInput] = useState(cfHandle);
   const [lcInput, setLcInput] = useState(lcHandle);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCfInput(cfHandle);
+      setLcInput(lcHandle);
+    }
+  }, [isOpen, cfHandle, lcHandle]);
 
   if (!isOpen) return null;
 
@@ -77,4 +84,4 @@ const HandleModal: React.FC<HandleModalProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default HandleModal; 
+export default HandleModal;

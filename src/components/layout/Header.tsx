@@ -3,11 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import {
   Sheet,
@@ -23,23 +20,24 @@ import {
   Settings,
   Moon,
   Sun,
-  Filter,
   TrendingUp,
   Dices,
   Menu,
   LogIn,
   LogOut,
   LoaderCircle,
+  UserRound,
+  ChevronDown,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function Header({ onOpenHandleModal }: { onOpenHandleModal?: () => void }) {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
-  const isMobile = useIsMobile();
   const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
@@ -123,34 +121,44 @@ export function Header({ onOpenHandleModal }: { onOpenHandleModal?: () => void }
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          {/* Add handle modal open button */}
-          {onOpenHandleModal && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onOpenHandleModal}
-              className="h-9 w-9"
-              title="Set Handles"
-            >
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Set Handles</span>
-            </Button>
-          )}
-
           {authLoading ? (
             <Button variant="outline" size="sm" disabled aria-label="Loading account">
               <LoaderCircle className="h-4 w-4 animate-spin" />
             </Button>
           ) : user ? (
-            <>
-              <span className="hidden lg:block max-w-40 truncate text-sm text-muted-foreground">
-                {user.user_metadata.full_name || user.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-10 gap-2 rounded-full border border-border/70 bg-card/70 pl-1.5 pr-2 hover:bg-accent" aria-label="Open profile menu">
+                  <Avatar className="h-7 w-7 ring-2 ring-primary/20">
+                    <AvatarImage src={user.user_metadata.avatar_url || user.user_metadata.picture} alt="" />
+                    <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">{(user.user_metadata.full_name || user.email || "A").slice(0, 1).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:block max-w-28 truncate text-sm font-medium">{user.user_metadata.full_name || user.email?.split("@")[0]}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={10} className="w-72 rounded-xl border-border/70 bg-popover/95 p-2 shadow-xl backdrop-blur">
+                <DropdownMenuLabel className="p-2 font-normal">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <AvatarImage src={user.user_metadata.avatar_url || user.user_metadata.picture} alt="" />
+                      <AvatarFallback className="bg-primary/10 font-semibold text-primary">{(user.user_metadata.full_name || user.email || "A").slice(0, 1).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{user.user_metadata.full_name || "AlgoGym member"}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2.5"><Link to="/profile"><UserRound className="mr-2 h-4 w-4" />Your profile</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2.5"><Link to="/statistics"><TrendingUp className="mr-2 h-4 w-4" />Statistics</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg py-2.5"><Link to="/training"><Dices className="mr-2 h-4 w-4" />Training gym</Link></DropdownMenuItem>
+                {onOpenHandleModal && <DropdownMenuItem onSelect={onOpenHandleModal} className="cursor-pointer rounded-lg py-2.5"><Settings className="mr-2 h-4 w-4" />Manage coding handles</DropdownMenuItem>}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handleSignOut} className="cursor-pointer rounded-lg py-2.5 text-destructive focus:text-destructive"><LogOut className="mr-2 h-4 w-4" />Sign out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button variant="outline" size="sm" onClick={handleGoogleSignIn}>
               <LogIn className="mr-2 h-4 w-4" />

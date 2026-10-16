@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Header } from "./Header";
 import { ThemeProvider } from "next-themes";
+import { Link } from "react-router-dom";
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,6 +38,7 @@ export function Layout({ children, onOpenHandleModal }: LayoutProps) {
               </svg>
             </a>
           </span>
+          <Link to="/privacy" className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">Privacy policy</Link>
         </footer>
       </div>
     </ThemeProvider>
