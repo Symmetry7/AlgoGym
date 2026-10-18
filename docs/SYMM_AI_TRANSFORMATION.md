@@ -25,6 +25,7 @@ Migration `20261019010000_symm_deep_learning.sql` adds path language/prompt vers
 Using the configured server-side Gemini key and `gemini-3.5-flash-lite`, a Grid DP prompt produced six modules and 32 lesson outlines in 5.54 seconds. A generated Unique Paths lesson took 10.66 seconds in C++ (1,398 words), 10.12 seconds in Java (1,323 words), and 9.07 seconds in Python (1,112 words). Each passed the structured validation and contained code only in its selected language. The benchmark also checked Dijkstra (1,273 words), binary search on answer (1,056 words), and operating systems (1,199 words); each generated six or seven modules and passed targeted topic assertions. These are individual calls, not p75/p95 latency estimates. No valid before-change latency sample or 10/25/50-user load result is available, so no speedup or concurrency capacity is claimed.
 
 The landing preview is a labeled, prepared product demonstration. It calls neither Gemini nor Supabase on passive interaction. Desktop 1440px and mobile 390px browser checks confirmed the headline, six roadmap nodes, language-switched code, and absence of horizontal overflow.
+After commit `82e8312` reached Vercel, the production deployment was Ready; the live landing returned HTTP 200, the Symm health endpoint reported configured, and the same desktop/mobile preview checks passed against `https://algogym.vercel.app`.
 
 ## Limits and follow-up verification
 
@@ -36,4 +37,4 @@ The landing preview is a labeled, prepared product demonstration. It calls neith
 
 ## Reproduce checks
 
-`npm run typecheck`, `npm run build`, and `npm test` cover local static and unit validation. The opt-in provider tests are `SYMM_LIVE_TEST=1 npm test -- server/symm-ai.live.spec.ts` and `SYMM_BENCHMARK=1 npm test -- server/symm-benchmark.live.spec.ts` with `GEMINI_API_KEY` supplied server-side. `node scripts/check-symm-showcase.mjs` checks the local development landing page on port 8080.
+`npm run typecheck`, `npm run build`, and `npm test` cover local static and unit validation. The opt-in provider tests are `SYMM_LIVE_TEST=1 npm test -- server/symm-ai.live.spec.ts` and `SYMM_BENCHMARK=1 npm test -- server/symm-benchmark.live.spec.ts` with `GEMINI_API_KEY` supplied server-side. `node scripts/check-symm-showcase.mjs` checks the local development landing page on port 8080; set `ALGOGYM_TEST_URL=https://algogym.vercel.app` to check the deployed preview.

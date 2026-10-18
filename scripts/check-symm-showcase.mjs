@@ -2,6 +2,7 @@ import { launchBrowser } from "./cdp.mjs";
 
 const browser = await launchBrowser();
 const results = [];
+const baseUrl = process.env.ALGOGYM_TEST_URL ?? "http://localhost:8080";
 try {
   for (const [width, height, label] of [
     [1440, 1000, "desktop"],
@@ -13,7 +14,7 @@ try {
       deviceScaleFactor: 1,
       mobile: width < 600,
     });
-    await browser.call("Page.navigate", { url: "http://localhost:8080/" });
+    await browser.call("Page.navigate", { url: `${baseUrl}/` });
     await browser.waitFor('document.querySelector(".symm-preview-generate")');
     await browser.waitFor('document.readyState === "complete"');
     await new Promise((resolve) => setTimeout(resolve, 1200));
