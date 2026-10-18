@@ -60,6 +60,7 @@ type Path = {
   estimated_minutes: number;
   created_at: string;
   updated_at: string;
+  preferred_language: "cpp" | "java" | "python";
   moduleCount?: number;
   lessonCount?: number;
   completedCount?: number;
@@ -107,6 +108,13 @@ type Detail = {
   progress: { lesson_id: string; completed_at: string }[];
   recommendations: Recommendation[];
   moduleAwards: { module_id: string; points: number; awarded_at: string }[];
+  codeVariants: {
+    lesson_id: string;
+    language: "cpp" | "java" | "python";
+    code_content: string;
+    explanation: string;
+    generation_version: number;
+  }[];
   conversation: Message[];
   configured: boolean;
 };
@@ -131,6 +139,13 @@ const dateLabel = (value: string) =>
   new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(
     new Date(value),
   );
+const codeLanguage = (value?: string) => {
+  const normalized = (value ?? "").toLowerCase().replace(/[\s.]/g, "");
+  if (["cpp", "c++", "c++17"].includes(normalized)) return "cpp";
+  if (["java", "java17"].includes(normalized)) return "java";
+  if (["python", "python3", "py"].includes(normalized)) return "python";
+  return normalized;
+};
 
 function RichText({ children }: { children: string }) {
   return (
@@ -165,7 +180,7 @@ function CodeExample({ code, language }: { code: string; language?: string }) {
     "sql",
     "bash",
   ];
-  const normalized = (language || "text").toLowerCase();
+  const normalized = codeLanguage(language) || "text";
   return (
     <div className="my-5 overflow-hidden rounded-xl border border-[#34343f] bg-[#121218]">
       <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-2 text-[11px] text-[#aaa8ba]">
@@ -274,12 +289,14 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
   const { user } = useAuth();
   const tracker = useTracker(0, "all", false);
   const composer = useRef<HTMLTextAreaElement>(null);
+  const attemptedRecommendations = useRef(new Set<string>());
   const [home, setHome] = useState<Home | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
   const [topic, setTopic] = useState("");
   const [level, setLevel] = useState("beginner");
   const [goal, setGoal] = useState("fundamentals");
   const [hours, setHours] = useState(5);
+  const [language, setLanguage] = useState<"cpp" | "java" | "python">("cpp");
   const [customize, setCustomize] = useState(false);
   const [librarySearch, setLibrarySearch] = useState("");
   const [deletePath, setDeletePath] = useState<Path | null>(null);
@@ -300,13 +317,22 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
 
   const load = async (lessonId?: string) => {
     try {
-      if (pathId)
-        setDetail(
-          await jsonRequest<Detail>(
-            `/api/symm?path=${pathId}${lessonId ? `&lesson=${lessonId}` : ""}`,
-          ),
+      if (pathId) {
+        const fetched = await jsonRequest<Detail>(
+          `/api/symm?path=${pathId}${lessonId ? `&lesson=${lessonId}` : ""}`,
         );
-      else setHome(await jsonRequest<Home>("/api/symm"));
+        setDetail(fetched);
+        setLanguage(fetched.path.preferred_language || "cpp");
+      } else {
+        const fetched = await jsonRequest<Home>("/api/symm");
+        setHome(fetched);
+        const saved = window.localStorage.getItem(
+          `symm-language:${user?.id ?? "guest"}`,
+        );
+        const choice = saved || fetched.paths[0]?.preferred_language;
+        if (choice === "cpp" || choice === "java" || choice === "python")
+          setLanguage(choice);
+      }
       setError("");
     } catch (cause) {
       setError(
@@ -319,7 +345,7 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
   useEffect(() => {
     setLoading(true);
     void load();
-  }, [pathId]);
+  }, [pathId, user?.id]);
   useEffect(() => {
     if (pathId) return;
     const params = new URLSearchParams(window.location.search);
@@ -339,6 +365,11 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
   useEffect(() => {
     if (pathId && selected) void load(selected);
   }, [pathId, selected]);
+  useEffect(() => {
+    if (detail?.path.status !== "generating") return;
+    const interval = window.setInterval(() => void load(), 2500);
+    return () => window.clearInterval(interval);
+  }, [detail?.path.status, pathId]);
   useEffect(() => {
     setReportOpen(false);
     setReportSaved(false);
@@ -386,6 +417,7 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
         level,
         goal,
         hoursPerWeek: hours,
+        language,
       });
       router.push(`/training/symm/${result.pathId}`);
     } catch (cause) {
@@ -393,6 +425,97 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
         cause instanceof Error
           ? cause.message
           : "Your path could not be created. Please retry.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const chooseLanguage = async (next: "cpp" | "java" | "python") => {
+    if (next === language || busy) return;
+    if (!pathId) {
+      setLanguage(next);
+      window.localStorage.setItem(`symm-language:${user?.id ?? "guest"}`, next);
+      return;
+    }
+    if (!detail) return;
+    setBusy("language");
+    setError("");
+    try {
+      await post({ action: "path.language", pathId, language: next });
+      setLanguage(next);
+      window.localStorage.setItem(`symm-language:${user?.id ?? "guest"}`, next);
+      if (
+        active?.status === "ready" &&
+        active.content?.sections.some((section) => section.code)
+      ) {
+        const existing = detail.codeVariants?.find(
+          (variant) =>
+            variant.lesson_id === active.id && variant.language === next,
+        );
+        const native = active.content.sections.some(
+          (section) => section.code && codeLanguage(section.language) === next,
+        );
+        if (!existing && !native) {
+          const result = await post<{
+            variant: Detail["codeVariants"][number] | null;
+          }>({ action: "code.variant", lessonId: active.id, language: next });
+          if (result.variant)
+            setDetail((current) =>
+              current
+                ? {
+                    ...current,
+                    codeVariants: [
+                      ...(current.codeVariants || []),
+                      result.variant!,
+                    ],
+                  }
+                : current,
+            );
+        }
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "The code variant could not be prepared. Please retry.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const retryCodeVariant = async () => {
+    if (!active || busy) return;
+    setBusy("language");
+    setError("");
+    try {
+      const result = await post<{
+        variant: Detail["codeVariants"][number] | null;
+      }>({
+        action: "code.variant",
+        lessonId: active.id,
+        language,
+      });
+      if (result.variant)
+        setDetail((current) =>
+          current
+            ? {
+                ...current,
+                codeVariants: [
+                  ...(current.codeVariants || []).filter(
+                    (item) =>
+                      item.lesson_id !== active.id ||
+                      item.language !== language,
+                  ),
+                  result.variant!,
+                ],
+              }
+            : current,
+        );
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "The code variant could not be prepared.",
       );
     } finally {
       setBusy("");
@@ -406,16 +529,34 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
     if (lesson.status === "ready" || busy) return;
     setBusy(`lesson:${lesson.id}`);
     try {
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          await post({ action: "lesson.generate", lessonId: lesson.id });
-          break;
-        } catch (cause) {
-          if (attempt === 1) throw cause;
-          await new Promise((resolve) => window.setTimeout(resolve, 800));
-        }
+      try {
+        await post({ action: "lesson.generate", lessonId: lesson.id });
+      } catch (cause) {
+        if (
+          !(cause instanceof Error) ||
+          !cause.message.includes("already generating")
+        )
+          throw cause;
       }
-      await load(lesson.id);
+      for (let attempt = 0; attempt < 24; attempt++) {
+        const current = await jsonRequest<Detail>(
+          `/api/symm?path=${pathId}&lesson=${lesson.id}`,
+        );
+        setDetail(current);
+        const currentLesson = current.lessons.find(
+          (item) => item.id === lesson.id,
+        );
+        if (currentLesson?.status === "ready") break;
+        if (currentLesson?.status === "failed")
+          throw new Error(
+            "This lesson could not be prepared. Open it again to retry.",
+          );
+        if (attempt === 23)
+          throw new Error(
+            "This lesson is still being prepared. You can continue exploring the roadmap.",
+          );
+        await new Promise((resolve) => window.setTimeout(resolve, 2500));
+      }
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -527,6 +668,17 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
       setBusy("");
     }
   };
+  useEffect(() => {
+    if (!activeModule || detail?.path.category !== "competitive" || busy)
+      return;
+    if (
+      detail.recommendations.some((item) => item.module_id === activeModule.id)
+    )
+      return;
+    if (attemptedRecommendations.current.has(activeModule.id)) return;
+    attemptedRecommendations.current.add(activeModule.id);
+    void retryRecommendations(activeModule.id);
+  }, [activeModule?.id, detail?.path.category, detail?.recommendations, busy]);
   const removePath = async () => {
     if (!deletePath) return;
     setBusy(`delete:${deletePath.id}`);
@@ -637,7 +789,7 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                   Your learning workspace
                 </p>
                 <h1 className="text-[clamp(2.1rem,5vw,3.8rem)] font-semibold leading-[1.1] tracking-[-.055em]">
-                  What will you learn today?
+                  What do you want to master?
                 </h1>
                 <p className="mt-4 text-[15px] text-[#aaa8ba]">
                   One question. A complete learning path.
@@ -669,6 +821,27 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                 />
                 <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#34343f] px-1 pt-3">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <div
+                      role="group"
+                      aria-label="Programming language"
+                      className="inline-flex rounded-lg border border-[#45414f] bg-[#15151c] p-0.5"
+                    >
+                      {(["cpp", "java", "python"] as const).map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          aria-pressed={language === option}
+                          onClick={() => void chooseLanguage(option)}
+                          className={`rounded-md px-2.5 py-1.5 text-[11px] transition-colors ${language === option ? "bg-[#b8a0f4] text-[#18151f]" : "text-[#aaa8ba] hover:text-white"}`}
+                        >
+                          {option === "cpp"
+                            ? "C++17"
+                            : option === "java"
+                              ? "Java 17"
+                              : "Python 3"}
+                        </button>
+                      ))}
+                    </div>
                     <button
                       type="button"
                       onClick={() => setCustomize(!customize)}
@@ -940,6 +1113,67 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                 <LoaderCircle size={17} className="animate-spin" />
                 Loading learning path…
               </p>
+            ) : detail && detail.path.status !== "ready" ? (
+              <section
+                className="mx-auto max-w-[780px] py-20"
+                role="status"
+                aria-live="polite"
+              >
+                <p className="text-xs uppercase tracking-[.18em] text-[#b8a0f4]">
+                  Symm AI
+                </p>
+                <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+                  {detail?.path.title ?? "Preparing your learning path"}
+                </h1>
+                {detail?.path.status === "failed" ? (
+                  <>
+                    <p className="mt-4 text-sm text-[#aaa8ba]">
+                      The curriculum could not be completed. Your request is
+                      saved.
+                    </p>
+                    <button
+                      type="button"
+                      disabled={Boolean(busy)}
+                      onClick={async () => {
+                        if (!pathId) return;
+                        setBusy("retry");
+                        setError("");
+                        try {
+                          await post({ action: "path.retry", pathId });
+                          await load();
+                        } catch (cause) {
+                          setError(
+                            cause instanceof Error
+                              ? cause.message
+                              : "Could not resume generation.",
+                          );
+                        } finally {
+                          setBusy("");
+                        }
+                      }}
+                      className="mt-6 rounded-lg bg-[#cdbbf7] px-4 py-2.5 text-sm font-medium text-[#19151e] disabled:opacity-50"
+                    >
+                      Retry generation
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-4 flex items-center gap-2 text-sm text-[#aaa8ba]">
+                      <LoaderCircle size={16} className="animate-spin" />{" "}
+                      Mapping concepts and building your curriculum. This page
+                      updates when it is ready.
+                    </p>
+                    <div className="mt-8 h-1 w-full overflow-hidden rounded-full bg-[#34343f]">
+                      <div className="h-full w-1/3 animate-pulse rounded-full bg-[#b8a0f4]" />
+                    </div>
+                  </>
+                )}
+                {error && (
+                  <p role="alert" className="mt-5 text-sm text-rose-200">
+                    {error}
+                  </p>
+                )}
+              </section>
             ) : detail ? (
               <>
                 <header className="mx-auto max-w-[1380px] border-b border-[#34343f] py-7 sm:py-9">
@@ -1310,6 +1544,77 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                           </div>
                           {active.status === "ready" && active.content ? (
                             <div className="mt-8">
+                              <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-[#34343f] pb-5">
+                                <span className="text-xs text-[#aaa8ba]">
+                                  Code language
+                                </span>
+                                <div
+                                  role="group"
+                                  aria-label="Lesson code language"
+                                  className="inline-flex rounded-lg border border-[#45414f] bg-[#15151c] p-0.5"
+                                >
+                                  {(["cpp", "java", "python"] as const).map(
+                                    (option) => (
+                                      <button
+                                        key={option}
+                                        type="button"
+                                        aria-pressed={language === option}
+                                        disabled={Boolean(busy)}
+                                        onClick={() =>
+                                          void chooseLanguage(option)
+                                        }
+                                        className={`rounded-md px-2.5 py-1.5 text-xs transition-colors disabled:opacity-50 ${language === option ? "bg-[#b8a0f4] text-[#18151f]" : "text-[#aaa8ba] hover:text-white"}`}
+                                      >
+                                        {option === "cpp"
+                                          ? "C++"
+                                          : option === "java"
+                                            ? "Java"
+                                            : "Python"}
+                                      </button>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                              {busy === "language" && (
+                                <p
+                                  role="status"
+                                  className="mb-4 text-xs text-[#aaa8ba]"
+                                >
+                                  Preparing the selected code language…
+                                </p>
+                              )}
+                              {active.content.sections.some(
+                                (section) => section.code,
+                              ) &&
+                                !active.content.sections.some(
+                                  (section) =>
+                                    section.code &&
+                                    codeLanguage(section.language) === language,
+                                ) &&
+                                !detail.codeVariants?.some(
+                                  (variant) =>
+                                    variant.lesson_id === active.id &&
+                                    variant.language === language,
+                                ) &&
+                                busy !== "language" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => void retryCodeVariant()}
+                                    className="mb-5 rounded-lg border border-[#554967] px-3 py-2 text-xs text-[#d8c5ff] hover:bg-[#34274a]"
+                                  >
+                                    Prepare{" "}
+                                    {language === "cpp"
+                                      ? "C++"
+                                      : language === "java"
+                                        ? "Java"
+                                        : "Python"}{" "}
+                                    code{" "}
+                                    <ArrowRight
+                                      size={13}
+                                      className="ml-1 inline"
+                                    />
+                                  </button>
+                                )}
                               <div className="rounded-lg border-l-2 border-[#b8a0f4] bg-[#34274a]/40 px-4 py-3">
                                 <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[#c9b4ff]">
                                   Learning objective
@@ -1324,6 +1629,21 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                                   {active.content.introduction}
                                 </RichText>
                               </div>
+                              {active.content.workedExample && (
+                                <section className="mt-8 rounded-lg border border-[#4b405c] bg-[#26212f] p-5">
+                                  <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[#c9b4ff]">
+                                    Worked example
+                                  </p>
+                                  <h3 className="mt-3 text-base font-medium">
+                                    {active.content.workedExample.problem}
+                                  </h3>
+                                  <div className="mt-4">
+                                    <RichText>
+                                      {active.content.workedExample.walkthrough}
+                                    </RichText>
+                                  </div>
+                                </section>
+                              )}
                               {/grid/i.test(
                                 `${detail.path.title} ${active.title}`,
                               ) &&
@@ -1352,14 +1672,47 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                                       <RichText>{section.example}</RichText>
                                     </div>
                                   )}
-                                  {section.code && (
-                                    <CodeExample
-                                      code={section.code}
-                                      language={section.language}
-                                    />
-                                  )}
+                                  {section.code &&
+                                    codeLanguage(section.language) ===
+                                      language &&
+                                    !detail.codeVariants?.some(
+                                      (variant) =>
+                                        variant.lesson_id === active.id &&
+                                        variant.language === language,
+                                    ) && (
+                                      <CodeExample
+                                        code={section.code}
+                                        language={section.language}
+                                      />
+                                    )}
                                 </section>
                               ))}
+                              {detail.codeVariants
+                                ?.filter(
+                                  (variant) =>
+                                    variant.lesson_id === active.id &&
+                                    variant.language === language,
+                                )
+                                .map((variant) => (
+                                  <section
+                                    key={variant.language}
+                                    className="mt-9 border-t border-[#34343f] pt-7"
+                                  >
+                                    <h3 className="text-lg font-semibold">
+                                      Implementation in{" "}
+                                      {language === "cpp"
+                                        ? "C++17"
+                                        : language === "java"
+                                          ? "Java 17"
+                                          : "Python 3"}
+                                    </h3>
+                                    <CodeExample
+                                      code={variant.code_content}
+                                      language={variant.language}
+                                    />
+                                    <RichText>{variant.explanation}</RichText>
+                                  </section>
+                                ))}
                               {active.content.commonMistakes?.length ? (
                                 <section className="mt-9 border-t border-[#34343f] pt-7">
                                   <h3 className="text-base font-medium">
@@ -1672,7 +2025,7 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                                 disabled={Boolean(busy)}
                                 className="text-[#cdbbf7] underline disabled:opacity-50"
                               >
-                                Retry catalog
+                                Search catalog again
                               </button>
                             </div>
                           )}

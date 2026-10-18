@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { processSyncJobs } from "../../sync-worker";
 import { adminSupabase } from "../../admin";
+import { recoverSymmPathJobs } from "../../symm-jobs";
 export const maxDuration = 60;
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -19,8 +20,12 @@ export async function GET(request: NextRequest) {
       { p_limit: 100 },
     );
     if (error) throw error;
+    const [sync, symm] = await Promise.all([
+      processSyncJobs(3),
+      recoverSymmPathJobs(),
+    ]);
     return NextResponse.json(
-      { queued, ...(await processSyncJobs(3)) },
+      { queued, ...sync, ...symm },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch {

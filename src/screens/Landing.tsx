@@ -2,19 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
   LoaderCircle,
 } from "lucide-react";
-import { codingProviders, CodingPlatformMark } from "@/components/brand/CodingPlatformMark";
+import {
+  codingProviders,
+  CodingPlatformMark,
+} from "@/components/brand/CodingPlatformMark";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
 import { HeroCubes } from "@/components/brand/HeroCubes";
 import { LandingFeatures } from "@/components/brand/LandingFeatures";
 import { GoogleMark } from "@/components/auth/GoogleMark";
 import { useAuth } from "@/contexts/AuthContext";
 import "./landing.css";
+
+const SymmShowcase = dynamic(() => import("@/components/brand/SymmShowcase"), {
+  loading: () => <div style={{ minHeight: 500 }} aria-hidden="true" />,
+});
 
 const links = [
   ["Explore", "/problems"],
@@ -111,14 +119,38 @@ export default function Landing() {
           </header>
           <section className="landing-hero">
             <div className="hero-copy">
-              <h1>Your competitive programming <span className="hero-workspace"><span className="hero-wave-letter"><span className="sr-only">w</span><svg aria-hidden="true" focusable="false" viewBox="0 0 68 66"><path d="M 3 21 L 13 5 L 27 57 L 39 22 L 51 48 L 64 18" /></svg></span><span className="hero-workspace-text">orkspace.</span></span></h1>
+              <h1>
+                Your competitive programming{" "}
+                <span className="hero-workspace">
+                  <span className="hero-wave-letter">
+                    <span className="sr-only">w</span>
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      viewBox="0 0 68 66"
+                    >
+                      <path d="M 3 21 L 13 5 L 27 57 L 39 22 L 51 48 L 64 18" />
+                    </svg>
+                  </span>
+                  <span className="hero-workspace-text">orkspace.</span>
+                </span>
+              </h1>
               <p className="hero-description">
-                Every problem is a building block.<br />
+                Every problem is a building block.
+                <br />
                 <span>Keep stacking.</span>
               </p>
               <div className="hero-platforms">
                 <span>CODING PLATFORMS</span>
-                {codingProviders.map(provider => <span key={provider.id} title={`${provider.name}${provider.available ? "" : " — integration in progress"}`}><CodingPlatformMark platform={provider.id} /><span>{provider.name}</span></span>)}
+                {codingProviders.map((provider) => (
+                  <span
+                    key={provider.id}
+                    title={`${provider.name}${provider.available ? "" : " — integration in progress"}`}
+                  >
+                    <CodingPlatformMark platform={provider.id} />
+                    <span>{provider.name}</span>
+                  </span>
+                ))}
               </div>
             </div>
             <HeroCubes />
@@ -142,6 +174,7 @@ export default function Landing() {
         <LandingFeatures>
           <GoogleStart />
         </LandingFeatures>
+        <SymmShowcase />
       </main>
       <footer className="landing-footer">
         <Link href="/" aria-label="AlgoGym home">

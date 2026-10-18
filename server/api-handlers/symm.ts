@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { after } from "next/server";
 import { adminSupabase } from "../admin";
 import {
   serverSupabase,
@@ -10,10 +11,12 @@ import {
   AiFailure,
   AiUnavailable,
   generateLesson,
-  generateRoadmap,
+  generateCodeVariant,
   askTutor,
   isAiConfigured,
+  type ProgrammingLanguage,
 } from "../symm-ai";
+import { processSymmPathJob } from "../symm-jobs";
 import { recommendProblems } from "../symm-recommend";
 import { allowAuthAttempt } from "../auth-policy";
 
@@ -26,6 +29,18 @@ const action = z.discriminatedUnion("action", [
     level: z.enum(["beginner", "intermediate", "advanced"]),
     goal: z.enum(["fundamentals", "interview", "competitive", "mastery"]),
     hoursPerWeek: z.number().int().min(1).max(40),
+    language: z.enum(["cpp", "java", "python"]).default("cpp"),
+  }),
+  z.object({ action: z.literal("path.retry"), pathId: uuid }),
+  z.object({
+    action: z.literal("path.language"),
+    pathId: uuid,
+    language: z.enum(["cpp", "java", "python"]),
+  }),
+  z.object({
+    action: z.literal("code.variant"),
+    lessonId: uuid,
+    language: z.enum(["cpp", "java", "python"]),
   }),
   z.object({ action: z.literal("lesson.generate"), lessonId: uuid }),
   z.object({ action: z.literal("progress.complete"), lessonId: uuid }),
@@ -78,7 +93,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const { data, error } = await client
           .from("ai_learning_paths")
           .select(
-            "id,topic,title,description,level,goal,category,status,created_at,updated_at",
+            "id,topic,title,description,level,goal,category,status,preferred_language,created_at,updated_at",
           )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
@@ -203,6 +218,15 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             .in("module_id", moduleIds)
         : { data: [], error: null };
       if (awardsError) throw awardsError;
+      const { data: codeVariants, error: variantsError } = lessonIds.length
+        ? await client
+            .from("ai_lesson_code_variants")
+            .select(
+              "lesson_id,language,code_content,explanation,generation_version",
+            )
+            .in("lesson_id", lessonIds)
+        : { data: [], error: null };
+      if (variantsError) throw variantsError;
       const selectedLesson = new URL(
         req.url ?? "http://localhost",
       ).searchParams.get("lesson");
@@ -225,6 +249,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         progress,
         recommendations,
         moduleAwards,
+        codeVariants,
         conversation,
         configured: isAiConfigured(),
       });
@@ -235,6 +260,68 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         .status(400)
         .json({ error: parsed.error.issues[0]?.message ?? "Invalid request." });
     const value = parsed.data;
+    if (value.action === "path.language") {
+      const saved = await admin
+        .from("ai_learning_paths")
+        .update({
+          preferred_language: value.language,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", value.pathId)
+        .eq("user_id", user.id)
+        .select("id")
+        .maybeSingle();
+      if (saved.error) throw saved.error;
+      if (!saved.data)
+        return res.status(404).json({ error: "Learning path not found." });
+      return res.status(200).json({ language: value.language });
+    }
+    if (value.action === "path.retry") {
+      const path = await admin
+        .from("ai_learning_paths")
+        .select("id,status")
+        .eq("id", value.pathId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (path.error) throw path.error;
+      if (!path.data)
+        return res.status(404).json({ error: "Learning path not found." });
+      if (path.data.status !== "failed")
+        return res
+          .status(409)
+          .json({ error: "This path is already being prepared." });
+      const job = await admin
+        .from("ai_generation_jobs")
+        .update({
+          status: "queued",
+          stage: "queued",
+          error_code: null,
+          queued_at: new Date().toISOString(),
+        })
+        .eq("resource_type", "path")
+        .eq("resource_id", value.pathId)
+        .eq("user_id", user.id)
+        .eq("status", "failed")
+        .lt("attempt_count", 3)
+        .select("id")
+        .maybeSingle();
+      if (job.error) throw job.error;
+      if (!job.data)
+        return res
+          .status(429)
+          .json({
+            error: "This path reached its retry limit. Create a new path.",
+          });
+      const resumed = await admin
+        .from("ai_learning_paths")
+        .update({ status: "generating" })
+        .eq("id", value.pathId);
+      if (resumed.error) throw resumed.error;
+      after(() => processSymmPathJob(value.pathId));
+      return res
+        .status(202)
+        .json({ pathId: value.pathId, status: "generating" });
+    }
     if (value.action === "path.delete") {
       const removed = await admin
         .from("ai_learning_paths")
@@ -339,6 +426,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           level: value.level,
           goal: value.goal,
           hours_per_week: value.hoursPerWeek,
+          preferred_language: value.language,
         })
         .select("id")
         .single();
@@ -350,78 +438,26 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         throw inserted.error;
       }
       const pathId = inserted.data.id;
-      try {
-        const road = await generateRoadmap(
-          value.topic,
-          value.level,
-          value.goal,
-          value.hoursPerWeek,
-        );
-        const update = await admin
-          .from("ai_learning_paths")
-          .update({
-            title: road.title,
-            description: road.description,
-            category: road.category,
-            objectives: road.objectives,
-            prerequisites: road.prerequisites,
-            estimated_minutes: road.estimatedMinutes,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", pathId);
-        if (update.error) throw update.error;
-        for (const [index, module] of road.modules.entries()) {
-          const saved = await admin
-            .from("ai_learning_modules")
-            .insert({
-              path_id: pathId,
-              position: index,
-              title: module.title,
-              description: module.description,
-              objectives: module.objectives,
-              tags: module.tags,
-              estimated_minutes: module.estimatedMinutes,
-            })
-            .select("id")
-            .single();
-          if (saved.error) throw saved.error;
-          const lessons = await admin.from("ai_learning_lessons").insert(
-            module.lessons.map((title, position) => ({
-              module_id: saved.data.id,
-              position,
-              title,
-              objectives: module.objectives,
-            })),
-          );
-          if (lessons.error) throw lessons.error;
-          if (road.category === "competitive")
-            await recommendProblems(
-              admin,
-              saved.data.id,
-              module.tags,
-              value.level,
-              module.title,
-              value.topic,
-            ).catch(() => []);
-        }
-        const completed = await admin
-          .from("ai_learning_paths")
-          .update({ status: "ready", updated_at: new Date().toISOString() })
-          .eq("id", pathId);
-        if (completed.error) throw completed.error;
-        return res.status(200).json({ pathId, status: "ready" });
-      } catch (error) {
+      const job = await admin.from("ai_generation_jobs").insert({
+        user_id: user.id,
+        resource_type: "path",
+        resource_id: pathId,
+        idempotency_key: value.requestId,
+      });
+      if (job.error) {
         await admin
           .from("ai_learning_paths")
-          .update({ status: "failed", updated_at: new Date().toISOString() })
+          .update({ status: "failed" })
           .eq("id", pathId);
-        throw error;
+        throw job.error;
       }
+      after(() => processSymmPathJob(pathId));
+      return res.status(202).json({ pathId, status: "generating" });
     }
     const lesson = await admin
       .from("ai_learning_lessons")
       .select(
-        "id,title,objectives,content,status,module_id,ai_learning_modules(id,title,path_id,ai_learning_paths(id,user_id,title,level,category))",
+        "id,title,objectives,content,status,module_id,ai_learning_modules(id,title,path_id,ai_learning_paths(id,user_id,title,level,category,preferred_language))",
       )
       .eq("id", value.lessonId)
       .single();
@@ -437,6 +473,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         title: string;
         level: string;
         category: string;
+        preferred_language: ProgrammingLanguage;
       };
     };
     if (moduleRow.ai_learning_paths.user_id !== user.id)
@@ -471,6 +508,64 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         );
       if (saved.error) throw saved.error;
       return res.status(200).json({ completed: true });
+    }
+    if (value.action === "code.variant") {
+      if (lesson.data.status !== "ready")
+        return res.status(409).json({ error: "Open the lesson first." });
+      const existing = await client
+        .from("ai_lesson_code_variants")
+        .select(
+          "lesson_id,language,code_content,explanation,generation_version",
+        )
+        .eq("lesson_id", value.lessonId)
+        .eq("language", value.language)
+        .eq("generation_version", 1)
+        .maybeSingle();
+      if (existing.error) throw existing.error;
+      if (existing.data)
+        return res.status(200).json({ variant: existing.data });
+      if (!isAiConfigured())
+        throw new AiUnavailable("Symm AI is temporarily unavailable.");
+      const content = lesson.data.content as {
+        sections?: { code?: string }[];
+      } | null;
+      if (!content?.sections?.some((section) => section.code))
+        return res.status(200).json({ variant: null });
+      if (!allowAuthAttempt(`symm-code:${user.id}`, 8, 60_000))
+        return res
+          .status(429)
+          .json({
+            error: "Please wait before generating another code variant.",
+          });
+      const generated = await generateCodeVariant({
+        path: moduleRow.ai_learning_paths.title,
+        module: moduleRow.title,
+        lesson: lesson.data.title,
+        language: value.language,
+        lessonContent: JSON.stringify(lesson.data.content).slice(0, 12000),
+      });
+      if (generated.language !== value.language)
+        throw new AiFailure(
+          "The code variant could not be validated. Please retry.",
+        );
+      const saved = await admin
+        .from("ai_lesson_code_variants")
+        .upsert(
+          {
+            lesson_id: value.lessonId,
+            language: value.language,
+            code_content: generated.code,
+            explanation: generated.explanation,
+            generation_version: 1,
+          },
+          { onConflict: "lesson_id,language,generation_version" },
+        )
+        .select(
+          "lesson_id,language,code_content,explanation,generation_version",
+        )
+        .single();
+      if (saved.error) throw saved.error;
+      return res.status(200).json({ variant: saved.data });
     }
     if (value.action === "lesson.generate") {
       if (lesson.data.status === "ready")
@@ -519,6 +614,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           moduleRow.title,
           lesson.data.title,
           lesson.data.objectives,
+          moduleRow.ai_learning_paths.preferred_language,
         );
         const saved = await admin
           .from("ai_learning_lessons")
@@ -569,7 +665,24 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       module: moduleRow.title,
       lesson: lesson.data.title,
       level: moduleRow.ai_learning_paths.level,
-      lessonSummary: JSON.stringify(lesson.data.content).slice(0, 6000),
+      language: moduleRow.ai_learning_paths.preferred_language,
+      lessonSummary: (() => {
+        const content = lesson.data.content as {
+          introduction?: string;
+          workedExample?: { problem?: string; walkthrough?: string };
+          sections?: { heading?: string; explanation?: string }[];
+          takeaways?: string[];
+        } | null;
+        return JSON.stringify({
+          introduction: content?.introduction?.slice(0, 900),
+          workedExample: content?.workedExample?.problem,
+          sections: content?.sections?.map((section) => ({
+            heading: section.heading,
+            summary: section.explanation?.slice(0, 250),
+          })),
+          takeaways: content?.takeaways,
+        }).slice(0, 6000);
+      })(),
       question: value.message,
       history: (history.data ?? []).reverse(),
     });

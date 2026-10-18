@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-import { askTutor, generateLesson, generateRoadmap } from "./symm-ai";
+import {
+  askTutor,
+  generateCodeVariant,
+  generateLesson,
+  generateRoadmap,
+} from "./symm-ai";
 
 describe.skipIf(process.env.SYMM_LIVE_TEST !== "1")(
   "Symm AI live Gemini integration",
@@ -60,6 +65,20 @@ describe.skipIf(process.env.SYMM_LIVE_TEST !== "1")(
       );
       expect(lesson.sections.length).toBeGreaterThanOrEqual(2);
       expect(lesson.questions.length).toBeGreaterThan(0);
+    }, 90_000);
+
+    it("generates a validated Java code variant without regenerating a course", async () => {
+      const variant = await generateCodeVariant({
+        path: "Grid Dynamic Programming",
+        module: "Tabulation",
+        lesson: "Unique Paths",
+        lessonContent:
+          "Count right/down paths. Base dp[0][0]=1. Transition dp[i][j]=dp[i-1][j]+dp[i][j-1].",
+        language: "java",
+      });
+      expect(variant.language).toBe("java");
+      expect(variant.code).toMatch(/class|static|long\[\]/);
+      expect(variant.explanation.length).toBeGreaterThan(60);
     }, 90_000);
   },
 );
