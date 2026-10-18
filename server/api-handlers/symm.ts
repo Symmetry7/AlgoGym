@@ -238,6 +238,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .eq("user_id", user.id)
           .eq("lesson_id", selectedLesson)
           .order("created_at")
+          .order("role", { ascending: false })
           .limit(30);
         if (messages.error) throw messages.error;
         conversation = messages.data ?? [];
@@ -307,11 +308,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         .maybeSingle();
       if (job.error) throw job.error;
       if (!job.data)
-        return res
-          .status(429)
-          .json({
-            error: "This path reached its retry limit. Create a new path.",
-          });
+        return res.status(429).json({
+          error: "This path reached its retry limit. Create a new path.",
+        });
       const resumed = await admin
         .from("ai_learning_paths")
         .update({ status: "generating" })
@@ -532,11 +531,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       if (!content?.sections?.some((section) => section.code))
         return res.status(200).json({ variant: null });
       if (!allowAuthAttempt(`symm-code:${user.id}`, 8, 60_000))
-        return res
-          .status(429)
-          .json({
-            error: "Please wait before generating another code variant.",
-          });
+        return res.status(429).json({
+          error: "Please wait before generating another code variant.",
+        });
       const generated = await generateCodeVariant({
         path: moduleRow.ai_learning_paths.title,
         module: moduleRow.title,
@@ -658,6 +655,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       .eq("user_id", user.id)
       .eq("lesson_id", value.lessonId)
       .order("created_at", { ascending: false })
+      .order("role", { ascending: true })
       .limit(10);
     if (history.error) throw history.error;
     const answer = await askTutor({
@@ -686,6 +684,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       question: value.message,
       history: (history.data ?? []).reverse(),
     });
+    const messageTime = Date.now();
     const saved = await admin
       .from("ai_learning_conversations")
       .insert([
@@ -694,12 +693,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           lesson_id: value.lessonId,
           role: "user",
           message: value.message,
+          created_at: new Date(messageTime).toISOString(),
         },
         {
           user_id: user.id,
           lesson_id: value.lessonId,
           role: "assistant",
           message: [answer.reply, answer.question].filter(Boolean).join("\n\n"),
+          created_at: new Date(messageTime + 1).toISOString(),
         },
       ])
       .select("id,role,message,created_at");

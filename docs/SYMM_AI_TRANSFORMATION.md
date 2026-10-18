@@ -31,6 +31,8 @@ An authenticated production integration check created two disposable Supabase us
 
 ## Limits and follow-up verification
 
+The follow-up workspace refinement replaced duplicate Beginner and hours buttons with one Customize path control for level, goal, and study time. The tutor now uses a Blender-rendered, four-tile Symm mark, distinct starter prompts, a saved desktop width control (300–520 px), and a mobile height toggle. Chat messages now sort student before tutor even when legacy rows share a timestamp. An isolated local browser check created and deleted a disposable account and path, confirmed the Customize selection, resized the tutor to 480 px, received a real Quiz me response, and found no horizontal overflow at 1440 px or 390 px. The check is local and does not prove the new interface is deployed yet.
+
 - The production integration check confirms authenticated path creation, background roadmap completion, owner-scoped API reads, progress persistence, and code-variant cache reuse. It does not separately establish direct database RLS behavior for a client using another user's JWT, first-lesson prefetch latency, Google OAuth, or concurrent-user capacity.
 - The fallback cron schedule is daily on the current Vercel plan. An interrupted job can also be retried from the path screen; higher reliability under sustained load would require a more frequent authorized worker or managed queue.
 - Generated code was checked for language consistency, not compiled or executed. No arbitrary generated code runs inside the Next.js process.

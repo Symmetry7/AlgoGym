@@ -1,0 +1,16 @@
+@media (min-width: 1280px) {
+  .symm-workspace-grid.symm-workspace-grid--tutor {
+    grid-template-columns: 248px minmax(0, 1fr) var(--symm-tutor-width);
+  }
+}
+
+.symm-range {
+  height: 24px;
+  cursor: pointer;
+}
+
+.symm-range:focus-visible {
+  outline: 2px solid #b8a0f4;
+  outline-offset: 3px;
+  border-radius: 4px;
+}

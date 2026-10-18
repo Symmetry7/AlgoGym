@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,11 +15,11 @@ import {
   ExternalLink,
   Library,
   LoaderCircle,
+  Maximize2,
   Menu,
   Plus,
   Search,
   Send,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -29,6 +29,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { SymmMark } from "@/components/brand/SymmMark";
+import "./symm-workspace.css";
 import { ChakraMark } from "@/components/brand/ChakraMark";
 import {
   AlertDialog,
@@ -304,6 +305,8 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [outlineOpen, setOutlineOpen] = useState(false);
   const [tutorOpen, setTutorOpen] = useState(false);
+  const [tutorWidth, setTutorWidth] = useState(340);
+  const [tutorTall, setTutorTall] = useState(false);
   const [message, setMessage] = useState("");
   const [answer, setAnswer] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -314,6 +317,12 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const savedWidth = Number(window.localStorage.getItem("symm-tutor-width"));
+    if (Number.isFinite(savedWidth) && savedWidth >= 300 && savedWidth <= 520)
+      setTutorWidth(savedWidth);
+  }, []);
 
   const load = async (lessonId?: string) => {
     try {
@@ -726,8 +735,8 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
               href="/training/symm"
               className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-.02em]"
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-[#34274a] text-[#cbb8fc]">
-                <SymmMark className="size-4" />
+              <span className="flex size-9 items-center justify-center rounded-lg bg-[#28232f]">
+                <SymmMark className="size-7 object-contain" />
               </span>
               Symm AI
             </Link>
@@ -846,25 +855,22 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                       type="button"
                       onClick={() => setCustomize(!customize)}
                       aria-expanded={customize}
-                      className="inline-flex h-8 items-center gap-1 rounded-md bg-[#2b2935] px-3 text-[#d5d0df] hover:bg-[#393545]"
+                      aria-controls="symm-customize"
+                      className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#45414f] bg-[#25242e] px-3 text-[#e7e1f2] transition-colors hover:border-[#8c7cae] hover:bg-[#302d3b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
                     >
-                      {level[0].toUpperCase() + level.slice(1)}{" "}
-                      <ChevronDown size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCustomize(!customize)}
-                      aria-expanded={customize}
-                      className="inline-flex h-8 items-center gap-1 rounded-md bg-[#2b2935] px-3 text-[#d5d0df] hover:bg-[#393545]"
-                    >
-                      {hours} hrs/week
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCustomize(!customize)}
-                      className="hidden px-2 py-1 text-[#aaa8ba] hover:text-white sm:inline"
-                    >
-                      Customize
+                      <span>Customize path</span>
+                      <span className="hidden text-[#aaa8ba] sm:inline">
+                        {level[0].toUpperCase() + level.slice(1)} · {hours}
+                        h/week
+                      </span>
+                      <ChevronDown
+                        size={14}
+                        className={
+                          customize
+                            ? "rotate-180 transition-transform"
+                            : "transition-transform"
+                        }
+                      />
                     </button>
                   </div>
                   <button
@@ -882,52 +888,81 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                   </button>
                 </div>
                 {customize && (
-                  <div className="mt-4 grid gap-3 border-t border-[#34343f] pt-4 sm:grid-cols-3">
-                    <label className="text-xs text-[#aaa8ba]">
-                      Skill level
-                      <select
-                        value={level}
-                        onChange={(event) => setLevel(event.target.value)}
-                        className="mt-1.5 w-full rounded-lg border border-[#45414f] bg-[#25252e] px-3 py-2.5 text-sm text-white"
+                  <div
+                    id="symm-customize"
+                    className="mt-4 grid gap-5 border-t border-[#34343f] pt-5 sm:grid-cols-2"
+                  >
+                    <fieldset className="min-w-0">
+                      <legend className="mb-2 text-xs font-medium text-[#e7e1f2]">
+                        Starting point
+                      </legend>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(
+                          ["beginner", "intermediate", "advanced"] as const
+                        ).map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            aria-pressed={level === option}
+                            onClick={() => setLevel(option)}
+                            className={`min-h-9 rounded-md border px-3 text-xs capitalize transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] ${level === option ? "border-[#b8a0f4] bg-[#34274a] text-[#f8f7fc]" : "border-[#45414f] text-[#aaa8ba] hover:text-white"}`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-[11px] leading-4 text-[#858293]">
+                        Sets how much background each lesson explains.
+                      </p>
+                    </fieldset>
+                    <fieldset className="min-w-0">
+                      <legend className="mb-2 text-xs font-medium text-[#e7e1f2]">
+                        Learning goal
+                      </legend>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(
+                          [
+                            ["fundamentals", "Fundamentals"],
+                            ["competitive", "Competitive programming"],
+                            ["interview", "Interviews"],
+                            ["mastery", "Deep understanding"],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={goal === value}
+                            onClick={() => setGoal(value)}
+                            className={`min-h-9 rounded-md border px-3 text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] ${goal === value ? "border-[#b8a0f4] bg-[#34274a] text-[#f8f7fc]" : "border-[#45414f] text-[#aaa8ba] hover:text-white"}`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#34343f] pt-4">
+                      <label
+                        htmlFor="symm-hours"
+                        className="text-xs text-[#e7e1f2]"
                       >
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                      </select>
-                    </label>
-                    <label className="text-xs text-[#aaa8ba]">
-                      Learning goal
-                      <select
-                        value={goal}
-                        onChange={(event) => setGoal(event.target.value)}
-                        className="mt-1.5 w-full rounded-lg border border-[#45414f] bg-[#25252e] px-3 py-2.5 text-sm text-white"
-                      >
-                        <option value="fundamentals">Fundamentals</option>
-                        <option value="competitive">
-                          Competitive programming
-                        </option>
-                        <option value="interview">Interview preparation</option>
-                        <option value="mastery">Deep understanding</option>
-                      </select>
-                    </label>
-                    <label className="text-xs text-[#aaa8ba]">
-                      Hours each week
+                        Study time{" "}
+                        <span className="ml-2 text-[#aaa8ba]">
+                          {hours} hours each week
+                        </span>
+                      </label>
                       <input
-                        type="number"
+                        id="symm-hours"
+                        type="range"
                         min={1}
                         max={40}
+                        step={1}
                         value={hours}
                         onChange={(event) =>
-                          setHours(
-                            Math.max(
-                              1,
-                              Math.min(40, Number(event.target.value) || 1),
-                            ),
-                          )
+                          setHours(Number(event.target.value))
                         }
-                        className="mt-1.5 w-full rounded-lg border border-[#45414f] bg-[#25252e] px-3 py-2.5 text-sm text-white"
+                        className="symm-range w-full accent-[#b8a0f4] sm:w-48"
                       />
-                    </label>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1241,7 +1276,10 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                   </div>
                 )}
                 <div
-                  className={`mx-auto mt-7 grid max-w-[1380px] gap-6 lg:grid-cols-[248px_minmax(0,1fr)] ${selected && tutorOpen ? "xl:grid-cols-[248px_minmax(0,1fr)_290px]" : ""}`}
+                  className={`symm-workspace-grid mx-auto mt-7 grid max-w-[1380px] gap-6 lg:grid-cols-[248px_minmax(0,1fr)] ${selected && tutorOpen ? "symm-workspace-grid--tutor" : ""}`}
+                  style={
+                    { "--symm-tutor-width": `${tutorWidth}px` } as CSSProperties
+                  }
                 >
                   <aside
                     className={`${outlineOpen ? "fixed inset-0 z-40 flex bg-black/70 p-3" : "hidden"} lg:sticky lg:top-5 lg:block lg:self-start`}
@@ -1537,9 +1575,10 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                             </div>
                             <button
                               onClick={() => setTutorOpen(true)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-[#4b405c] px-3 py-2 text-xs text-[#d8c5ff] hover:bg-[#34274a]"
+                              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#5d5072] bg-[#25212f] px-3 py-2 text-xs font-medium text-[#eadfff] transition-colors hover:border-[#a28ac8] hover:bg-[#34274a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
                             >
-                              <Sparkles size={14} /> Ask tutor
+                              <SymmMark className="size-6 object-contain" /> Ask
+                              tutor
                             </button>
                           </div>
                           {active.status === "ready" && active.content ? (
@@ -2129,25 +2168,126 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                     )}
                   </div>
                   {selected && tutorOpen && (
-                    <div className="fixed inset-x-0 bottom-0 z-50 flex h-[85vh] flex-col rounded-t-2xl border border-[#45414f] bg-[#1d1d25] shadow-2xl xl:sticky xl:top-5 xl:z-auto xl:h-[min(780px,calc(100vh-2.5rem))] xl:rounded-xl xl:shadow-none">
-                      <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-4">
-                        <div className="flex items-center gap-2 text-sm font-medium">
-                          <SymmMark className="size-4 text-[#b8a0f4]" /> Symm AI
-                          tutor
+                    <section
+                      aria-label="Symm AI tutor"
+                      className={`fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-xl border border-[#45414f] bg-[#1d1d25] shadow-2xl xl:sticky xl:top-5 xl:z-auto xl:h-[min(780px,calc(100vh-2.5rem))] xl:rounded-xl xl:shadow-none ${tutorTall ? "h-[94vh]" : "h-[80vh]"}`}
+                    >
+                      <div className="flex items-center justify-between gap-2 border-b border-[#34343f] px-4 py-3.5">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-[#655278] bg-[#28232f]">
+                            <SymmMark className="size-8 object-contain" />
+                          </span>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-semibold text-[#f8f7fc]">
+                              Symm tutor
+                            </h3>
+                            <p className="truncate text-[11px] text-[#aaa8ba]">
+                              {active?.title}
+                            </p>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => setTutorOpen(false)}
-                          aria-label="Close tutor"
-                          className="rounded-md p-1.5 text-[#aaa8ba] hover:bg-[#2d2b36]"
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setTutorTall(!tutorTall)}
+                            aria-label={
+                              tutorTall
+                                ? "Reduce tutor height"
+                                : "Expand tutor height"
+                            }
+                            className="rounded-md p-2 text-[#aaa8ba] hover:bg-[#2d2b36] hover:text-white xl:hidden"
+                          >
+                            <Maximize2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => setTutorOpen(false)}
+                            aria-label="Close tutor"
+                            className="rounded-md p-2 text-[#aaa8ba] hover:bg-[#2d2b36] hover:text-white"
+                          >
+                            <X size={17} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="hidden items-center justify-between gap-3 border-b border-[#34343f] px-4 py-2.5 xl:flex">
+                        <label
+                          htmlFor="symm-tutor-width"
+                          className="text-[11px] text-[#aaa8ba]"
                         >
-                          <X size={17} />
-                        </button>
+                          Panel width
+                        </label>
+                        <input
+                          id="symm-tutor-width"
+                          type="range"
+                          min={300}
+                          max={520}
+                          step={10}
+                          value={tutorWidth}
+                          onChange={(event) => {
+                            const value = Number(event.target.value);
+                            setTutorWidth(value);
+                            window.localStorage.setItem(
+                              "symm-tutor-width",
+                              String(value),
+                            );
+                          }}
+                          aria-valuetext={`${tutorWidth} pixels`}
+                          className="symm-range w-28 accent-[#b8a0f4]"
+                        />
                       </div>
                       <p className="px-4 pt-4 text-xs leading-5 text-[#aaa8ba]">
-                        Ask about{" "}
-                        <span className="text-[#ddd3ee]">{active?.title}</span>.
-                        We’ll work through it together.
+                        Work through{" "}
+                        <span className="text-[#ddd3ee]">{active?.title}</span>{" "}
+                        one step at a time.
                       </p>
+                      {active?.status !== "ready" && (
+                        <p
+                          role="status"
+                          className="mx-4 mt-3 rounded-md border border-[#4b405c] bg-[#292532] px-3 py-2 text-xs leading-5 text-[#cfc0e5]"
+                        >
+                          Your lesson is being prepared. Tutoring opens when the
+                          content is ready.
+                        </p>
+                      )}
+                      {!detail.conversation.length && (
+                        <div className="grid grid-cols-2 gap-2 px-4 pt-4">
+                          {(
+                            [
+                              [
+                                "Simplify",
+                                "Explain the main idea more simply, then check my understanding.",
+                              ],
+                              [
+                                "Walk through",
+                                "Walk me through a small example, step by step.",
+                              ],
+                              [
+                                "Quiz me",
+                                "Quiz me with one reasoning question about this lesson.",
+                              ],
+                              [
+                                "Find pitfalls",
+                                "Show me a common mistake and help me understand why it fails.",
+                              ],
+                            ] as const
+                          ).map(([label, prompt]) => (
+                            <button
+                              key={label}
+                              type="button"
+                              disabled={
+                                Boolean(busy) || active?.status !== "ready"
+                              }
+                              onClick={() => void askTutor(prompt)}
+                              className="min-h-11 rounded-lg border border-[#45414f] bg-[#25242e] px-3 py-2 text-left text-xs text-[#e4ddec] transition-colors hover:border-[#8772a7] hover:bg-[#302b3a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] disabled:opacity-45"
+                            >
+                              {label}
+                              <ArrowRight
+                                size={13}
+                                className="ml-auto mt-1 text-[#aaa8ba]"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       <div
                         aria-live="polite"
                         className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5"
@@ -2156,7 +2296,7 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                           detail.conversation.map((item) => (
                             <div
                               key={item.id}
-                              className={`rounded-lg p-3 text-xs leading-5 ${item.role === "user" ? "ml-5 bg-[#34274a]" : "mr-5 bg-[#292831]"}`}
+                              className={`rounded-lg border p-3.5 text-[13px] leading-6 ${item.role === "user" ? "ml-5 border-[#594875] bg-[#34274a]" : "mr-5 border-[#393740] bg-[#25252e]"}`}
                             >
                               <p className="mb-2 text-[10px] uppercase tracking-[.1em] text-[#b8a0f4]">
                                 {item.role === "user" ? "You" : "Symm AI"}
@@ -2165,9 +2305,9 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                             </div>
                           ))
                         ) : (
-                          <p className="rounded-lg border border-dashed border-[#45414f] p-4 text-xs leading-5 text-[#aaa8ba]">
-                            Try “Explain this with a simpler example” or ask
-                            about a step you do not understand.
+                          <p className="text-xs leading-5 text-[#858293]">
+                            Choose a starting point above, or write your own
+                            question below.
                           </p>
                         )}
                       </div>
@@ -2178,6 +2318,14 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                         }}
                         className="border-t border-[#34343f] p-3"
                       >
+                        {error && (
+                          <p
+                            role="alert"
+                            className="mb-3 rounded-md border border-rose-400/30 bg-rose-400/5 p-2 text-xs text-rose-200"
+                          >
+                            {error}
+                          </p>
+                        )}
                         <label htmlFor="symm-message" className="sr-only">
                           Ask the tutor
                         </label>
@@ -2211,7 +2359,7 @@ export default function SymmAI({ pathId }: { pathId?: string }) {
                           </button>
                         </div>
                       </form>
-                    </div>
+                    </section>
                   )}
                 </div>
               </>
