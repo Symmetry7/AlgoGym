@@ -27,9 +27,11 @@ Using the configured server-side Gemini key and `gemini-3.5-flash-lite`, a Grid 
 The landing preview is a labeled, prepared product demonstration. It calls neither Gemini nor Supabase on passive interaction. Desktop 1440px and mobile 390px browser checks confirmed the headline, six roadmap nodes, language-switched code, and absence of horizontal overflow.
 After commit `82e8312` reached Vercel, the production deployment was Ready; the live landing returned HTTP 200, the Symm health endpoint reported configured, and the same desktop/mobile preview checks passed against `https://algogym.vercel.app`.
 
+An authenticated production integration check created two disposable Supabase users and exercised the deployed API. The path creation request returned HTTP 202 in 2,375 ms, and the six-module, 30-lesson roadmap became available in 13,641 ms from submission. It generated and persisted a detailed lesson with nine sections, switched the path from C++ to Java, generated a Java code variant and reused its cached value, saved progress, denied the second user's private-path read, and denied access after deletion. Both test users and the test path were deleted; a follow-up database query found zero remaining test accounts. These are one-run end-to-end measurements, not p95 latency or a before/after comparison. The first-lesson prefetch was not separately measured.
+
 ## Limits and follow-up verification
 
-- Authenticated path creation, background `after()` execution on Vercel, first-lesson prefetch, RLS across two test accounts, and code-variant cache reuse still need a real multi-account end-to-end check after deployment. Build and live provider tests do not prove those flows.
+- The production integration check confirms authenticated path creation, background roadmap completion, owner-scoped API reads, progress persistence, and code-variant cache reuse. It does not separately establish direct database RLS behavior for a client using another user's JWT, first-lesson prefetch latency, Google OAuth, or concurrent-user capacity.
 - The fallback cron schedule is daily on the current Vercel plan. An interrupted job can also be retried from the path screen; higher reliability under sustained load would require a more frequent authorized worker or managed queue.
 - Generated code was checked for language consistency, not compiled or executed. No arbitrary generated code runs inside the Next.js process.
 - LeetCode Chakra remains gated by the existing accepted-solve verification policy. External practice links come from the existing catalog and recommendation adapter, not from the language model.
@@ -38,3 +40,5 @@ After commit `82e8312` reached Vercel, the production deployment was Ready; the 
 ## Reproduce checks
 
 `npm run typecheck`, `npm run build`, and `npm test` cover local static and unit validation. The opt-in provider tests are `SYMM_LIVE_TEST=1 npm test -- server/symm-ai.live.spec.ts` and `SYMM_BENCHMARK=1 npm test -- server/symm-benchmark.live.spec.ts` with `GEMINI_API_KEY` supplied server-side. `node scripts/check-symm-showcase.mjs` checks the local development landing page on port 8080; set `ALGOGYM_TEST_URL=https://algogym.vercel.app` to check the deployed preview.
+
+The opt-in authenticated flow check is `SYMM_E2E=1 ALGOGYM_TEST_URL=https://algogym.vercel.app node scripts/test-symm-flow.mjs` with the server-side Supabase URL and service-role key in the environment. It creates and deletes two temporary Auth users and a temporary learning path; run it only against a project where that write activity is intended. It does not print credentials.
