@@ -55,6 +55,8 @@ There is no configured lint command. `scripts/test-auth-recovery.mjs` and `scrip
 
 Reviewed additive migrations are in `supabase/migrations/`. Production data must not be reset. Provider synchronization is dispatched by `GET /api/jobs/sync`, authenticated with `CRON_SECRET`; `vercel.json` schedules one daily invocation. Higher-volume deployments need an appropriately provisioned job cadence. Deployment environment and scheduler execution must be verified separately.
 
+Vercel is configured for Next.js in `vercel.json`. API URLs are dispatched through one App Router route at `src/app/api/[...path]/route.ts`; their handlers live under `server/next-api/` and `server/api-handlers/`. This keeps the deployment within the Hobby plan's function limit while retaining the existing URLs and server-side authorization checks.
+
 The profile-verification Edge Function independently validates authenticated users. See [architecture](architecture.md), [database design](api-and-database-design.md), [design system](DESIGN.md), and [implementation plan](IMPLEMENTATION_PLAN.md).
 
 ## Hero assets

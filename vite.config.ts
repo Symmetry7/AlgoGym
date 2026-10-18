@@ -2,11 +2,11 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import googleHandler from "./api/auth/google";
-import callbackHandler from "./api/auth/callback";
-import sessionHandler from "./api/auth/session";
-import signoutHandler from "./api/auth/signout";
-import profileVerificationHandler from "./api/profile-verification";
+import googleHandler from "./server/api-handlers/auth/google";
+import callbackHandler from "./server/api-handlers/auth/callback";
+import sessionHandler from "./server/api-handlers/auth/session";
+import signoutHandler from "./server/api-handlers/auth/signout";
+import profileVerificationHandler from "./server/api-handlers/profile-verification";
 import type { ApiRequest, ApiResponse } from "./server/supabase";
 
 function apiHandler(handler: (request: ApiRequest, response: ApiResponse) => Promise<unknown>, readJson = false) {

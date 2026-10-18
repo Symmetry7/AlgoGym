@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 .next
+.vercel
 *.tsbuildinfo
 dist-ssr
 *.local
@@ -25,3 +26,4 @@ dist-ssr
 *.sln
 *.sw?
 .local-backups/
+.env*
