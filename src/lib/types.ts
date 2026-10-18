@@ -1,10 +1,10 @@
 // LeetCode Problem Types
 export interface LeetCodeProblem {
   ID: number;
-  Rating: number;
+  Rating?: number;
   TitleSlug: string;
-  ContestSlug: string;
-  ContestID_en: number;
+  ContestSlug?: string;
+  ContestID_en?: number;
   Title?: string;
   Difficulty?: "Easy" | "Medium" | "Hard";
   Tags?: string[];
@@ -85,6 +85,7 @@ export interface ProblemFilters {
 
 // UI State Types
 export interface ProblemState {
+  warnings?: string[];
   problems: Problem[];
   filteredProblems: Problem[];
   loading: boolean;

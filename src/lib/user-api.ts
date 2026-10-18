@@ -100,27 +100,9 @@ export async function fetchLeetCodeUserStats(
 ): Promise<LeetCodeUserStats | null> {
   try {
     // Using LeetCode's public API endpoint
-    const response = await fetch(
-      `https://leetcode-api-faisalshohag.vercel.app/${username}`,
-    );
-
-    if (!response.ok) {
-      throw new Error("User not found");
-    }
-
-    const data = await response.json();
-
-    return {
-      totalSolved: data.totalSolved || 0,
-      totalQuestions: data.totalQuestions || 0,
-      easySolved: data.easySolved || 0,
-      mediumSolved: data.mediumSolved || 0,
-      hardSolved: data.hardSolved || 0,
-      acceptanceRate: data.acceptanceRate || 0,
-      ranking: data.ranking || 0,
-      contributionPoints: data.contributionPoints || 0,
-      reputation: data.reputation || 0,
-    };
+    void username;
+    // No stable, supported public LeetCode statistics endpoint is configured.
+    return null;
   } catch (error) {
     console.error("Error fetching LeetCode stats:", error);
     return null;
@@ -133,7 +115,7 @@ export async function fetchCodeforcesUser(
 ): Promise<CodeforcesUser | null> {
   try {
     const response = await fetch(
-      `https://codeforces.com/api/user.info?handles=${handle}`,
+      `/api/providers/codeforces?resource=user.info&handles=${encodeURIComponent(handle)}`,
     );
 
     if (!response.ok) {
@@ -159,7 +141,7 @@ export async function fetchCodeforcesSubmissions(
 ): Promise<CodeforcesSubmission[]> {
   try {
     const response = await fetch(
-      `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=${count}`,
+      `/api/providers/codeforces?resource=user.status&handle=${encodeURIComponent(handle)}&from=1&count=${count}`,
     );
 
     if (!response.ok) {
@@ -181,7 +163,7 @@ export async function fetchCodeforcesSubmissions(
 
 export async function fetchCodeforcesContests(): Promise<CodeforcesContest[]> {
   try {
-    const response = await fetch("https://codeforces.com/api/contest.list");
+    const response = await fetch("/api/providers/codeforces?resource=contest.list");
 
     if (!response.ok) {
       throw new Error("Failed to fetch contests");
@@ -412,58 +394,15 @@ interface LeetCodeSubmission {
   timestamp: number;
 }
 
-interface CodeforcesSubmission {
-  id: number;
-  problem: {
-    contestId: number;
-    index: string;
-    name: string;
-  };
-  verdict: string;
-  creationTimeSeconds: number;
-}
-
 // Check if a LeetCode problem was recently solved
 export async function checkLeetCodeSubmission(
   problemTitleSlug: string,
   username: string,
   timeWindow: number = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 ): Promise<boolean> {
-  try {
-    console.log(`Checking LeetCode submission for ${problemTitleSlug} by ${username}`);
-    
-    // Fetch real submissions from LeetCode API
-    const response = await fetch(
-      `https://leetcode-api-faisalshohag.vercel.app/${username}/submissions`
-    );
-
-    if (!response.ok) {
-      console.error("Failed to fetch LeetCode submissions");
-      return false;
-    }
-
-    const data = await response.json();
-    const submissions = data.submissions || [];
-    const currentTime = Date.now();
-
-    // Find a recent successful submission for this specific problem
-    const recentSubmission = submissions.find(
-      (sub: any) => sub.titleSlug === problemTitleSlug && 
-                   sub.status === "ac" && 
-                   currentTime - sub.timestamp < timeWindow
-    );
-
-    if (recentSubmission) {
-      console.log(`Found recent LeetCode submission: ${recentSubmission.id} at ${new Date(recentSubmission.timestamp).toLocaleString()}`);
-      return true;
-    } else {
-      console.log(`No recent LeetCode submission found for ${problemTitleSlug}`);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error checking LeetCode submission:", error);
-    return false;
-  }
+  void problemTitleSlug; void username; void timeWindow;
+  // LeetCode has no configured, dependable public per-submission proof connector.
+  return false;
 }
 
 // Check if a Codeforces problem was recently solved
@@ -478,7 +417,7 @@ export async function checkCodeforcesSubmission(
     
     // Fetch real submissions from Codeforces API
     const response = await fetch(
-      `https://codeforces.com/api/user.status?handle=${username}&from=1&count=1000`
+      `/api/providers/codeforces?resource=user.status&handle=${encodeURIComponent(username)}&from=1&count=1000`
     );
 
     if (!response.ok) {

@@ -1,5 +1,5 @@
 import { Problem, ProblemFilters, ProblemState } from "./types";
-import { fetchAllProblems, extractTags } from "./api";
+import { fetchAllProblems, extractTags, getCatalogWarnings } from "./api";
 
 class ProblemStore {
   private state: ProblemState = {
@@ -25,9 +25,7 @@ class ProblemStore {
 
   private subscribers: Array<() => void> = [];
 
-  constructor() {
-    this.loadProblems();
-  }
+  // Start requests from a mounted client, never while Next.js imports a module.
 
   subscribe(callback: () => void) {
     this.subscribers.push(callback);
@@ -44,14 +42,15 @@ class ProblemStore {
     return { ...this.state };
   }
 
-  async loadProblems() {
+  async loadProblems(force=false) {
     this.state.loading = true;
     this.state.error = null;
     this.notify();
 
     try {
       console.log("Problem store: Starting to load problems...");
-      const problems = await fetchAllProblems();
+      const problems = await fetchAllProblems(force);
+      this.state.warnings = getCatalogWarnings();
 
       if (problems.length === 0) {
         this.state.error =

@@ -1,0 +1,6 @@
+for(const [provider,url,options] of [
+ ['codeforces','https://codeforces.com/api/contest.list',{}],
+ ['leetcode','https://leetcode.com/graphql/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:'query { allContests { title titleSlug startTime duration } }'})}],
+ ['codechef','https://www.codechef.com/api/list/contests/all',{}]
+]){try{const response=await fetch(url,{...options,signal:AbortSignal.timeout(15000)});const data=await response.json();const rows=provider==='codeforces'?data.result:provider==='leetcode'?data.data?.allContests:data.future_contests;console.log(JSON.stringify({provider,httpStatus:response.status,readable:Array.isArray(rows),count:rows?.length,firstKeys:rows?.[0]?Object.keys(rows[0]):[],hasErrors:Boolean(data.errors)}));}catch(error){console.log(JSON.stringify({provider,error:error.message}));}}
+try{const response=await fetch('https://atcoder.jp/contests/?lang=en',{signal:AbortSignal.timeout(15000)});const html=await response.text();const upcoming=html.split('id="contest-table-upcoming"')[1]?.split('</table>')[0];console.log(JSON.stringify({provider:'atcoder',httpStatus:response.status,hasUpcoming:Boolean(upcoming),firstRow:upcoming?.match(/<tr>[\s\S]*?<\/tr>/g)?.at(1)?.slice(0,1600)}));}catch(error){console.log(JSON.stringify({provider:'atcoder',error:error.message}));}

@@ -1,0 +1,2 @@
+﻿import {readFileSync} from 'node:fs';
+for(const [p,terms] of [['atcoder',['Affiliation']],['codechef',['user-details-container','user-details','user-name','h1','realname']],['gfg',['bio','userName','username','userHandle','sandeepjain','profileData']]]){const t=readFileSync(`.local-backups/${p}-public-profile.txt`,'utf8');console.log(p);for(const term of terms){let pos=t.indexOf(term);console.log(term,pos>=0?t.slice(Math.max(0,pos-100),pos+350):'absent')}}

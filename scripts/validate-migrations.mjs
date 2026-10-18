@@ -1,0 +1,10 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+const cli = process.argv[2]; if (!cli) throw new Error('Pass the Supabase CLI path.');
+const files = process.argv.includes('--existing-schema') ? [] : ['supabase/migrations/20261017010000_algogym_core.sql', 'supabase/migrations/20261017102938_onboarding_sync_rewards.sql'];
+for (const arg of process.argv) if (arg.startsWith('--extra=')) files.push(arg.slice(8));
+const extraTests = (process.argv.includes('--submissions') ? readFileSync('scripts/sql/submission-tests.sql','utf8') : '')+(process.argv.includes('--study') ? readFileSync('scripts/sql/study-tests.sql','utf8') : '')+(process.argv.includes('--calendar') ? readFileSync('scripts/sql/calendar-portfolio-tests.sql','utf8') : '')+(process.argv.includes('--community') ? readFileSync('scripts/sql/community-tests.sql','utf8') : '');
+const sql = `begin;\n${files.map((path) => readFileSync(path,'utf8')).join('\n')}\n${readFileSync('scripts/sql/reward-tests.sql','utf8')}\n${readFileSync('scripts/sql/verification-tests.sql','utf8')}\n${extraTests}\nrollback;\nselect 'Schema, RLS, rewards and ownership-challenge tests passed; all changes rolled back' as result;`;
+const path = '.local-backups/migration-validation.sql'; writeFileSync(path, sql);
+const result = spawnSync(cli, ['db','query','--linked','--project-ref','sfnmcgcxerbqceujzbqv','--file',path], {encoding:'utf8',windowsHide:true});
+process.stdout.write(result.stdout); process.stderr.write(result.stderr); process.exitCode=result.status??1;

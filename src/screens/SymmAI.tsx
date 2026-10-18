@@ -1,0 +1,1917 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Clock3,
+  Copy,
+  ExternalLink,
+  Library,
+  LoaderCircle,
+  Menu,
+  Plus,
+  Search,
+  Send,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
+import { Highlight, themes, type Language } from "prism-react-renderer";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+import { SymmMark } from "@/components/brand/SymmMark";
+import { ChakraMark } from "@/components/brand/ChakraMark";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { jsonRequest } from "@/hooks/use-account";
+import { useTracker } from "@/hooks/use-tracker";
+import { chakraFor } from "@/lib/training";
+import type { Lesson } from "../../server/symm-ai";
+
+type Path = {
+  id: string;
+  topic: string;
+  title: string;
+  description: string;
+  level: string;
+  goal: string;
+  category: string;
+  status: string;
+  objectives: string[];
+  prerequisites: string[];
+  estimated_minutes: number;
+  created_at: string;
+  updated_at: string;
+  moduleCount?: number;
+  lessonCount?: number;
+  completedCount?: number;
+};
+type Module = {
+  id: string;
+  path_id: string;
+  position: number;
+  title: string;
+  description: string;
+  estimated_minutes: number;
+  objectives: string[];
+};
+type LessonRow = {
+  id: string;
+  module_id: string;
+  position: number;
+  title: string;
+  content: Lesson | null;
+  status: string;
+};
+type Recommendation = {
+  module_id: string;
+  position: number;
+  problems: {
+    id: string;
+    provider: string;
+    title: string;
+    url: string;
+    cf_rating: number | null;
+    lc_difficulty: string | null;
+    tags: string[];
+  } | null;
+};
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  message: string;
+  created_at: string;
+};
+type Detail = {
+  path: Path;
+  modules: Module[];
+  lessons: LessonRow[];
+  progress: { lesson_id: string; completed_at: string }[];
+  recommendations: Recommendation[];
+  moduleAwards: { module_id: string; points: number; awarded_at: string }[];
+  conversation: Message[];
+  configured: boolean;
+};
+type Home = { paths: Path[]; configured: boolean };
+
+const suggestions = [
+  "Dynamic Programming",
+  "Graph Algorithms",
+  "Binary Search",
+  "Number Theory",
+  "Computer Networks",
+];
+const post = <T,>(body: object) =>
+  jsonRequest<T>("/api/symm", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+const percent = (done: number, total: number) =>
+  total ? Math.round((done / total) * 100) : 0;
+const dateLabel = (value: string) =>
+  new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(
+    new Date(value),
+  );
+
+function RichText({ children }: { children: string }) {
+  return (
+    <div className="prose prose-invert max-w-none text-[14px] leading-[1.8] prose-headings:text-[#f8f7fc] prose-p:text-[#c8c5d2] prose-strong:text-[#f8f7fc] prose-a:text-[#c8b7fa] prose-pre:overflow-x-auto prose-pre:bg-[#111117] prose-code:text-[#d5c5ff]">
+      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+        {children}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+function CodeExample({ code, language }: { code: string; language?: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+  const supported = [
+    "javascript",
+    "typescript",
+    "python",
+    "java",
+    "cpp",
+    "c",
+    "go",
+    "rust",
+    "sql",
+    "bash",
+  ];
+  const normalized = (language || "text").toLowerCase();
+  return (
+    <div className="my-5 overflow-hidden rounded-xl border border-[#34343f] bg-[#121218]">
+      <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-2 text-[11px] text-[#aaa8ba]">
+        <span className="font-mono uppercase tracking-wide">
+          {language || "Code"}
+        </span>
+        <button
+          type="button"
+          onClick={() => void copy()}
+          className="inline-flex items-center gap-1.5 rounded px-2 py-1 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
+          aria-label="Copy code"
+        >
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <Highlight
+        theme={themes.vsDark}
+        code={code.trim()}
+        language={
+          (supported.includes(normalized) ? normalized : "markup") as Language
+        }
+      >
+        {({ tokens, getLineProps, getTokenProps }) => (
+          <pre className="max-w-full overflow-x-auto p-4 font-mono text-[12px] leading-6">
+            <code>
+              {tokens.map((line, index) => (
+                <div
+                  key={index}
+                  {...getLineProps({ line })}
+                  className="table-row"
+                >
+                  <span className="table-cell select-none pr-5 text-right text-[#767485]">
+                    {index + 1}
+                  </span>
+                  <span className="table-cell whitespace-pre">
+                    {line.map((token, tokenIndex) => (
+                      <span key={tokenIndex} {...getTokenProps({ token })} />
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </code>
+          </pre>
+        )}
+      </Highlight>
+    </div>
+  );
+}
+
+function GridDiagram() {
+  const values = [
+    [1, 1, 1, 1],
+    [1, 2, 3, 4],
+    [1, 3, 6, 10],
+    [1, 4, 10, 20],
+  ];
+  return (
+    <figure className="my-6 rounded-xl border border-[#34343f] bg-[#181820] p-5">
+      <figcaption className="mb-4 text-xs text-[#aaa8ba]">
+        Paths to each cell when you can move right or down
+      </figcaption>
+      <div
+        className="mx-auto grid max-w-[320px] grid-cols-4 gap-2"
+        aria-label="Four by four grid showing path counts"
+      >
+        {values.flatMap((row, y) =>
+          row.map((value, x) => (
+            <div
+              key={`${y}-${x}`}
+              className={`flex aspect-square items-center justify-center rounded-md border font-mono text-sm ${x === 3 && y === 3 ? "border-[#b8a0f4] bg-[#34274a] text-[#e5daff]" : "border-[#464457] bg-[#272630] text-[#cfccd8]"}`}
+            >
+              {value}
+            </div>
+          )),
+        )}
+      </div>
+      <p className="mt-4 text-center text-xs text-[#aaa8ba]">
+        Each interior cell is the sum of the cell above and the cell to its
+        left.
+      </p>
+    </figure>
+  );
+}
+
+function ProgressBar({ value, label }: { value: number; label: string }) {
+  return (
+    <div
+      role="progressbar"
+      aria-label={label}
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="h-1.5 overflow-hidden rounded-full bg-[#34343f]"
+    >
+      <div
+        className="h-full rounded-full bg-[#b8a0f4] transition-[width] duration-300 motion-reduce:transition-none"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+}
+
+export default function SymmAI({ pathId }: { pathId?: string }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const tracker = useTracker(0, "all", false);
+  const composer = useRef<HTMLTextAreaElement>(null);
+  const [home, setHome] = useState<Home | null>(null);
+  const [detail, setDetail] = useState<Detail | null>(null);
+  const [topic, setTopic] = useState("");
+  const [level, setLevel] = useState("beginner");
+  const [goal, setGoal] = useState("fundamentals");
+  const [hours, setHours] = useState(5);
+  const [customize, setCustomize] = useState(false);
+  const [librarySearch, setLibrarySearch] = useState("");
+  const [deletePath, setDeletePath] = useState<Path | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [outlineOpen, setOutlineOpen] = useState(false);
+  const [tutorOpen, setTutorOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [reportReason, setReportReason] = useState("");
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportSaved, setReportSaved] = useState(false);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = async (lessonId?: string) => {
+    try {
+      if (pathId)
+        setDetail(
+          await jsonRequest<Detail>(
+            `/api/symm?path=${pathId}${lessonId ? `&lesson=${lessonId}` : ""}`,
+          ),
+        );
+      else setHome(await jsonRequest<Home>("/api/symm"));
+      setError("");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Could not load Symm AI.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    setLoading(true);
+    void load();
+  }, [pathId]);
+  useEffect(() => {
+    if (pathId) return;
+    const params = new URLSearchParams(window.location.search);
+    const previousTopic = params.get("topic");
+    if (previousTopic) setTopic(previousTopic.slice(0, 180));
+    const previousLevel = params.get("level");
+    if (["beginner", "intermediate", "advanced"].includes(previousLevel ?? ""))
+      setLevel(previousLevel!);
+    const previousGoal = params.get("goal");
+    if (
+      ["fundamentals", "interview", "competitive", "mastery"].includes(
+        previousGoal ?? "",
+      )
+    )
+      setGoal(previousGoal!);
+  }, [pathId]);
+  useEffect(() => {
+    if (pathId && selected) void load(selected);
+  }, [pathId, selected]);
+  useEffect(() => {
+    setReportOpen(false);
+    setReportSaved(false);
+    setQuestionIndex(0);
+    setAnswer("");
+  }, [selected]);
+
+  const active = detail?.lessons.find((lesson) => lesson.id === selected);
+  const activeModule = detail?.modules.find(
+    (module) => module.id === active?.module_id,
+  );
+  const completedIds = new Set(
+    detail?.progress.map((item) => item.lesson_id) ?? [],
+  );
+  const totalProgress = percent(completedIds.size, detail?.lessons.length ?? 0);
+  const orderedLessons =
+    detail?.modules.flatMap((module) =>
+      detail.lessons.filter((lesson) => lesson.module_id === module.id),
+    ) ?? [];
+  const nextLesson = active
+    ? orderedLessons[
+        orderedLessons.findIndex((lesson) => lesson.id === active.id) + 1
+      ]
+    : undefined;
+  const visiblePaths = (home?.paths ?? []).filter((path) =>
+    `${path.title} ${path.topic}`
+      .toLowerCase()
+      .includes(librarySearch.trim().toLowerCase()),
+  );
+
+  const createPath = async () => {
+    if (busy) return;
+    if (topic.trim().length < 3) {
+      setError("Describe what you want to learn in at least three characters.");
+      composer.current?.focus();
+      return;
+    }
+    setBusy("roadmap");
+    setError("");
+    try {
+      const result = await post<{ pathId: string }>({
+        action: "path.generate",
+        requestId: crypto.randomUUID(),
+        topic: topic.trim(),
+        level,
+        goal,
+        hoursPerWeek: hours,
+      });
+      router.push(`/training/symm/${result.pathId}`);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Your path could not be created. Please retry.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const openLesson = async (lesson: LessonRow) => {
+    setSelected(lesson.id);
+    setExpanded(lesson.module_id);
+    setOutlineOpen(false);
+    setError("");
+    if (lesson.status === "ready" || busy) return;
+    setBusy(`lesson:${lesson.id}`);
+    try {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          await post({ action: "lesson.generate", lessonId: lesson.id });
+          break;
+        } catch (cause) {
+          if (attempt === 1) throw cause;
+          await new Promise((resolve) => window.setTimeout(resolve, 800));
+        }
+      }
+      await load(lesson.id);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "This lesson could not be prepared. Please retry.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const completeLesson = async () => {
+    if (!active || busy) return;
+    setBusy("complete");
+    setError("");
+    try {
+      await post({ action: "progress.complete", lessonId: active.id });
+      await load(active.id);
+      setSuccess("Lesson saved. Your learning progress is up to date.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Progress could not be saved.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const askTutor = async (text: string) => {
+    if (!active || active.status !== "ready" || !text.trim() || busy) return;
+    setBusy("tutor");
+    setError("");
+    setTutorOpen(true);
+    try {
+      await post({
+        action: "tutor.ask",
+        lessonId: active.id,
+        message: text.trim(),
+      });
+      setMessage("");
+      setAnswer("");
+      await load(active.id);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Symm AI could not reply. Please retry.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const report = async () => {
+    if (!active || reportReason.trim().length < 10 || busy) return;
+    setBusy("report");
+    setError("");
+    try {
+      await post({
+        action: "lesson.report",
+        lessonId: active.id,
+        reason: reportReason.trim(),
+      });
+      setReportSaved(true);
+      setReportOpen(false);
+      setReportReason("");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Feedback could not be saved.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const claimModule = async (moduleId: string) => {
+    setBusy(`claim:${moduleId}`);
+    setError("");
+    try {
+      const result = await post<{ points: number }>({
+        action: "module.claim",
+        moduleId,
+      });
+      await load(selected ?? undefined);
+      await tracker.refetch();
+      if (result.points > 0)
+        setSuccess(
+          `+${result.points} Chakra added for verified module practice.`,
+        );
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Module reward could not be claimed.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const retryRecommendations = async (moduleId: string) => {
+    setBusy(`recommend:${moduleId}`);
+    setError("");
+    try {
+      await post({ action: "module.recommend", moduleId });
+      await load(selected ?? undefined);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Recommendations are unavailable right now.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+  const removePath = async () => {
+    if (!deletePath) return;
+    setBusy(`delete:${deletePath.id}`);
+    setError("");
+    try {
+      await post({ action: "path.delete", pathId: deletePath.id });
+      setDeletePath(null);
+      await load();
+      setSuccess("Learning path deleted.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Learning path could not be deleted.",
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const avatarUrl =
+    typeof user?.user_metadata?.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : "";
+  const avatarName = String(
+    user?.user_metadata?.full_name ?? user?.email ?? "Learner",
+  );
+  return (
+    <div className="min-h-screen bg-[#131319] font-sans text-[#f8f7fc]">
+      <div className="mx-auto max-w-[1700px]">
+        <nav
+          aria-label="Symm AI navigation"
+          className="flex h-[68px] items-center justify-between gap-3 border-b border-[#34343f] px-4 sm:px-8 lg:px-10"
+        >
+          <div className="flex min-w-0 items-center gap-4">
+            <Link
+              href="/training"
+              className="flex size-9 items-center justify-center rounded-lg text-[#aaa8ba] transition-colors hover:bg-[#1d1d25] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
+              aria-label="Back to Training Gym"
+            >
+              <ArrowLeft size={18} />
+            </Link>
+            <span className="h-5 w-px bg-[#34343f]" aria-hidden="true" />
+            <Link
+              href="/training/symm"
+              className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-.02em]"
+            >
+              <span className="flex size-8 items-center justify-center rounded-lg bg-[#34274a] text-[#cbb8fc]">
+                <SymmMark className="size-4" />
+              </span>
+              Symm AI
+            </Link>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-3">
+            {pathId ? (
+              <Link
+                href="/training/symm"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[#c9c6d2] hover:bg-[#1d1d25] hover:text-white"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">New Path</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setTopic("");
+                  setError("");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  composer.current?.focus();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[#c9c6d2] hover:bg-[#1d1d25] hover:text-white"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">New Path</span>
+              </button>
+            )}
+            <Link
+              href="/training/symm#library"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[#c9c6d2] hover:bg-[#1d1d25] hover:text-white"
+            >
+              <Library size={14} />
+              <span className="hidden sm:inline">My Library</span>
+            </Link>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={avatarName}
+                className="ml-2 size-8 rounded-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span
+                title={avatarName}
+                className="ml-2 flex size-8 items-center justify-center rounded-full border border-[#4b4659] bg-[#34274a] text-xs font-medium text-[#ded1ff]"
+              >
+                {avatarName[0]?.toUpperCase()}
+              </span>
+            )}
+          </div>
+        </nav>
+
+        {!pathId ? (
+          <main className="px-4 pb-20 sm:px-8">
+            <div className="mx-auto max-w-[900px] pt-[clamp(72px,12vh,140px)]">
+              <div className="mb-10 text-center sm:mb-12">
+                <p className="mb-4 text-[11px] font-medium uppercase tracking-[.19em] text-[#b8a0f4]">
+                  Your learning workspace
+                </p>
+                <h1 className="text-[clamp(2.1rem,5vw,3.8rem)] font-semibold leading-[1.1] tracking-[-.055em]">
+                  What will you learn today?
+                </h1>
+                <p className="mt-4 text-[15px] text-[#aaa8ba]">
+                  One question. A complete learning path.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[#484554] bg-[#1d1d25] p-3 transition-[border-color,box-shadow] duration-150 focus-within:border-[#b8a0f4] focus-within:shadow-[0_0_0_3px_rgba(184,160,244,.08)] sm:p-4">
+                <label className="sr-only" htmlFor="symm-topic">
+                  What do you want to learn?
+                </label>
+                <textarea
+                  ref={composer}
+                  id="symm-topic"
+                  value={topic}
+                  maxLength={180}
+                  onChange={(event) => setTopic(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      !event.shiftKey &&
+                      !event.nativeEvent.isComposing
+                    ) {
+                      event.preventDefault();
+                      void createPath();
+                    }
+                  }}
+                  placeholder="Teach me Dynamic Programming on Grids..."
+                  rows={3}
+                  className="min-h-[96px] max-h-[260px] w-full resize-y bg-transparent px-2 py-2 text-[15px] leading-7 text-[#f8f7fc] outline-none placeholder:text-[#777583] sm:text-base"
+                />
+                <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#34343f] px-1 pt-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setCustomize(!customize)}
+                      aria-expanded={customize}
+                      className="inline-flex h-8 items-center gap-1 rounded-md bg-[#2b2935] px-3 text-[#d5d0df] hover:bg-[#393545]"
+                    >
+                      {level[0].toUpperCase() + level.slice(1)}{" "}
+                      <ChevronDown size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCustomize(!customize)}
+                      aria-expanded={customize}
+                      className="inline-flex h-8 items-center gap-1 rounded-md bg-[#2b2935] px-3 text-[#d5d0df] hover:bg-[#393545]"
+                    >
+                      {hours} hrs/week
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCustomize(!customize)}
+                      className="hidden px-2 py-1 text-[#aaa8ba] hover:text-white sm:inline"
+                    >
+                      Customize
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void createPath()}
+                    disabled={Boolean(busy) || !home?.configured}
+                    aria-label="Create learning path"
+                    className="flex size-10 items-center justify-center rounded-xl bg-[#cdbbf7] text-[#18151f] transition-transform duration-150 hover:scale-[1.04] hover:bg-[#e0d3ff] disabled:cursor-not-allowed disabled:opacity-45 motion-reduce:transition-none"
+                  >
+                    {busy === "roadmap" ? (
+                      <LoaderCircle size={17} className="animate-spin" />
+                    ) : (
+                      <ArrowRight size={19} />
+                    )}
+                  </button>
+                </div>
+                {customize && (
+                  <div className="mt-4 grid gap-3 border-t border-[#34343f] pt-4 sm:grid-cols-3">
+                    <label className="text-xs text-[#aaa8ba]">
+                      Skill level
+                      <select
+                        value={level}
+                        onChange={(event) => setLevel(event.target.value)}
+                        className="mt-1.5 w-full rounded-lg border border-[#45414f] bg-[#25252e] px-3 py-2.5 text-sm text-white"
+                      >
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </label>
+                    <label className="text-xs text-[#aaa8ba]">
+                      Learning goal
+                      <select
+                        value={goal}
+                        onChange={(event) => setGoal(event.target.value)}
+                        className="mt-1.5 w-full rounded-lg border border-[#45414f] bg-[#25252e] px-3 py-2.5 text-sm text-white"
+                      >
+                        <option value="fundamentals">Fundamentals</option>
+                        <option value="competitive">
+                          Competitive programming
+                        </option>
+                        <option value="interview">Interview preparation</option>
+                        <option value="mastery">Deep understanding</option>
+                      </select>
+                    </label>
+                    <label className="text-xs text-[#aaa8ba]">
+                      Hours each week
+                      <input
+                        type="number"
+                        min={1}
+                        max={40}
+                        value={hours}
+                        onChange={(event) =>
+                          setHours(
+                            Math.max(
+                              1,
+                              Math.min(40, Number(event.target.value) || 1),
+                            ),
+                          )
+                        }
+                        className="mt-1.5 w-full rounded-lg border border-[#45414f] bg-[#25252e] px-3 py-2.5 text-sm text-white"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+              <p className="mt-3 text-center text-[11px] text-[#858293]">
+                Press Enter to create a path · Shift + Enter for a new line
+              </p>
+              {busy === "roadmap" && (
+                <div
+                  role="status"
+                  className="mt-7 flex items-center gap-3 rounded-xl border border-[#484554] bg-[#1d1d25] px-5 py-4 text-sm text-[#d9d3e8]"
+                >
+                  <LoaderCircle
+                    size={17}
+                    className="shrink-0 animate-spin text-[#b8a0f4]"
+                  />
+                  <span>
+                    <strong className="font-medium text-white">
+                      Building your curriculum.
+                    </strong>{" "}
+                    Mapping concepts and lessons from your learning goal. This
+                    can take a moment.
+                  </span>
+                </div>
+              )}
+              {!home?.configured && !loading && (
+                <p
+                  role="status"
+                  className="mt-5 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3 text-sm text-amber-100"
+                >
+                  Generation is temporarily unavailable. You can still open
+                  saved paths; try again when the AI service is ready.
+                </p>
+              )}
+              {error && (
+                <div
+                  role="alert"
+                  className="mt-5 rounded-lg border border-rose-400/30 bg-rose-400/5 p-3 text-sm text-rose-200"
+                >
+                  {error}{" "}
+                  <button
+                    onClick={() => setError("")}
+                    className="ml-2 underline"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+              {success && (
+                <p
+                  role="status"
+                  className="mt-5 rounded-lg border border-[#b8a0f4]/30 bg-[#34274a] p-3 text-sm text-[#e5dcff]"
+                >
+                  {success}
+                </p>
+              )}
+              <div
+                aria-label="Suggested topics"
+                className="mt-7 flex flex-wrap justify-center gap-2"
+              >
+                {suggestions.map((suggestion) => (
+                  <button
+                    type="button"
+                    key={suggestion}
+                    onClick={() => {
+                      setTopic(`Teach me ${suggestion} from the fundamentals.`);
+                      composer.current?.focus();
+                    }}
+                    className="rounded-full border border-[#45414f] px-3.5 py-2 text-[12px] text-[#bbb8c8] transition-colors duration-150 hover:border-[#b8a0f4] hover:bg-[#25222e] hover:text-white"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <section
+              id="library"
+              className="mx-auto mt-24 max-w-[1000px] scroll-mt-10 border-t border-[#34343f] pt-8 sm:mt-32"
+            >
+              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[.16em] text-[#b8a0f4]">
+                    Saved work
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold tracking-[-.03em]">
+                    Your learning paths
+                  </h2>
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Search
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#858293]"
+                  />
+                  <label htmlFor="symm-search" className="sr-only">
+                    Search learning paths
+                  </label>
+                  <input
+                    id="symm-search"
+                    value={librarySearch}
+                    onChange={(event) => setLibrarySearch(event.target.value)}
+                    placeholder="Search your library"
+                    className="h-9 w-full rounded-lg border border-[#34343f] bg-[#1d1d25] pl-9 pr-3 text-xs outline-none focus:border-[#b8a0f4]"
+                  />
+                </div>
+              </div>
+              {loading ? (
+                <p
+                  role="status"
+                  className="flex items-center gap-2 py-8 text-sm text-[#aaa8ba]"
+                >
+                  <LoaderCircle size={16} className="animate-spin" />
+                  Loading paths…
+                </p>
+              ) : visiblePaths.length ? (
+                <div className="divide-y divide-[#34343f] border-y border-[#34343f]">
+                  {visiblePaths.map((path) => (
+                    <div
+                      key={path.id}
+                      className="group flex items-center gap-4 py-4"
+                    >
+                      <Link
+                        href={`/training/symm/${path.id}`}
+                        className="min-w-0 flex-1 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
+                      >
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="truncate text-sm font-medium group-hover:text-[#d6c6ff]">
+                            {path.title}
+                          </span>
+                          <span className="text-[11px] text-[#858293]">
+                            {path.moduleCount ?? 0} modules
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-[#aaa8ba]">
+                          {path.status === "ready"
+                            ? `${percent(path.completedCount ?? 0, path.lessonCount ?? 0)}% complete`
+                            : path.status === "failed"
+                              ? "Generation failed"
+                              : "Preparing"}{" "}
+                          · Updated {dateLabel(path.updated_at)}
+                        </p>
+                        <div className="mt-2 max-w-[220px]">
+                          <ProgressBar
+                            value={percent(
+                              path.completedCount ?? 0,
+                              path.lessonCount ?? 0,
+                            )}
+                            label={`${path.title} completion`}
+                          />
+                        </div>
+                      </Link>
+                      <Link
+                        href={`/training/symm/${path.id}`}
+                        className="hidden items-center gap-1 text-xs text-[#b8a0f4] sm:inline-flex"
+                      >
+                        Continue <ArrowRight size={14} />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setDeletePath(path)}
+                        aria-label={`Delete ${path.title}`}
+                        className="flex size-9 items-center justify-center rounded-lg text-[#858293] hover:bg-[#2a252e] hover:text-rose-200"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="py-7 text-sm text-[#aaa8ba]">
+                  {librarySearch
+                    ? "No paths match your search."
+                    : "Your courses will appear here after you create your first path."}
+                </p>
+              )}
+            </section>
+          </main>
+        ) : (
+          <main className="px-4 pb-16 sm:px-6 lg:px-8">
+            {loading && !detail ? (
+              <p
+                role="status"
+                className="flex items-center gap-2 py-12 text-sm text-[#aaa8ba]"
+              >
+                <LoaderCircle size={17} className="animate-spin" />
+                Loading learning path…
+              </p>
+            ) : detail ? (
+              <>
+                <header className="mx-auto max-w-[1380px] border-b border-[#34343f] py-7 sm:py-9">
+                  <Link
+                    href="/training/symm"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#aaa8ba] hover:text-white"
+                  >
+                    <ArrowLeft size={13} /> My Library
+                  </Link>
+                  <div className="mt-5 flex flex-wrap items-end justify-between gap-5">
+                    <div className="max-w-[760px]">
+                      <p className="mb-2 text-[11px] font-medium uppercase tracking-[.16em] text-[#b8a0f4]">
+                        Learning path · {detail.path.level}
+                      </p>
+                      <h1 className="text-[clamp(1.9rem,3.3vw,3rem)] font-semibold leading-tight tracking-[-.045em]">
+                        {detail.path.title}
+                      </h1>
+                      <p className="mt-3 max-w-[650px] text-sm leading-6 text-[#aaa8ba]">
+                        {detail.path.description}
+                      </p>
+                    </div>
+                    <div className="w-full sm:w-[210px]">
+                      <div className="mb-2 flex justify-between text-xs">
+                        <span className="text-[#aaa8ba]">Course progress</span>
+                        <span>{totalProgress}%</span>
+                      </div>
+                      <ProgressBar
+                        value={totalProgress}
+                        label="Course progress"
+                      />
+                      <p className="mt-2 text-[11px] text-[#858293]">
+                        {completedIds.size} of {detail.lessons.length} lessons ·{" "}
+                        {detail.modules.length} modules ·{" "}
+                        {Math.round(detail.path.estimated_minutes / 60)} hours
+                      </p>
+                      <Link
+                        href={`/training/symm?topic=${encodeURIComponent(detail.path.topic)}&level=${detail.path.level}&goal=${detail.path.goal}`}
+                        className="mt-3 inline-flex items-center gap-1 text-[11px] text-[#b8a0f4] hover:text-white"
+                      >
+                        Create a new version <ArrowRight size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                </header>
+                {error && (
+                  <div
+                    role="alert"
+                    className="mx-auto mt-5 max-w-[1380px] rounded-lg border border-rose-400/30 bg-rose-400/5 p-3 text-sm text-rose-200"
+                  >
+                    {error}{" "}
+                    <button
+                      onClick={() => setError("")}
+                      className="ml-2 underline"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+                {success && (
+                  <div
+                    role="status"
+                    className="mx-auto mt-5 max-w-[1380px] rounded-lg border border-[#b8a0f4]/30 bg-[#34274a] p-3 text-sm text-[#e5dcff]"
+                  >
+                    {success}
+                  </div>
+                )}
+                <div
+                  className={`mx-auto mt-7 grid max-w-[1380px] gap-6 lg:grid-cols-[248px_minmax(0,1fr)] ${selected && tutorOpen ? "xl:grid-cols-[248px_minmax(0,1fr)_290px]" : ""}`}
+                >
+                  <aside
+                    className={`${outlineOpen ? "fixed inset-0 z-40 flex bg-black/70 p-3" : "hidden"} lg:sticky lg:top-5 lg:block lg:self-start`}
+                  >
+                    <div className="flex max-h-[90vh] w-[min(330px,90vw)] flex-col overflow-hidden rounded-xl border border-[#34343f] bg-[#1d1d25] lg:max-h-[calc(100vh-2.5rem)] lg:w-auto">
+                      <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-3">
+                        <h2 className="text-xs font-semibold uppercase tracking-[.12em] text-[#aaa8ba]">
+                          Curriculum
+                        </h2>
+                        <button
+                          className="lg:hidden"
+                          aria-label="Close curriculum"
+                          onClick={() => setOutlineOpen(false)}
+                        >
+                          <X size={17} />
+                        </button>
+                      </div>
+                      <div className="overflow-y-auto p-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelected(null);
+                            setOutlineOpen(false);
+                          }}
+                          className={`mb-2 flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs ${!selected ? "bg-[#34274a] text-[#eee8ff]" : "text-[#aaa8ba] hover:bg-[#2a2934]"}`}
+                        >
+                          <Library size={14} /> Course overview
+                        </button>
+                        <ol>
+                          {detail.modules.map((module, index) => {
+                            const moduleLessons = detail.lessons.filter(
+                              (lesson) => lesson.module_id === module.id,
+                            );
+                            const done = moduleLessons.filter((lesson) =>
+                              completedIds.has(lesson.id),
+                            ).length;
+                            const isOpen = expanded === module.id;
+                            return (
+                              <li
+                                key={module.id}
+                                className="border-t border-[#34343f]"
+                              >
+                                <button
+                                  onClick={() =>
+                                    setExpanded(isOpen ? null : module.id)
+                                  }
+                                  aria-expanded={isOpen}
+                                  className="flex w-full items-center gap-2 rounded-lg px-2 py-3 text-left text-xs hover:bg-[#2a2934]"
+                                >
+                                  <span
+                                    className={`flex size-7 shrink-0 items-center justify-center rounded-md font-mono text-[11px] ${done === moduleLessons.length && done > 0 ? "bg-[#34274a] text-[#d6c6ff]" : "bg-[#2a2934] text-[#aaa8ba]"}`}
+                                  >
+                                    {done === moduleLessons.length &&
+                                    done > 0 ? (
+                                      <Check size={14} />
+                                    ) : (
+                                      String(index + 1).padStart(2, "0")
+                                    )}
+                                  </span>
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block truncate font-medium text-[#e9e6f0]">
+                                      {module.title}
+                                    </span>
+                                    <span className="mt-0.5 block text-[10px] text-[#858293]">
+                                      {done}/{moduleLessons.length} lessons
+                                    </span>
+                                  </span>
+                                  {isOpen ? (
+                                    <ChevronDown size={13} />
+                                  ) : (
+                                    <ChevronRight size={13} />
+                                  )}
+                                </button>
+                                <div
+                                  className={`grid transition-[grid-template-rows] duration-200 motion-reduce:transition-none ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                                >
+                                  <ol className="overflow-hidden pb-2 pl-7">
+                                    {moduleLessons.map((lesson) => (
+                                      <li key={lesson.id}>
+                                        <button
+                                          onClick={() =>
+                                            void openLesson(lesson)
+                                          }
+                                          className={`flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-[11px] leading-4 ${selected === lesson.id ? "bg-[#34274a] text-[#ede5ff]" : "text-[#aaa8ba] hover:bg-[#2a2934] hover:text-white"}`}
+                                        >
+                                          {completedIds.has(lesson.id) ? (
+                                            <Check
+                                              size={13}
+                                              className="mt-0.5 shrink-0"
+                                            />
+                                          ) : (
+                                            <BookOpen
+                                              size={13}
+                                              className="mt-0.5 shrink-0"
+                                            />
+                                          )}
+                                          {lesson.title}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ol>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ol>
+                      </div>
+                    </div>
+                  </aside>
+                  <div className="min-w-0">
+                    <button
+                      onClick={() => setOutlineOpen(true)}
+                      className="mb-4 inline-flex items-center gap-2 rounded-lg border border-[#34343f] px-3 py-2 text-xs text-[#ddd8e8] lg:hidden"
+                    >
+                      <Menu size={15} /> Curriculum
+                    </button>
+                    {!selected ? (
+                      <div className="space-y-7">
+                        <section className="rounded-xl border border-[#34343f] bg-[#1d1d25] p-6 sm:p-8">
+                          <p className="text-[11px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                            Course overview
+                          </p>
+                          <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
+                            Your route through {detail.path.title}
+                          </h2>
+                          <p className="mt-3 max-w-[700px] text-sm leading-6 text-[#aaa8ba]">
+                            {detail.path.description}
+                          </p>
+                          {detail.path.prerequisites.length > 0 && (
+                            <div className="mt-6 border-t border-[#34343f] pt-5">
+                              <h3 className="text-xs font-medium text-[#e9e6f0]">
+                                Before you begin
+                              </h3>
+                              <p className="mt-2 text-xs leading-6 text-[#aaa8ba]">
+                                {detail.path.prerequisites.join(" · ")}
+                              </p>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => {
+                              if (orderedLessons[0])
+                                void openLesson(
+                                  orderedLessons.find(
+                                    (lesson) => !completedIds.has(lesson.id),
+                                  ) ?? orderedLessons[0],
+                                );
+                            }}
+                            className="mt-7 inline-flex items-center gap-2 rounded-lg bg-[#cdbbf7] px-4 py-2.5 text-sm font-medium text-[#19151e] hover:bg-[#e0d3ff]"
+                          >
+                            {completedIds.size
+                              ? "Continue Learning"
+                              : "Start Learning"}
+                            <ArrowRight size={16} />
+                          </button>
+                        </section>
+                        <section
+                          aria-label="Learning roadmap"
+                          className="pl-3 sm:pl-5"
+                        >
+                          <h2 className="mb-6 text-lg font-medium">
+                            The roadmap
+                          </h2>
+                          <ol className="border-l border-[#514866]">
+                            {detail.modules.map((module, index) => {
+                              const moduleLessons = detail.lessons.filter(
+                                (lesson) => lesson.module_id === module.id,
+                              );
+                              const done = moduleLessons.filter((lesson) =>
+                                completedIds.has(lesson.id),
+                              ).length;
+                              const finished =
+                                done === moduleLessons.length && done > 0;
+                              return (
+                                <li
+                                  key={module.id}
+                                  className="relative pb-6 pl-7 last:pb-0"
+                                >
+                                  <span
+                                    className={`absolute -left-[15px] top-3 flex size-[29px] items-center justify-center rounded-full border bg-[#131319] font-mono text-[10px] ${finished ? "border-[#b8a0f4] text-[#b8a0f4]" : "border-[#6b647a] text-[#aaa8ba]"}`}
+                                  >
+                                    {finished ? (
+                                      <Check size={14} />
+                                    ) : (
+                                      String(index + 1).padStart(2, "0")
+                                    )}
+                                  </span>
+                                  <button
+                                    onClick={() =>
+                                      setExpanded(
+                                        expanded === module.id
+                                          ? null
+                                          : module.id,
+                                      )
+                                    }
+                                    aria-expanded={expanded === module.id}
+                                    className="w-full rounded-xl border border-[#34343f] bg-[#1d1d25] p-5 text-left transition-colors hover:border-[#6d5c8c]"
+                                  >
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <span className="text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                        Module{" "}
+                                        {String(index + 1).padStart(2, "0")}
+                                      </span>
+                                      <span className="flex items-center gap-1 text-[11px] text-[#858293]">
+                                        <Clock3 size={12} />{" "}
+                                        {module.estimated_minutes} min ·{" "}
+                                        {moduleLessons.length} lessons
+                                      </span>
+                                    </div>
+                                    <h3 className="mt-2 text-[16px] font-medium">
+                                      {module.title}
+                                    </h3>
+                                    <p className="mt-1 text-xs leading-5 text-[#aaa8ba]">
+                                      {module.description}
+                                    </p>
+                                    <div className="mt-4 flex items-center gap-3">
+                                      <div className="w-28">
+                                        <ProgressBar
+                                          value={percent(
+                                            done,
+                                            moduleLessons.length,
+                                          )}
+                                          label={`${module.title} progress`}
+                                        />
+                                      </div>
+                                      <span className="text-[11px] text-[#aaa8ba]">
+                                        {done}/{moduleLessons.length} completed
+                                      </span>
+                                      <ChevronDown
+                                        size={14}
+                                        className={`ml-auto transition-transform ${expanded === module.id ? "rotate-180" : ""}`}
+                                      />
+                                    </div>
+                                  </button>
+                                  {expanded === module.id && (
+                                    <div className="mt-2 space-y-1 rounded-xl border border-[#34343f] bg-[#1a1a22] p-2">
+                                      {moduleLessons.map(
+                                        (lesson, lessonIndex) => (
+                                          <button
+                                            key={lesson.id}
+                                            onClick={() =>
+                                              void openLesson(lesson)
+                                            }
+                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs text-[#d8d5e0] hover:bg-[#292735]"
+                                          >
+                                            <span className="font-mono text-[#858293]">
+                                              {String(lessonIndex + 1).padStart(
+                                                2,
+                                                "0",
+                                              )}
+                                            </span>
+                                            <span className="flex-1">
+                                              {lesson.title}
+                                            </span>
+                                            {completedIds.has(lesson.id) ? (
+                                              <Check
+                                                size={14}
+                                                className="text-[#b8a0f4]"
+                                              />
+                                            ) : (
+                                              <ArrowRight size={13} />
+                                            )}
+                                          </button>
+                                        ),
+                                      )}
+                                    </div>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ol>
+                        </section>
+                      </div>
+                    ) : (
+                      active && (
+                        <article className="mx-auto max-w-[830px] rounded-xl border border-[#34343f] bg-[#1d1d25] px-5 py-6 sm:px-8 sm:py-9">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                Module{" "}
+                                {String(
+                                  (activeModule?.position ?? 0) + 1,
+                                ).padStart(2, "0")}{" "}
+                                · Lesson{" "}
+                                {String(active.position + 1).padStart(2, "0")}
+                              </p>
+                              <h2 className="mt-3 text-[clamp(1.6rem,3vw,2.3rem)] font-semibold tracking-[-.04em]">
+                                {active.title}
+                              </h2>
+                              <p className="mt-2 text-[12px] text-[#858293]">
+                                Generated by Symm AI · Read, question, and
+                                practice at your own pace.
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => setTutorOpen(true)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-[#4b405c] px-3 py-2 text-xs text-[#d8c5ff] hover:bg-[#34274a]"
+                            >
+                              <Sparkles size={14} /> Ask tutor
+                            </button>
+                          </div>
+                          {active.status === "ready" && active.content ? (
+                            <div className="mt-8">
+                              <div className="rounded-lg border-l-2 border-[#b8a0f4] bg-[#34274a]/40 px-4 py-3">
+                                <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[#c9b4ff]">
+                                  Learning objective
+                                </p>
+                                <p className="mt-1 text-sm leading-6 text-[#e6dfed]">
+                                  {activeModule?.objectives?.[0] ??
+                                    `Understand ${active.title} and explain it in your own words.`}
+                                </p>
+                              </div>
+                              <div className="mt-8">
+                                <RichText>
+                                  {active.content.introduction}
+                                </RichText>
+                              </div>
+                              {/grid/i.test(
+                                `${detail.path.title} ${active.title}`,
+                              ) &&
+                                /grid|path/i.test(active.title) && (
+                                  <GridDiagram />
+                                )}
+                              {active.content.sections.map((section, index) => (
+                                <section
+                                  key={index}
+                                  className="mt-9 border-t border-[#34343f] pt-7"
+                                >
+                                  <p className="text-[10px] font-mono text-[#b8a0f4]">
+                                    {String(index + 1).padStart(2, "0")}
+                                  </p>
+                                  <h3 className="mt-2 text-lg font-semibold tracking-[-.02em]">
+                                    {section.heading}
+                                  </h3>
+                                  <div className="mt-4">
+                                    <RichText>{section.explanation}</RichText>
+                                  </div>
+                                  {section.example && (
+                                    <div className="mt-5 rounded-lg border border-[#3b3947] bg-[#25242e] p-4">
+                                      <p className="mb-2 text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                        Worked example
+                                      </p>
+                                      <RichText>{section.example}</RichText>
+                                    </div>
+                                  )}
+                                  {section.code && (
+                                    <CodeExample
+                                      code={section.code}
+                                      language={section.language}
+                                    />
+                                  )}
+                                </section>
+                              ))}
+                              {active.content.commonMistakes?.length ? (
+                                <section className="mt-9 border-t border-[#34343f] pt-7">
+                                  <h3 className="text-base font-medium">
+                                    Common mistakes
+                                  </h3>
+                                  <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-[#c8c5d2]">
+                                    {active.content.commonMistakes.map(
+                                      (mistake, index) => (
+                                        <li key={index}>{mistake}</li>
+                                      ),
+                                    )}
+                                  </ul>
+                                </section>
+                              ) : null}
+                              <section className="mt-9 border-t border-[#34343f] pt-7">
+                                <p className="text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                  Knowledge check
+                                </p>
+                                <h3 className="mt-2 text-lg font-medium">
+                                  Explain it in your own words
+                                </h3>
+                                <div className="mt-4 rounded-lg border border-[#3b3947] bg-[#25242e] p-4">
+                                  <p className="text-sm leading-6">
+                                    {active.content.questions[questionIndex] ??
+                                      active.content.questions[0]}
+                                  </p>
+                                  <p className="mt-2 text-[11px] text-[#858293]">
+                                    Question {questionIndex + 1} of{" "}
+                                    {active.content.questions.length}
+                                  </p>
+                                  <label
+                                    htmlFor="symm-answer"
+                                    className="sr-only"
+                                  >
+                                    Your answer
+                                  </label>
+                                  <textarea
+                                    id="symm-answer"
+                                    value={answer}
+                                    maxLength={1400}
+                                    onChange={(event) =>
+                                      setAnswer(event.target.value)
+                                    }
+                                    rows={3}
+                                    placeholder="Write your reasoning here…"
+                                    className="mt-4 w-full resize-y rounded-lg border border-[#484554] bg-[#181820] p-3 text-sm outline-none focus:border-[#b8a0f4]"
+                                  />
+                                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                                    <button
+                                      onClick={() => {
+                                        setQuestionIndex(
+                                          (questionIndex + 1) %
+                                            active.content!.questions.length,
+                                        );
+                                        setAnswer("");
+                                      }}
+                                      disabled={
+                                        active.content.questions.length < 2
+                                      }
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#514b60] bg-[#2d2b36] px-3 py-2 text-xs font-medium text-[#ded8ea] transition-colors hover:border-[#b8a0f4] hover:bg-[#342f40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      Next question <ArrowRight size={13} />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        void askTutor(
+                                          `Knowledge check: ${active.content!.questions[questionIndex]}\nMy answer: ${answer}`,
+                                        )
+                                      }
+                                      disabled={!answer.trim() || Boolean(busy)}
+                                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#cdbbf7] px-3 py-2 text-xs font-medium text-[#19151e] transition-colors hover:bg-[#e0d3ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f8f7fc] disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      Check with Symm AI{" "}
+                                      <ArrowRight size={13} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </section>
+                              <section className="mt-9 border-t border-[#34343f] pt-7">
+                                <h3 className="text-base font-medium">
+                                  Key takeaways
+                                </h3>
+                                <ul className="mt-4 space-y-2">
+                                  {active.content.takeaways.map(
+                                    (takeaway, index) => (
+                                      <li
+                                        key={index}
+                                        className="flex gap-3 text-sm leading-6 text-[#c8c5d2]"
+                                      >
+                                        <Check
+                                          size={15}
+                                          className="mt-1 shrink-0 text-[#b8a0f4]"
+                                        />
+                                        {takeaway}
+                                      </li>
+                                    ),
+                                  )}
+                                </ul>
+                              </section>
+                              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[#34343f] pt-6">
+                                <div>
+                                  <button
+                                    onClick={() => setReportOpen(!reportOpen)}
+                                    className="text-[11px] text-[#858293] underline underline-offset-4 hover:text-white"
+                                  >
+                                    Report an issue with this lesson
+                                  </button>
+                                  {reportSaved && (
+                                    <span
+                                      role="status"
+                                      className="ml-2 text-[11px] text-[#b8a0f4]"
+                                    >
+                                      Feedback saved
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    completedIds.has(active.id)
+                                      ? nextLesson &&
+                                        void openLesson(nextLesson)
+                                      : void completeLesson()
+                                  }
+                                  disabled={
+                                    Boolean(busy) ||
+                                    (completedIds.has(active.id) && !nextLesson)
+                                  }
+                                  className="inline-flex items-center gap-2 rounded-lg bg-[#cdbbf7] px-4 py-2.5 text-sm font-medium text-[#19151e] hover:bg-[#e0d3ff] disabled:opacity-50"
+                                >
+                                  {busy === "complete" ? (
+                                    <LoaderCircle
+                                      size={15}
+                                      className="animate-spin"
+                                    />
+                                  ) : completedIds.has(active.id) ? (
+                                    nextLesson ? (
+                                      "Next lesson"
+                                    ) : (
+                                      "Course complete"
+                                    )
+                                  ) : (
+                                    "Complete lesson"
+                                  )}
+                                  <ArrowRight size={15} />
+                                </button>
+                              </div>
+                              {reportOpen && (
+                                <div className="mt-4 rounded-lg border border-[#34343f] p-4">
+                                  <label
+                                    htmlFor="symm-report"
+                                    className="text-xs text-[#aaa8ba]"
+                                  >
+                                    What should we improve?
+                                  </label>
+                                  <textarea
+                                    id="symm-report"
+                                    value={reportReason}
+                                    onChange={(event) =>
+                                      setReportReason(event.target.value)
+                                    }
+                                    rows={3}
+                                    className="mt-2 w-full rounded-lg border border-[#45414f] bg-[#181820] p-3 text-sm outline-none focus:border-[#b8a0f4]"
+                                  />
+                                  <button
+                                    onClick={() => void report()}
+                                    disabled={
+                                      reportReason.trim().length < 10 ||
+                                      Boolean(busy)
+                                    }
+                                    className="mt-2 rounded-lg bg-[#34274a] px-3 py-2 text-xs text-[#e7dcff] disabled:opacity-50"
+                                  >
+                                    Send feedback
+                                  </button>
+                                </div>
+                              )}
+                              <p className="mt-4 text-[11px] text-[#858293]">
+                                Lesson completion records study progress. Chakra
+                                requires an eligible verified solve.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="mt-8 rounded-xl border border-dashed border-[#4a4654] bg-[#181820] p-8 text-center">
+                              {busy === `lesson:${active.id}` ? (
+                                <LoaderCircle
+                                  size={24}
+                                  className="mx-auto animate-spin text-[#b8a0f4]"
+                                />
+                              ) : (
+                                <BookOpen
+                                  size={24}
+                                  className="mx-auto text-[#b8a0f4]"
+                                />
+                              )}
+                              <h3 className="mt-3 text-sm font-medium">
+                                {active.status === "failed" &&
+                                busy !== `lesson:${active.id}`
+                                  ? "This lesson needs another attempt"
+                                  : "Preparing your lesson"}
+                              </h3>
+                              <p className="mt-2 text-xs text-[#aaa8ba]">
+                                {busy === `lesson:${active.id}`
+                                  ? "Building the explanation and examples. Your lesson will open automatically."
+                                  : "Lessons are generated when you open them and saved for later."}
+                              </p>
+                              {active.status === "failed" &&
+                                busy !== `lesson:${active.id}` && (
+                                  <button
+                                    onClick={() => void openLesson(active)}
+                                    disabled={
+                                      Boolean(busy) || !detail.configured
+                                    }
+                                    className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#cdbbf7] px-4 py-2 text-xs font-medium text-[#19151e] transition-colors hover:bg-[#e0d3ff] disabled:opacity-50"
+                                  >
+                                    Try preparing again <ArrowRight size={14} />
+                                  </button>
+                                )}
+                              {!detail.configured && (
+                                <p className="mt-3 text-xs text-amber-200">
+                                  The AI service is unavailable. Try again
+                                  later.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </article>
+                      )
+                    )}
+                    {active &&
+                      activeModule &&
+                      detail.path.category === "competitive" && (
+                        <section className="mx-auto mt-6 max-w-[830px] rounded-xl border border-[#34343f] bg-[#1d1d25] p-5 sm:p-7">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                Apply what you learned
+                              </p>
+                              <h3 className="mt-2 text-lg font-medium">
+                                Practice problems
+                              </h3>
+                            </div>
+                            <span className="text-[11px] text-[#858293]">
+                              Verified solves update after sync
+                            </span>
+                          </div>
+                          {detail.recommendations.filter(
+                            (item) =>
+                              item.module_id === activeModule.id &&
+                              item.problems,
+                          ).length ? (
+                            <div className="mt-4 divide-y divide-[#34343f]">
+                              {detail.recommendations
+                                .filter(
+                                  (item) =>
+                                    item.module_id === activeModule.id &&
+                                    item.problems,
+                                )
+                                .map((item) => {
+                                  const problem = item.problems!;
+                                  const reward = chakraFor(
+                                    problem.provider,
+                                    problem.cf_rating ??
+                                      problem.lc_difficulty ??
+                                      undefined,
+                                  );
+                                  const verified = tracker.data?.solves.some(
+                                    (solve) => solve.problemId === problem.id,
+                                  );
+                                  return (
+                                    <a
+                                      key={problem.id}
+                                      href={problem.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex flex-wrap items-center gap-3 py-3 text-xs hover:text-[#d5c5ff]"
+                                    >
+                                      <span className="min-w-0 flex-1">
+                                        <span className="mr-2 text-[#858293]">
+                                          {problem.provider}
+                                        </span>
+                                        {problem.title}
+                                      </span>
+                                      <span className="text-[#aaa8ba]">
+                                        {problem.cf_rating ??
+                                          problem.lc_difficulty}
+                                      </span>
+                                      {verified && (
+                                        <span className="text-[#b8a0f4]">
+                                          Verified
+                                        </span>
+                                      )}
+                                      {reward &&
+                                        problem.provider === "codeforces" && (
+                                          <span className="inline-flex items-center gap-1 text-[#aaa8ba]">
+                                            <ChakraMark className="size-3" />
+                                            {reward}
+                                          </span>
+                                        )}
+                                      <ExternalLink size={13} />
+                                    </a>
+                                  );
+                                })}
+                            </div>
+                          ) : (
+                            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-[#aaa8ba]">
+                              No matching catalog problems yet.
+                              <button
+                                onClick={() =>
+                                  void retryRecommendations(activeModule.id)
+                                }
+                                disabled={Boolean(busy)}
+                                className="text-[#cdbbf7] underline disabled:opacity-50"
+                              >
+                                Retry catalog
+                              </button>
+                            </div>
+                          )}
+                          <div className="mt-5 flex gap-5 border-t border-[#34343f] pt-4 text-[11px] text-[#aaa8ba]">
+                            <a
+                              href="https://usaco.guide/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-white"
+                            >
+                              USACO Guide ↗
+                            </a>
+                            <a
+                              href="https://youkn0wwho.academy/topic-list"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-white"
+                            >
+                              YouKn0wWho Academy ↗
+                            </a>
+                          </div>
+                        </section>
+                      )}
+                    {detail.path.category === "competitive" && (
+                      <section className="mx-auto mt-6 max-w-[830px] rounded-xl border border-[#34343f] bg-[#1d1d25] p-5 sm:p-6">
+                        <div className="flex items-center gap-2">
+                          <ChakraMark className="size-5" />
+                          <h3 className="text-sm font-medium">
+                            Module rewards
+                          </h3>
+                          <span className="ml-auto text-[11px] text-[#b8a0f4]">
+                            25 Chakra each
+                          </span>
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-[#aaa8ba]">
+                          Complete the lessons and one new eligible verified
+                          practice solve in the module. Each solve can support
+                          one module reward.
+                        </p>
+                        <div className="mt-4 divide-y divide-[#34343f]">
+                          {detail.modules.map((module) => {
+                            const lessons = detail.lessons.filter(
+                              (lesson) => lesson.module_id === module.id,
+                            );
+                            const done =
+                              lessons.length > 0 &&
+                              lessons.every((lesson) =>
+                                completedIds.has(lesson.id),
+                              );
+                            const awarded = detail.moduleAwards.some(
+                              (award) => award.module_id === module.id,
+                            );
+                            const practiceIds = detail.recommendations
+                              .filter((item) => item.module_id === module.id)
+                              .map((item) => item.problems?.id);
+                            const eligible = tracker.data?.solves.some(
+                              (solve) =>
+                                practiceIds.includes(solve.problemId) &&
+                                solve.chakra &&
+                                Date.parse(solve.acceptedAt) >=
+                                  Date.parse(detail.path.created_at),
+                            );
+                            return (
+                              <div
+                                key={module.id}
+                                className="flex flex-wrap items-center gap-2 py-3 text-xs"
+                              >
+                                <span className="min-w-0 flex-1 text-[#d8d5e0]">
+                                  {module.title}
+                                </span>
+                                <span className="text-[#858293]">
+                                  {awarded
+                                    ? "Awarded"
+                                    : !done
+                                      ? "Lessons pending"
+                                      : eligible
+                                        ? "Ready to claim"
+                                        : "Verified solve needed"}
+                                </span>
+                                <button
+                                  onClick={() => void claimModule(module.id)}
+                                  disabled={
+                                    Boolean(busy) ||
+                                    awarded ||
+                                    !done ||
+                                    !eligible
+                                  }
+                                  className="rounded-md border border-[#5d5075] px-2.5 py-1.5 text-[#ddcfff] hover:bg-[#34274a] disabled:cursor-not-allowed disabled:opacity-45"
+                                >
+                                  {awarded
+                                    ? "Claimed"
+                                    : busy === `claim:${module.id}`
+                                      ? "Claiming…"
+                                      : "Claim"}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                  {selected && tutorOpen && (
+                    <div className="fixed inset-x-0 bottom-0 z-50 flex h-[85vh] flex-col rounded-t-2xl border border-[#45414f] bg-[#1d1d25] shadow-2xl xl:sticky xl:top-5 xl:z-auto xl:h-[min(780px,calc(100vh-2.5rem))] xl:rounded-xl xl:shadow-none">
+                      <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-4">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          <SymmMark className="size-4 text-[#b8a0f4]" /> Symm AI
+                          tutor
+                        </div>
+                        <button
+                          onClick={() => setTutorOpen(false)}
+                          aria-label="Close tutor"
+                          className="rounded-md p-1.5 text-[#aaa8ba] hover:bg-[#2d2b36]"
+                        >
+                          <X size={17} />
+                        </button>
+                      </div>
+                      <p className="px-4 pt-4 text-xs leading-5 text-[#aaa8ba]">
+                        Ask about{" "}
+                        <span className="text-[#ddd3ee]">{active?.title}</span>.
+                        We’ll work through it together.
+                      </p>
+                      <div
+                        aria-live="polite"
+                        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5"
+                      >
+                        {detail.conversation.length ? (
+                          detail.conversation.map((item) => (
+                            <div
+                              key={item.id}
+                              className={`rounded-lg p-3 text-xs leading-5 ${item.role === "user" ? "ml-5 bg-[#34274a]" : "mr-5 bg-[#292831]"}`}
+                            >
+                              <p className="mb-2 text-[10px] uppercase tracking-[.1em] text-[#b8a0f4]">
+                                {item.role === "user" ? "You" : "Symm AI"}
+                              </p>
+                              <RichText>{item.message}</RichText>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="rounded-lg border border-dashed border-[#45414f] p-4 text-xs leading-5 text-[#aaa8ba]">
+                            Try “Explain this with a simpler example” or ask
+                            about a step you do not understand.
+                          </p>
+                        )}
+                      </div>
+                      <form
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          void askTutor(message);
+                        }}
+                        className="border-t border-[#34343f] p-3"
+                      >
+                        <label htmlFor="symm-message" className="sr-only">
+                          Ask the tutor
+                        </label>
+                        <div className="flex items-center gap-2 rounded-lg border border-[#45414f] bg-[#181820] px-2 focus-within:border-[#b8a0f4]">
+                          <input
+                            id="symm-message"
+                            value={message}
+                            onChange={(event) => setMessage(event.target.value)}
+                            maxLength={2000}
+                            placeholder="Ask a question…"
+                            className="h-11 min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"
+                          />
+                          <button
+                            type="submit"
+                            aria-label="Send question"
+                            disabled={
+                              !message.trim() ||
+                              Boolean(busy) ||
+                              active?.status !== "ready"
+                            }
+                            className="flex size-8 items-center justify-center rounded-md bg-[#cdbbf7] text-[#19151e] disabled:opacity-45"
+                          >
+                            {busy === "tutor" ? (
+                              <LoaderCircle
+                                size={15}
+                                className="animate-spin"
+                              />
+                            ) : (
+                              <Send size={15} />
+                            )}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              error && (
+                <p role="alert" className="py-12 text-sm text-rose-200">
+                  {error}
+                </p>
+              )
+            )}
+          </main>
+        )}
+      </div>
+      <AlertDialog
+        open={Boolean(deletePath)}
+        onOpenChange={(open) => {
+          if (!open) setDeletePath(null);
+        }}
+      >
+        <AlertDialogContent className="border-[#45414f] bg-[#1d1d25] text-[#f8f7fc]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this learning path?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#aaa8ba]">
+              The curriculum, lessons, tutor conversation, and study progress
+              for “{deletePath?.title}” will be permanently removed. Verified
+              problem solves and Chakra awards remain in your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {error && (
+            <p
+              role="alert"
+              className="rounded-lg border border-rose-400/30 bg-rose-400/5 p-3 text-xs text-rose-200"
+            >
+              {error}
+            </p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-[#45414f] bg-transparent text-[#e9e6f0] hover:bg-[#292831]">
+              Keep path
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void removePath();
+              }}
+              disabled={Boolean(busy)}
+              className="bg-rose-400 text-[#1d1d25] hover:bg-rose-300"
+            >
+              Delete path
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

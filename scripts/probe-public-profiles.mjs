@@ -1,0 +1,3 @@
+﻿import {writeFileSync} from 'node:fs';
+const urls=[['atcoder','https://atcoder.jp/users/tourist?lang=en'],['codechef','https://www.codechef.com/users/tourist'],['gfg','https://www.geeksforgeeks.org/profile/sandeepjain'],['github','https://api.github.com/users/octocat']];
+for(const [name,url] of urls){try{const r=await fetch(url,{signal:AbortSignal.timeout(20000),headers:{'User-Agent':'AlgoGym public profile verification','Cache-Control':'no-cache'}});const body=await r.text();writeFileSync(`.local-backups/${name}-public-profile.txt`,body);console.log(JSON.stringify({name,status:r.status,url:r.url,size:body.length,hasAffiliation:body.includes('Affiliation'),hasBio:body.includes('bio'),hasNextData:body.includes('__NEXT_DATA__')}));}catch(e){console.log(name,e.message)}}

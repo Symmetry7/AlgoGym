@@ -1,0 +1,6 @@
+export interface StudyProblem{id:string;provider:'codeforces'|'leetcode';external_problem_id:string;title:string;url:string;cf_rating:number|null;lc_difficulty:string|null;tags:string[]}
+export interface StudyNote{id:string;question_id:string|null;title:string;body:string;updated_at:string}
+export interface StudyQuestion{id:string;problem_id:string;study_status:'planned'|'in_progress'|'completed';starred:boolean;custom_tags:string[];last_reviewed_at:string|null;created_at:string;updated_at:string;problems:StudyProblem}
+export interface StudySheet{id:string;title:string;description:string|null;visibility:'public'|'college'|'private';category:string;created_by:string|null;updated_at:string;source_url:string|null;training_items:Array<{count:number}>;followers:number}
+export interface StudyData{questions:StudyQuestion[];notes:StudyNote[];sheets:StudySheet[];follows:Array<{id:string;sheet_id:string}>;invitations:Array<{id:string;sheet_id:string;title:string;role:string}>;collaborations:Array<{id:string;sheet_id:string;role:string;status:string}>}
+export interface SheetDetail{sheet:StudySheet;items:Array<{id:string;position:number;problem_id:string;problems:StudyProblem}>;canEdit:boolean}
