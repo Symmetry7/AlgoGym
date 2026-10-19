@@ -7,16 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import {
-  CartesianGrid,
-  ComposedChart,
-  Line,
-  ReferenceArea,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { MeasuredChartContainer as ResponsiveContainer } from "./MeasuredChartContainer";
 import { useCodeforcesCatalog as useCatalog } from "@/hooks/use-codeforces-catalog";
 import { jsonRequest } from "@/hooks/use-account";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +21,7 @@ import {
   type CFRating,
   type SubmissionFilter,
 } from "@/lib/codeforces-analytics";
-import { Distribution } from "./Charts";
+import { Distribution, RatingChart } from "./Charts";
 import type { Problem } from "@/lib/types";
 export type StatisticsView =
   | "overview"
@@ -42,13 +32,6 @@ export type StatisticsView =
 const input =
   "h-9 w-full rounded-md border bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const panel = "min-w-0 rounded-lg border bg-card p-5 sm:p-6";
-const tooltipStyle = {
-  background: "#151820",
-  border: "1px solid #303746",
-  borderRadius: 6,
-  fontSize: 12,
-  color: "#E8EDF5",
-};
 const fmt = (value: number | null | undefined, suffix = "") =>
   typeof value === "number"
     ? `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })}${suffix}`
@@ -876,17 +859,12 @@ function RatedHistory({ ratings }: { ratings: CFRating[] }) {
   const deltas = rows.flatMap((row) =>
     row.before === null ? [] : [row.rating - row.before],
   );
-  const data = rows.map((row, index) => ({
+  const data = rows.map((row) => ({
     ...row,
-    number: index + 1,
     delta: row.before === null ? null : row.rating - row.before,
   }));
   const maxAbsDelta = Math.max(1, ...deltas.map((value) => Math.abs(value)));
   const maxRating = Math.max(1500, ...rows.map((row) => row.rating));
-  const minRating = Math.max(
-    0,
-    Math.min(1000, ...rows.map((row) => row.rating)) - 100,
-  );
   return (
     <>
       <section className={panel}>
@@ -958,84 +936,13 @@ function RatedHistory({ ratings }: { ratings: CFRating[] }) {
         </h3>
         {rows.length ? (
           <>
-            <div
-              className="h-72 sm:h-96"
-              role="img"
-              aria-label="Official Codeforces rating history against rank bands"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={data}
-                  margin={{ left: -15, right: 15, top: 10, bottom: 5 }}
-                >
-                  <CartesianGrid vertical={false} stroke="#252A36" />
-                  <XAxis
-                    dataKey="number"
-                    tick={{ fill: "#98A2B3", fontSize: 10 }}
-                    tickLine={false}
-                    minTickGap={30}
-                  />
-                  <YAxis
-                    type="number"
-                    domain={[
-                      minRating,
-                      Math.ceil((maxRating + 100) / 100) * 100,
-                    ]}
-                    tick={{ fill: "#98A2B3", fontSize: 10 }}
-                    tickLine={false}
-                  />
-                  {rankBands
-                    .filter(
-                      (band) =>
-                        band.from < maxRating + 100 && band.to > minRating,
-                    )
-                    .map((band) => (
-                      <ReferenceArea
-                        key={band.name}
-                        y1={Math.max(minRating, band.from)}
-                        y2={Math.min(
-                          Math.ceil((maxRating + 100) / 100) * 100,
-                          band.to,
-                        )}
-                        fill={band.color}
-                        fillOpacity={0.1}
-                        strokeOpacity={0}
-                      />
-                    ))}
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      const row = payload?.[0]?.payload;
-                      return active && row ? (
-                        <div
-                          style={tooltipStyle}
-                          className="max-w-72 space-y-1 p-3"
-                        >
-                          <p>{row.name}</p>
-                          <p className="text-muted-foreground">
-                            {new Date(row.date).toLocaleDateString()} · Rank{" "}
-                            {fmt(row.rank)}
-                          </p>
-                          <p>
-                            Rating {row.rating}{" "}
-                            {row.delta === null
-                              ? ""
-                              : `(${row.delta >= 0 ? "+" : ""}${row.delta})`}
-                          </p>
-                        </div>
-                      ) : null;
-                    }}
-                  />
-                  <Line
-                    dataKey="rating"
-                    stroke="#E8EDF5"
-                    strokeWidth={2}
-                    type="linear"
-                    dot={data.length < 30 ? { r: 2, fill: "#E8EDF5" } : false}
-                    isAnimationActive={false}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
+            <RatingChart
+              provider="codeforces"
+              history={rows.map((row) => ({ provider: "codeforces", date: row.date, contestId: row.contestId, contestName: row.name, contestRank: row.rank, before: row.before, rating: row.rating }))}
+              bands={rankBands}
+              showDetails={false}
+              chartClassName="h-72 sm:h-96"
+            />
             <p className="mb-1 mt-3 text-[11px] text-muted-foreground">
               Per-contest change · same contest order
             </p>
@@ -1051,9 +958,7 @@ function RatedHistory({ ratings }: { ratings: CFRating[] }) {
             </div>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-muted-foreground">
               {rankBands
-                .filter(
-                  (band) => band.from < maxRating + 100 && band.to > minRating,
-                )
+                .filter((band) => band.from < maxRating + 100)
                 .map((band) => (
                   <span key={band.name}>
                     <span

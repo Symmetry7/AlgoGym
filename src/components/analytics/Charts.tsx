@@ -19,6 +19,9 @@ const tooltipStyle = {
 export function RatingChart({
   history,
   provider,
+  bands = [],
+  showDetails = true,
+  chartClassName = "h-64 sm:h-80",
 }: {
   history: Array<{
     provider: string;
@@ -30,6 +33,9 @@ export function RatingChart({
     before: number | null;
   }>;
   provider: string;
+  bands?: Array<{ name: string; from: number; to: number; color: string }>;
+  showDetails?: boolean;
+  chartClassName?: string;
 }) {
   const [active, setActive] = useState<number | null>(null);
   const data = history
@@ -63,11 +69,16 @@ export function RatingChart({
   return (
     <>
       <div
-        className="relative h-64 w-full sm:h-80"
+        className={`relative w-full ${chartClassName}`}
         role="img"
         aria-label={`${provider} contest rating history with ${data.length} rated contests. Latest rating ${data.at(-1)?.rating}.`}
       >
         <svg viewBox="0 0 1000 300" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+          {bands.filter((band) => band.from < maxRating && band.to > minRating).map((band) => {
+            const upper = Math.min(maxRating, band.to);
+            const lower = Math.max(minRating, band.from);
+            return <rect key={band.name} x={left} y={bottom - upper / maxRating * (bottom - top)} width={right - left} height={(upper - lower) / maxRating * (bottom - top)} fill={band.color} fillOpacity="0.11" />;
+          })}
           {gridRatings.map((rating) => {
             const y = bottom - rating / maxRating * (bottom - top);
             return <g key={rating}><line x1={left} x2={right} y1={y} y2={y} stroke="#34343f" strokeWidth="1" vectorEffect="non-scaling-stroke" /><text x="0" y={y + 4} fill="#aaa8ba" fontSize="11">{rating}</text></g>;
@@ -81,7 +92,7 @@ export function RatingChart({
         <time dateTime={data[0].date}>{new Date(data[0].date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</time>
         {data.length > 1 && <time dateTime={data.at(-1)!.date}>{new Date(data.at(-1)!.date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</time>}
       </div>
-      <details className="mt-2 text-xs text-muted-foreground">
+      {showDetails && <details className="mt-2 text-xs text-muted-foreground">
         <summary className="cursor-pointer hover:text-foreground">
           View contest data
         </summary>
@@ -105,7 +116,7 @@ export function RatingChart({
             </tbody>
           </table>
         </div>
-      </details>
+      </details>}
     </>
   );
 }

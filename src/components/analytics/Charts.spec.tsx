@@ -21,4 +21,22 @@ describe("Codeforces rating plot", () => {
     expect(coordinates[1].y).toBeGreaterThan(coordinates[0].y);
     expect(coordinates[2].y).toBeLessThan(coordinates[0].y);
   });
+
+  it("renders rank bands and a usable plot without the details table", () => {
+    const html = renderToStaticMarkup(
+      <RatingChart
+        provider="codeforces"
+        history={[
+          { provider: "codeforces", date: "2026-01-01T00:00:00Z", contestId: "1", rating: 1250, before: 1150 },
+          { provider: "codeforces", date: "2026-02-01T00:00:00Z", contestId: "2", rating: 1430, before: 1250 },
+        ]}
+        bands={[{ name: "Pupil", from: 1200, to: 1400, color: "#35a66b" }, { name: "Specialist", from: 1400, to: 1600, color: "#25a9ae" }]}
+        showDetails={false}
+      />,
+    );
+    expect(html).toContain('fill="#35a66b"');
+    expect(html).toContain('fill="#25a9ae"');
+    expect(html).toContain('stroke="#b8a0f4"');
+    expect(html).not.toContain("View contest data");
+  });
 });
