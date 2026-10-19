@@ -30,7 +30,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { SymmMark } from "@/components/brand/SymmMark";
-import { SymmAtmosphere } from "@/components/symm/SymmAtmosphere";
+import { SymmAtmosphere } from "./SymmAtmosphere";
 import "./symm-workspace.css";
 import { ChakraMark } from "@/components/brand/ChakraMark";
 import {
@@ -47,7 +47,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
 import { useTracker } from "@/hooks/use-tracker";
 import { chakraFor } from "@/lib/training";
-import type { Lesson } from "../../server/symm-ai";
+import type { Lesson } from "@/../server/symm-ai";
 
 type Path = {
   id: string;

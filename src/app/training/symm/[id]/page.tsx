@@ -1,2 +1,2 @@
-import SymmAI from "@/screens/SymmAI";
+import SymmAI from "@/features/symm-ai/SymmAI";
 export default async function Page({params}:{params:Promise<{id:string}>}) { const {id}=await params; return <SymmAI pathId={id}/>; }

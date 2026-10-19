@@ -27,3 +27,8 @@ dist-ssr
 *.sw?
 .local-backups/
 .env*
+!.env.example
+coverage/
+tmp/
+output/
+desktop.ini
