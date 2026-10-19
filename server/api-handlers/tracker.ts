@@ -91,7 +91,7 @@ export default async function handler(
       ),
       client
         .from("provider_rating_history")
-        .select("provider,contest_id,contest_at,rating_before,rating_after")
+        .select("provider,contest_id,contest_name,contest_rank,contest_at,rating_before,rating_after")
         .eq("user_id", user.id)
         .order("contest_at")
         .limit(10_000),
@@ -176,6 +176,8 @@ export default async function handler(
             provider: item.provider,
             date: item.contest_at,
             contestId: item.contest_id,
+            contestName: item.contest_name,
+            contestRank: item.contest_rank,
             before: item.rating_before,
             rating: item.rating_after,
           })),

@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -23,15 +24,19 @@ export function RatingChart({
     provider: string;
     date: string;
     contestId: string;
+    contestName?: string | null;
+    contestRank?: number | null;
     rating: number;
     before: number | null;
   }>;
   provider: string;
 }) {
+  const [active, setActive] = useState<number | null>(null);
   const data = history
     .filter((item) => item.provider === provider)
     .filter((item) => Number.isFinite(item.rating) && Number.isFinite(Date.parse(item.date)))
-    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    .map((item) => ({ ...item, timestamp: Date.parse(item.date) }))
+    .sort((a, b) => a.timestamp - b.timestamp);
   if (!data.length)
     return (
       <div className="flex h-64 items-center justify-center rounded-md border border-dashed px-6 text-center text-sm leading-6 text-muted-foreground">
@@ -39,73 +44,38 @@ export function RatingChart({
         range.
       </div>
     );
+  const firstTime = data[0].timestamp;
+  const lastTime = data.at(-1)!.timestamp;
+  const minRating = 0;
+  const maxRating = Math.ceil((Math.max(...data.map((item) => item.rating)) + 100) / 200) * 200;
+  const left = 46;
+  const right = 982;
+  const top = 16;
+  const bottom = 280;
+  const points = data.map((item, index) => ({
+    ...item,
+    x: firstTime === lastTime ? (left + right) / 2 : left + (item.timestamp - firstTime) / (lastTime - firstTime) * (right - left),
+    y: bottom - (item.rating - minRating) / (maxRating - minRating) * (bottom - top),
+    index,
+  }));
+  const gridRatings = Array.from({ length: 5 }, (_, index) => index * maxRating / 4);
+  const path = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ");
   return (
     <>
       <div
-        className="h-64 w-full sm:h-80"
+        className="relative h-64 w-full sm:h-80"
         role="img"
         aria-label={`${provider} contest rating history with ${data.length} rated contests. Latest rating ${data.at(-1)?.rating}.`}
       >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 16, right: 12, bottom: 4, left: -20 }}
-          >
-            <CartesianGrid stroke="#252A36" vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(value) =>
-                new Date(value).toLocaleDateString(undefined, {
-                  month: "short",
-                  year: "2-digit",
-                })
-              }
-              tick={{ fill: "#98A2B3", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              minTickGap={45}
-            />
-            <YAxis
-              domain={["auto", "auto"]}
-              tick={{ fill: "#98A2B3", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip
-              content={({ active, payload }) => {
-                const row = payload?.[0]?.payload;
-                return active && row ? (
-                  <div style={tooltipStyle} className="space-y-1 p-3">
-                    <p>{new Date(row.date).toLocaleDateString()}</p>
-                    <p className="text-muted-foreground">
-                      Contest {row.contestId}
-                    </p>
-                    <p>
-                      Rating {Math.round(row.rating)}
-                      {row.before !== null
-                        ? ` (${row.rating - row.before >= 0 ? "+" : ""}${row.rating - row.before})`
-                        : ""}
-                    </p>
-                  </div>
-                ) : null;
-              }}
-            />
-            <Line
-              type="linear"
-              dataKey="rating"
-              name="Rating"
-              stroke="#A78BFA"
-              strokeWidth={2}
-              dot={
-                data.length < 15
-                  ? { r: 3, fill: "#A78BFA", strokeWidth: 0 }
-                  : false
-              }
-              activeDot={{ r: 4 }}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <svg viewBox="0 0 1000 300" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+          {gridRatings.map((rating) => {
+            const y = bottom - rating / maxRating * (bottom - top);
+            return <g key={rating}><line x1={left} x2={right} y1={y} y2={y} stroke="#34343f" strokeWidth="1" vectorEffect="non-scaling-stroke" /><text x="0" y={y + 4} fill="#aaa8ba" fontSize="11">{rating}</text></g>;
+          })}
+          <path d={path} fill="none" stroke="#b8a0f4" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          {points.map((point) => <circle key={point.contestId} cx={point.x} cy={point.y} r={data.length > 40 ? 5 : 6} fill={active === point.index ? "#f8f7fc" : "#b8a0f4"} stroke="#1d1d25" strokeWidth="2" vectorEffect="non-scaling-stroke" tabIndex={0} aria-label={`${point.contestName || `Contest ${point.contestId}`}, ${new Date(point.date).toLocaleDateString()}, rating ${point.rating}`} onMouseEnter={() => setActive(point.index)} onMouseLeave={() => setActive(null)} onFocus={() => setActive(point.index)} onBlur={() => setActive(null)} />)}
+        </svg>
+        {active !== null && points[active] && <div className="pointer-events-none absolute z-10 max-w-64 rounded-lg border border-[#34343f] bg-[#1d1d25] p-3 text-xs shadow-xl" style={{ left: `${Math.min(82, Math.max(18, points[active].x / 10))}%`, top: `${Math.max(0, points[active].y / 3 - 35)}%`, transform: "translate(-50%, -100%)" }}><p className="font-medium text-foreground">{points[active].contestName || `Contest ${points[active].contestId}`}</p><p className="mt-1 text-muted-foreground">{new Date(points[active].date).toLocaleDateString()} {typeof points[active].contestRank === "number" ? `· Rank ${points[active].contestRank?.toLocaleString()}` : ""}</p><p className="mt-2 tabular-nums text-foreground">Rating {points[active].rating} {points[active].before !== null ? `(${points[active].rating - points[active].before >= 0 ? "+" : ""}${points[active].rating - points[active].before})` : ""}</p></div>}
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
         <time dateTime={data[0].date}>{new Date(data[0].date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</time>
@@ -128,7 +98,7 @@ export function RatingChart({
               {data.map((row) => (
                 <tr key={row.contestId} className="border-t">
                   <td className="py-2">{row.date.slice(0, 10)}</td>
-                  <td>{row.contestId}</td>
+                  <td>{row.contestName || `Contest ${row.contestId}`}</td>
                   <td>{Math.round(row.rating)}</td>
                 </tr>
               ))}
