@@ -546,7 +546,7 @@ export function SheetCollection({
             <DialogTitle>Delete {deleting?.title}?</DialogTitle>
             <DialogDescription>
               This removes the sheet, follows, and collaboration invitations.
-              Personal questions, notes, verified solves and Chakra are
+              Personal questions, notes, accepted solves and Coins are
               retained.
             </DialogDescription>
           </DialogHeader>
@@ -700,7 +700,7 @@ function SheetContents({
         </div>
         <p className="mt-3 text-[11px] text-muted-foreground">
           Your study checklist is separate from verified accepted submissions
-          and Chakra.
+          and Coins.
         </p>
       </div>
       {data.canEdit && (

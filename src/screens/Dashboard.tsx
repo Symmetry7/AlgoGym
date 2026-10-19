@@ -86,22 +86,22 @@ export default function Dashboard() {
             className="ag-highlight-metric ag-highlight-paper"
           >
             <span>
-              Verified solves
+              Total solves
               <ArrowUpRight size={16} />
             </span>
-            <strong>{number(data?.overview.verifiedSolves)}</strong>
-            <small>Unique accepted Codeforces problems</small>
+            <strong>{number(data?.overview.totalSolves)}</strong>
+            <small>Codeforces history and LeetCode profile</small>
           </Link>
           <Link
           href="/statistics"
             className="ag-highlight-metric ag-highlight-lilac"
           >
             <span>
-              Total Chakra
+              Total Coins
               <ChakraMark className="size-4" variant="small" />
             </span>
             <strong>{number(data?.overview.chakra)}</strong>
-            <small>Earned through eligible verified solves</small>
+            <small>Earned through eligible accepted solves</small>
           </Link>
         </div>
         <TrackerFeedback tracker={tracker} />

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Search, ShieldCheck } from "lucide-react";
 import { PlatformCard } from "./ProfileOnboarding";
@@ -249,7 +249,7 @@ export function PlatformConnections({
             )}
             <p className="connections-detail-note">
               {selected === "leetcode"
-                ? "LeetCode ownership verification does not enable Chakra rewards. Individual accepted solutions must be reliably confirmed first."
+                ? "LeetCode ownership verification does not enable Coins rewards. Individual accepted solutions must be reliably confirmed first."
                 : "Verification confirms ownership. Activity synchronization is a separate step."}
             </p>
           </div>

@@ -5,7 +5,7 @@ export interface ProviderSnapshot { provider:"codeforces"|"leetcode"; profile:Re
 export interface TrackerData {
  accounts:VerifiedProfile[];snapshots:ProviderSnapshot[];jobs:Array<{id:string;provider:string;status:string;error_code:string|null;updated_at:string}>;
  historyComplete:boolean;days:number;provider:string;solvedIds:string[];recentSolves:TrackedSolve[];solves:TrackedSolve[];
- overview:{verifiedSolves:number|null;knownSolves:number;activeDays:number|null;chakra:number;chakraWeek:number;chakraMonth:number};
+ overview:{verifiedSolves:number|null;knownSolves:number;totalSolves:number;activeDays:number|null;chakra:number;chakraWeek:number;chakraMonth:number};
  ratingHistory:Array<{provider:string;date:string;contestId:string;before:number|null;rating:number}>;
  difficulty:Array<{label:string;count:number}>;topics:Array<{topic:string;count:number}>;activity:Array<{date:string;count:number}>;
  chakraHistory:Array<{date:string;points:number}>;chakraByProvider:Array<{label:string;points:number}>;chakraByDifficulty:Array<{label:string;points:number}>;ledger:LedgerEntry[];

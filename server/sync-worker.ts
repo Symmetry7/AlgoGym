@@ -177,6 +177,10 @@ export async function processSyncJobs(maxPages = 2) {
         p_submissions: submissions,
       });
       if (ingestError) throw ingestError;
+      const { error: awardError } = await db.rpc("award_pending_cf_solves", {
+        p_user_id: job.user_id,
+      });
+      if (awardError) throw awardError;
       const newestId = Math.max(
         Number(cursor.newestId ?? 0),
         ...submissions.map((item: any) => Number(item.id)),
@@ -214,10 +218,11 @@ export async function processSyncJobs(maxPages = 2) {
             { onConflict: "user_id,provider,stream" },
           );
         if (cursorError) throw cursorError;
-        const { error: awardError } = await db.rpc("award_pending_cf_solves", {
+        // Retain the final pass for installations awaiting the coin migration.
+        const { error: finalAwardError } = await db.rpc("award_pending_cf_solves", {
           p_user_id: job.user_id,
         });
-        if (awardError) throw awardError;
+        if (finalAwardError) throw finalAwardError;
         await update({
           status: "succeeded",
           leased_until: null,

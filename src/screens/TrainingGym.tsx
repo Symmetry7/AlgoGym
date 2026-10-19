@@ -92,14 +92,14 @@ export default function TrainingGym({
     );
     if (added.length)
       toast.success("Problem Solved", {
-        description: `+${added.reduce((sum, entry) => sum + entry.delta, 0)} Chakra · saved to your verified ledger`,
+        description: `+${added.reduce((sum, entry) => sum + entry.delta, 0)} coins added to your balance`,
       });
     else if (solved.length)
       toast.success(
-        `${solved.length} verified solve${solved.length === 1 ? "" : "s"} synchronized`,
+        `${solved.length} accepted solve${solved.length === 1 ? "" : "s"} synchronized`,
         {
           description:
-            "Chakra applies only to first eligible solves after activation.",
+            "Eligible past and new accepted problems can earn coins once.",
         },
       );
     beforeSync.current = null;
@@ -238,7 +238,7 @@ export default function TrainingGym({
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-4">
               <p className="text-sm text-muted-foreground">
                 Verify a Codeforces account to track solves and earn eligible
-                Chakra.
+                Coins.
               </p>
               <Link href="/onboarding?step=3" className="text-sm text-primary">
                 Connect account <ArrowRight className="inline size-3.5" />
@@ -253,7 +253,7 @@ export default function TrainingGym({
               "Codeforces unique accepted problems",
             ],
             [
-              "Chakra earned",
+              "Coins earned",
               tracker.data
                 ? tracker.data.overview.chakra.toLocaleString()
                 : "—",
@@ -427,7 +427,7 @@ export default function TrainingGym({
                   : "Focused practice session"}
               </h2>
               <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                A personal timer and saved problem list. Solves and Chakra are
+                A personal timer and saved problem list. Solves and Coins are
                 verified independently.
               </p>
             </div>
@@ -505,9 +505,9 @@ export default function TrainingGym({
           )}
         </section>
         <p className="text-xs leading-6 text-muted-foreground">
-          Each eligible Codeforces problem can earn Chakra once, after
-          verification and reward activation. Historical solves still count
-          toward track progress. Unrated problems, ratings outside 800–3500, and
+          Each eligible Codeforces problem can earn coins once after account
+          synchronization, including problems solved before you joined.
+          Unrated problems, ratings outside 800–3500, and
           LeetCode solves do not currently earn rewards.
         </p>
       </div>

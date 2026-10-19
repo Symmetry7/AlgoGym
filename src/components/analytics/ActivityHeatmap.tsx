@@ -54,8 +54,8 @@ export function ActivityHeatmap({
                 refs.current[index] = node;
               }}
               tabIndex={selected === index ? 0 : -1}
-              aria-label={`${cell.date}: ${cell.count} verified solve${cell.count === 1 ? "" : "s"}`}
-              title={`${cell.date}: ${cell.count} verified solves`}
+              aria-label={`${cell.date}: ${cell.count} accepted solve${cell.count === 1 ? "" : "s"}`}
+              title={`${cell.date}: ${cell.count} accepted solves`}
               onFocus={() => setActive(index)}
               onKeyDown={(event) => {
                 const moves: Record<string, number> = {

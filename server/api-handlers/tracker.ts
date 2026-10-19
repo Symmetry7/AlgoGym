@@ -153,7 +153,6 @@ export default async function handler(
       provider,
       historyComplete,
     );
-    const since = days === 0 ? 0 : Date.now() - days * 86_400_000;
     return response
       .status(200)
       .json({
@@ -166,12 +165,13 @@ export default async function handler(
         solvedIds: normalized.map((item) => item.id),
         solves: normalized,
         ...aggregation,
+        overview: {
+          ...aggregation.overview,
+          totalSolves:
+            normalized.filter((item) => item.provider === "codeforces").length +
+            Number((snapshotResult.data ?? []).find((item) => item.provider === "leetcode")?.summary?.totalSolved ?? 0),
+        },
         ratingHistory: (ratingResult.data ?? [])
-          .filter(
-            (item) =>
-              (provider === "all" || item.provider === provider) &&
-              Date.parse(item.contest_at) >= since,
-          )
           .map((item) => ({
             provider: item.provider,
             date: item.contest_at,

@@ -144,7 +144,7 @@ export function ChakraChart({
   if (!data.length)
     return (
       <div className="flex h-44 items-center justify-center px-4 text-center text-sm leading-6 text-muted-foreground">
-        No Chakra entries for this period. Eligible verified solves will appear
+        No coin entries for this period. Eligible accepted solves will appear
         here.
       </div>
     );
@@ -152,7 +152,7 @@ export function ChakraChart({
     <div
       className="h-48 w-full"
       role="img"
-      aria-label={`Daily Chakra earning history across ${data.length} days`}
+      aria-label={`Daily Coins earning history across ${data.length} days`}
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
@@ -180,7 +180,7 @@ export function ChakraChart({
           />
           <Tooltip
             contentStyle={tooltipStyle}
-            formatter={(value) => [value, "Chakra"]}
+            formatter={(value) => [value, "Coins"]}
           />
           <Line
             type="linear"
@@ -197,7 +197,7 @@ export function ChakraChart({
 }
 export function Distribution({
   items,
-  empty = "No verified solves in this period.",
+  empty = "No accepted solves in this period.",
 }: {
   items: Array<{ label: string; count: number }>;
   empty?: string;

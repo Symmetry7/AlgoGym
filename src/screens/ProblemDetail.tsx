@@ -124,7 +124,7 @@ export default function ProblemDetail({ id }: { id: string }) {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    Potential Chakra
+                    Potential Coins
                   </p>
                   <p className="mt-2 flex items-center gap-1.5 text-lg text-primary">
                     <ChakraMark className="size-4" variant="small" />
@@ -134,8 +134,8 @@ export default function ProblemDetail({ id }: { id: string }) {
               </div>
               <p className="text-xs leading-6 text-muted-foreground">
                 Read the statement, implement your solution, and submit on the
-                source platform. A first eligible accepted solve on your
-                verified linked account can earn Chakra after synchronization.
+                source platform. An eligible accepted solve on your
+                linked account can earn coins after synchronization, even if you solved it before joining.
                 Personal study markers and repeated submissions do not award
                 points.
               </p>

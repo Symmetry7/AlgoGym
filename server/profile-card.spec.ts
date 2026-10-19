@@ -19,6 +19,7 @@ describe("portfolio export", () => {
       "",
     );
     expect(svg).not.toContain("<script>");
-    expect(svg).toContain("VERIFIED SOLVES");
+    expect(svg).toContain("TOTAL SOLVES");
+    expect(svg).toContain("COINS");
   });
 });

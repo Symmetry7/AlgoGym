@@ -448,7 +448,7 @@ export default function Workspace({
             </div>
             <p className="text-[11px] leading-6 text-muted-foreground">
               Study completion is your personal checklist. Only server-verified
-              eligible accepted submissions can earn Chakra.
+              eligible accepted submissions can earn Coins.
             </p>
           </>
         ) : null}
@@ -731,8 +731,8 @@ function QuestionDetail({
           <DialogHeader>
             <DialogTitle>Remove this saved question?</DialogTitle>
             <DialogDescription>
-              This deletes its personal note and study state. Verified solves
-              and Chakra remain in your account.
+              This deletes its personal note and study state. Total solves
+              and Coins remain in your account.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3">

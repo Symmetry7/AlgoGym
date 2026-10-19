@@ -49,13 +49,13 @@ export default function Statistics() {
   const [view, setView] = useState<StatisticsView>("overview");
   const [days, setDays] = useState(365);
   const [provider, setProvider] = useState("all");
-  const [ratingProvider, setRatingProvider] = useState("codeforces");
   const tracker = useTracker(days, provider);
   const account = useAccount();
   const data = tracker.data;
   const cf = data?.snapshots.find((item) => item.provider === "codeforces");
   const lc = data?.snapshots.find((item) => item.provider === "leetcode");
-  const ratingView = provider === "all" ? ratingProvider : provider;
+  const leetcodeSolved = lc?.summary.totalSolved ?? 0;
+  const totalSolved = data?.overview.totalSolves ?? 0;
   return (
     <Layout>
       <div className="space-y-7">
@@ -181,12 +181,12 @@ export default function Statistics() {
                 >
                   {[
                     [
-                      "Verified solves",
-                      data.overview.verifiedSolves,
-                      "Codeforces · selected period",
+                      "Total solves",
+                      totalSolved,
+                      "Codeforces history + LeetCode profile",
                     ],
                     [
-                      "Total Chakra",
+                      "Total coins",
                       data.overview.chakra,
                       "All-time ledger balance",
                     ],
@@ -219,7 +219,7 @@ export default function Statistics() {
                         {title}
                       </p>
                       <p
-                        className={`mt-3 text-2xl font-semibold tracking-tight tabular-nums ${title === "Total Chakra" ? "text-primary" : ""}`}
+                        className={`mt-3 text-2xl font-semibold tracking-tight tabular-nums ${title === "Total coins" ? "text-primary" : ""}`}
                       >
                         {typeof value === "number"
                           ? Math.round(value).toLocaleString()
@@ -231,42 +231,25 @@ export default function Statistics() {
                     </div>
                   ))}
                 </section>
-                <AnalyticsPanel
-                  title="Rating progression"
-                  description="Contest ratings stay separate for each platform."
-                >
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <div
-                      className="flex gap-1 rounded-md border p-1"
-                      aria-label="Rating platform"
-                    >
-                      {["codeforces", "leetcode"].map((item) => (
-                        <button
-                          key={item}
-                          onClick={() => setRatingProvider(item)}
-                          disabled={provider !== "all" && provider !== item}
-                          aria-pressed={ratingView === item}
-                          className={`rounded px-3 py-1.5 text-xs ${ratingView === item ? "bg-muted text-foreground" : "text-muted-foreground"}`}
-                        >
-                          {item === "codeforces" ? "Codeforces" : "LeetCode"}
-                        </button>
-                      ))}
+                <AnalyticsPanel title="Solved problems" description="All-time counts from your synchronized Codeforces history and LeetCode public profile.">
+                  <div className="flex flex-col items-center gap-7 py-2 sm:flex-row sm:justify-center sm:gap-12">
+                    <div className="text-center sm:text-right"><p className="text-2xl font-semibold tabular-nums">{data.solves.filter((item) => item.provider === "codeforces").length.toLocaleString()}</p><p className="text-xs text-muted-foreground">Codeforces</p></div>
+                    <div className="flex size-44 items-center justify-center rounded-full p-3" style={{ background: totalSolved > 0 ? `conic-gradient(#aa91e5 0 ${data.solves.filter((item) => item.provider === "codeforces").length / totalSolved * 100}%, #ff8b48 0 100%)` : "#34343f" }}>
+                      <div className="flex size-full flex-col items-center justify-center rounded-full bg-card text-center"><span className="text-3xl font-semibold tabular-nums">{totalSolved.toLocaleString()}</span><span className="text-xs text-muted-foreground">total solved</span></div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {ratingView === "codeforces" &&
-                      cf?.summary.rating !== null &&
-                      cf?.summary.rating !== undefined
-                        ? `Current ${cf.summary.rating} · Peak ${cf.summary.maxRating ?? "unavailable"}`
-                        : ratingView === "leetcode" && lc?.summary.rating
-                          ? `Current ${Math.round(lc.summary.rating)}`
-                          : "No synchronized rating"}
-                    </p>
+                    <div className="text-center sm:text-left"><p className="text-2xl font-semibold tabular-nums">{leetcodeSolved.toLocaleString()}</p><p className="text-xs text-muted-foreground">LeetCode</p></div>
                   </div>
-                  <RatingChart
-                    history={data.ratingHistory}
-                    provider={ratingView}
-                  />
+                  {!data.historyComplete && cf && <p className="mt-3 text-center text-xs text-muted-foreground">Codeforces history is still syncing; this total may rise.</p>}
                 </AnalyticsPanel>
+                {provider !== "leetcode" && <AnalyticsPanel
+                  title="Codeforces rating"
+                  description="All synchronized rated contests, independent of the solve date filter."
+                >
+                  <p className="mb-4 text-xs text-muted-foreground">
+                    {typeof cf?.summary.rating === "number" ? `Current ${cf.summary.rating} · Peak ${cf.summary.maxRating ?? "unavailable"}` : "No synchronized rating yet"}
+                  </p>
+                  <RatingChart history={data.ratingHistory} provider="codeforces" />
+                </AnalyticsPanel>}
                 <div className="grid gap-5 lg:grid-cols-2">
                   <AnalyticsPanel
                     title="Codeforces difficulty"
@@ -388,14 +371,14 @@ export default function Statistics() {
                       </>
                     ) : (
                       <p className="text-sm leading-6 text-muted-foreground">
-                        As you synchronize verified solves, this section will
+                        As you synchronize accepted solves, this section will
                         highlight the topics represented least in your practice.
                       </p>
                     )}
                   </AnalyticsPanel>
                 </div>
                 <AnalyticsPanel
-                  title="Chakra analytics"
+                  title="Coins analytics"
                   description="Each unique eligible problem earns one initial award. All amounts come from the authoritative ledger."
                 >
                   <div className="mb-5 grid gap-4 sm:grid-cols-3">
@@ -442,8 +425,8 @@ export default function Statistics() {
                   </div>
                   <p className="mt-6 text-xs leading-6 text-muted-foreground">
                     LeetCode rewards are disabled pending dependable per-problem
-                    solve verification. Historical problems and ratings outside
-                    the active policy do not earn Chakra.
+                    solve confirmation. Codeforces problems outside the supported
+                    rating brackets do not earn coins.
                   </p>
                 </AnalyticsPanel>
                 <AnalyticsPanel

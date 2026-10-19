@@ -33,8 +33,8 @@ interface Rankings {
   topK: number | null;
 }
 const metrics = [
-  ["chakra", "Chakra", "Chakra"],
-  ["unique_solves", "Verified solves", "Problems"],
+  ["chakra", "Coins", "Coins"],
+  ["unique_solves", "Total solves", "Problems"],
   ["leetcode_rating", "LeetCode rating", "Rating"],
   ["codeforces_rating", "Codeforces rating", "Rating"],
 ];
@@ -483,7 +483,7 @@ export default function Leaderboards() {
                 {data.sourceUpdatedAt
                   ? ` Oldest eligible source update: ${new Date(data.sourceUpdatedAt).toLocaleString()}.`
                   : ""}{" "}
-                Each platform rating stays separate. Chakra replaces the
+                Each platform rating stays separate. Coins replaces the
                 reference product’s proprietary C Score.
               </p>
             </details>

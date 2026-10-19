@@ -247,7 +247,7 @@ export default function Index() {
               </select>
             </label>
             <label className="text-[11px] text-muted-foreground">
-              Verified solve status
+              Accepted solve status
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
@@ -255,7 +255,7 @@ export default function Index() {
               >
                 <option value="all">All problems</option>
                 <option value="solved" disabled={!user}>
-                  Verified solved
+                  Solved
                 </option>
                 <option
                   value="unsolved"
@@ -275,7 +275,7 @@ export default function Index() {
                 <option value="popular">Most solved · CF</option>
                 <option value="title">Title A–Z</option>
                 <option value="difficulty">Difficulty ascending</option>
-                <option value="chakra">Potential Chakra · CF</option>
+                <option value="chakra">Potential Coins · CF</option>
               </select>
             </label>
           </div>
@@ -361,7 +361,7 @@ export default function Index() {
           </div>
         )}
         <p className="text-[11px] leading-6 text-muted-foreground">
-          Solve opens the source platform. Potential Chakra requires a first
+          Solve opens the source platform. Potential Coins requires a first
           eligible accepted solve on a verified linked account; opening a
           problem or marking personal study complete never awards points.
           LeetCode per-problem proof and rewards are unavailable.

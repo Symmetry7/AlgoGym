@@ -166,9 +166,9 @@ export default function SocietyDetail({ slug }: { slug: string }) {
                     onChange={(event) => setMetric(event.target.value)}
                     className="h-9 rounded-md border bg-background px-3 text-xs"
                   >
-                    <option value="chakra">Chakra during membership</option>
+                    <option value="chakra">Coins during membership</option>
                     <option value="unique_solves">
-                      Verified solves during membership
+                      Total solves during membership
                     </option>
                     <option value="codeforces_rating">
                       Current Codeforces rating
@@ -216,7 +216,7 @@ export default function SocietyDetail({ slug }: { slug: string }) {
               )}
               <p className="mt-5 text-[10px] leading-6 text-muted-foreground">
                 Only opted-in, metric-eligible verified accounts are ranked.
-                Chakra and solve counts here start at current membership;
+                Coins and solve counts here start at current membership;
                 platform ratings are kept separate.
               </p>
             </section>

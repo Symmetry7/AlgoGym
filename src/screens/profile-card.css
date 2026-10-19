@@ -1,0 +1,7 @@
+.ag-card-stage { position: relative; display: flex; align-items: center; justify-content: center; min-height: 660px; overflow: hidden; border: 1px solid #26232c; border-radius: 20px; background: radial-gradient(ellipse at 83% 18%, #732130 0, transparent 34%), radial-gradient(ellipse at 17% 82%, #52213d 0, transparent 38%), #0c0b10; perspective: 1200px; }
+.ag-card-stage-glow { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(90deg, transparent 0 31px, #ffffff06 32px), repeating-linear-gradient(0deg, transparent 0 31px, #ffffff05 32px); mask-image: linear-gradient(90deg, transparent, black 30%, transparent); }
+.ag-card-preview { position: relative; z-index: 1; width: min(38%, 390px); min-width: 275px; height: auto; border-radius: 20px; box-shadow: 0 36px 72px #000a; transform: rotate(-4deg) rotateY(-8deg); animation: ag-card-drift 8s ease-in-out infinite alternate; transition: transform 350ms ease, box-shadow 350ms ease; }
+.ag-card-preview:hover { transform: rotate(0) rotateY(0) scale(1.025); box-shadow: 0 42px 88px #000d; animation-play-state: paused; }
+@keyframes ag-card-drift { from { transform: rotate(-4deg) rotateY(-8deg) translateY(8px); } to { transform: rotate(3deg) rotateY(7deg) translateY(-8px); } }
+@media (max-width: 640px) { .ag-card-stage { min-height: 560px; } .ag-card-preview { min-width: 260px; width: 72%; } }
+@media (prefers-reduced-motion: reduce) { .ag-card-preview { animation: none; transform: none; } .ag-card-preview:hover { transform: none; } }

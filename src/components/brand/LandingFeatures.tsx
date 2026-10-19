@@ -90,12 +90,12 @@ export function LandingFeatures({ children }: { children: ReactNode }) {
             <span className="verified-pill">
               <Check size={13} /> Verified submissions
             </span>
-            <h3>Chakra rewards</h3>
+            <h3>Coin rewards</h3>
             <div className="chakra-emblem" aria-hidden="true">
               <Zap strokeWidth={1.2} />
             </div>
             <p>
-              Eligible accepted solutions earn Chakra based on difficulty. Each
+              Eligible accepted solutions earn Coins based on difficulty. Each
               problem earns its first-solve reward once.
             </p>
             <ArrowUpRight className="card-arrow" size={20} />

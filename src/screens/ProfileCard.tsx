@@ -5,6 +5,7 @@ import { Copy, Download, ArrowLeft } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/hooks/use-account";
+import "./profile-card.css";
 export default function ProfileCard() {
   const account = useAccount();
   const [error, setError] = useState("");
@@ -52,19 +53,18 @@ export default function ProfileCard() {
             {message}
           </p>
         )}
-        <img
-          src="/api/profile-card"
-          alt="Your AlgoGym profile card with verified solves, active days, Chakra and Codeforces rating"
-          width={1000}
-          height={620}
-          className="w-full rounded-xl border"
-          onError={() =>
-            setError(
-              "Your card could not be loaded. Synchronize your profile and retry.",
-            )
-          }
-          loading="eager"
-        />
+        <div className="ag-card-stage">
+          <div className="ag-card-stage-glow" aria-hidden="true" />
+          <img
+            src="/api/profile-card"
+            alt="Your AlgoGym profile card with total solves, active days, coins and Codeforces rating"
+            width={720}
+            height={1000}
+            className="ag-card-preview"
+            onError={() => setError("Your card could not be loaded. Synchronize your profile and retry.")}
+            loading="eager"
+          />
+        </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild>
             <a

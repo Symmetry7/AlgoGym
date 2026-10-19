@@ -166,7 +166,7 @@ export function Portfolio({
     ...(owner
       ? [
           ["solves", "Solved Problems"],
-          ["chakra", "Chakra History"],
+          ["chakra", "Coins History"],
         ]
       : []),
   ];
@@ -315,7 +315,7 @@ export function Portfolio({
           <>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid grid-cols-2 gap-3">
-                <Section title="Verified solves">
+                <Section title="Total solves">
                   <p className="mt-4 text-3xl font-semibold tabular-nums">
                     {format(data.overview.verifiedSolves)}
                   </p>
@@ -328,17 +328,17 @@ export function Portfolio({
                     {format(data.overview.activeDays)}
                   </p>
                   <p className="mt-3 text-[10px] leading-5 text-muted-foreground">
-                    Verified solve days · UTC
+                    Accepted solve days · UTC
                   </p>
                 </Section>
               </div>
-              <Section title="Chakra">
+              <Section title="Coins">
                 <p className="mt-4 flex items-center gap-2 text-3xl font-semibold tabular-nums text-primary">
                   <ChakraMark className="size-[22px]" variant="main" />
                   {format(data.overview.chakra)}
                 </p>
                 <p className="mt-3 text-[10px] leading-5 text-muted-foreground">
-                  Authoritative ledger balance · eligible verified solves
+                  Authoritative ledger balance · eligible accepted solves
                 </p>
               </Section>
             </div>
@@ -430,7 +430,7 @@ export function Portfolio({
                 </Section>
                 <Section
                   title="Topic analysis"
-                  description="Verified solve counts per topic. Multi-topic problems count in each category."
+                  description="Accepted solve counts per topic. Multi-topic problems count in each category."
                 >
                   <Distribution
                     items={data.topics
@@ -544,7 +544,7 @@ export function Portfolio({
         )}
         {tab === "solves" && (
           <Section
-            title="Verified solved problems"
+            title="Solved problems"
             description="Unique accepted problems from the synchronized server archive. Manual study markers are excluded."
           >
             {data.solves?.length ? (
@@ -596,7 +596,7 @@ export function Portfolio({
         )}
         {tab === "chakra" && (
           <Section
-            title="Chakra history"
+            title="Coins history"
             description="Immutable grants and compensating adjustments from your server ledger."
           >
             {data.ledger?.length ? (
@@ -622,16 +622,16 @@ export function Portfolio({
                       </div>
                       <span className="font-mono text-sm text-primary">
                         {entry.delta > 0 ? "+" : ""}
-                        {entry.delta} Chakra
+                        {entry.delta} Coins
                       </span>
                     </li>
                   ))}
               </ol>
             ) : (
               <p className="py-10 text-sm leading-6 text-muted-foreground">
-                No Chakra entries yet. Eligible verified Codeforces solves earn
-                one initial award per problem. Historical and repeated solves do
-                not produce extra awards.
+                No coin entries yet. Eligible accepted Codeforces solves earn
+                one initial award per problem, including problems solved before
+                you joined. Repeated solves do not produce extra awards.
               </p>
             )}
           </Section>
