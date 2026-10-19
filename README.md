@@ -1,93 +1,126 @@
 # AlgoGym
 
-Competitive programming workspace built on Next.js App Router, React, TypeScript, Tailwind/Radix, and the existing Supabase project. The original Vite application has been migrated incrementally; existing user records and verified account associations are retained.
+AlgoGym is a competitive programming workspace for connected coding profiles, structured practice, intelligent learning, progress analytics, and college programming communities. [Open the live application](https://algogym.vercel.app/).
 
-## Run locally
+## Why AlgoGym exists
+
+Coding progress is fragmented across providers, practice often lacks a sequence, and college societies have few shared measures of progress. AlgoGym connects supported public profiles, organizes practice into tracks, shows provider-specific statistics, and offers Symm AI learning paths. Rewards use provider evidence rather than self-reported activity.
+
+## Features
+
+| Area | Implemented behavior |
+| --- | --- |
+| Coding profiles | Ownership challenges for Codeforces, LeetCode, CodeChef, AtCoder, GitHub, and GeeksforGeeks. Data depth differs by provider. |
+| Training Gym | Codeforces problem catalog, curated tracks, timed sessions, and restored local session state. |
+| Symm AI | Gemini-backed curriculum, saved modules and lessons, C++/Java/Python code variants, contextual tutor, and practice recommendations. **Learn competitive programming from first principles.** Requires a Gemini key. |
+| Rewards | Verified Codeforces solves feed a versioned Chakra ledger, shown as coins in parts of the UI. LeetCode individual solve awards are disabled. Competitive module bonuses also require a new verified eligible solve. |
+| Statistics | Codeforces rating and submission history; public LeetCode aggregates where available. |
+| Communities | College search, societies, applications, memberships, invitations, and management roles. |
+| Leaderboards | Individual, society, and college scopes with metric-specific database rankings. |
+
+See [integration coverage](docs/integrations.md) and [reward rules](docs/chakra.md) for precise limitations.
+
+## Technology and architecture
+
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Web | Next.js 16 App Router, React 19, TypeScript | Routes, rendering, API dispatch |
+| Styling | Tailwind CSS 3, Radix-based UI | Design system and controls |
+| Identity and data | Supabase Auth and PostgreSQL | Sessions, records, row-level security |
+| AI | Server-side Gemini API | Curriculum, lessons, code variants, tutor |
+| Hosting | Vercel | Next.js deployment and daily sync trigger |
+
+```mermaid
+flowchart LR
+  User --> Browser --> Next[Next.js on Vercel]
+  Next --> API[Route handlers and services]
+  API --> DB[(Supabase PostgreSQL)]
+  API --> Auth[Supabase Auth]
+  API --> CF[Codeforces API]
+  API --> LC[LeetCode public GraphQL]
+  API --> Gemini[Gemini API]
+```
+
+Provider sync and Symm AI jobs are stored in PostgreSQL and executed from Next.js requests or a Vercel cron invocation. Redis, a dedicated worker service, and a second authentication system are **not deployed**. See [architecture](docs/architecture.md).
+
+## Repository map
+
+```text
+src/app/               Next.js pages, layouts, API dispatch
+src/features/          Symm AI and Training Gym screens
+src/screens/           Other product screens
+src/components/        Shared layout, brand, and UI components
+src/hooks/, src/lib/    Hooks and domain helpers
+src/proxy.ts            Supabase session refresh
+server/api-handlers/   Validated business endpoints
+server/next-api/       Next.js request adapters
+server/               Provider, AI, and job services
+supabase/migrations/   Ordered PostgreSQL schema history
+supabase/functions/    Profile verification Edge Function
+scripts/               Explicit development and diagnostic tools
+docs/                  Engineering reference
+assets/                Design references used by ui-ux.md
+public/                Runtime assets and licensed fonts
+```
+
+`src/app/api/[...path]/route.ts` preserves existing `/api/*` URLs through a dispatch table. Older root product and design documents remain historical references; `/docs` contains the current engineering description.
+
+## Local development
+
+Use Node.js 22.12 or newer and npm, then:
 
 ```sh
-npm install
+git clone https://github.com/Symmetry7/AlgoGym.git
+cd AlgoGym
+npm ci
+```
+
+Copy `.env.example` to `.env.local` and supply credentials from a **development** Supabase project. Apply `supabase/migrations/` in order to that project; for a linked development project, the Supabase CLI command is `supabase db push`. Configure the Supabase Google provider and allow `http://localhost:8080/api/auth/callback` for local OAuth testing. Do not reset production data.
+
+```sh
 npm run dev
 ```
 
-Open **http://localhost:8080**. An existing server may already be listening there. `npm run dev` reports a port conflict rather than silently opening a different app. The public landing page is `/`; the authenticated workspace begins at `/dashboard`.
+Open <http://localhost:8080>. The landing page is `/`; authenticated navigation starts at `/dashboard`. Symm AI generation needs `GEMINI_API_KEY`.
 
-Server environment in ignored `.env.local`:
+### Environment variables
 
-```dotenv
-SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
-SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVER_ONLY_KEY
-CRON_SECRET=YOUR_RANDOM_JOB_SECRET
-APP_ORIGIN=http://localhost:8080
-```
+| Name | Purpose |
+| --- | --- |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | Project URL and publishable key for auth requests |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only privileged database calls |
+| `APP_ORIGIN` | Canonical origin for redirects and request validation |
+| `CRON_SECRET` | Bearer secret for `/api/jobs/sync` |
+| `GEMINI_API_KEY` | Server-only Symm AI credential |
+| `GEMINI_MODEL` | Optional model override |
 
-Existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are supported during migration. Never prefix privileged keys with `NEXT_PUBLIC_` or `VITE_`. Production uses its actual HTTPS `APP_ORIGIN` and requires its own server environment. See [authentication setup](AUTH_SETUP.md).
+The server also accepts `NEXT_PUBLIC_SUPABASE_*` and historical `VITE_SUPABASE_*` fallbacks; new setups should use `.env.example`. Never expose privileged keys through a public prefix. See [deployment](docs/deployment.md).
 
-## Implemented modules
+## Data, identity, and security
 
-- Google PKCE and email/password authentication with server-managed HttpOnly cookies; confirmation, recovery, logout, and resumable onboarding.
-- Canonical Indian college search over an imported Supabase directory, with missing-college requests and authorized review.
-- Server-issued Codeforces/LeetCode ownership challenges, separate from provider data synchronization.
-- Codeforces submissions, rating histories, difficulty/topic/activity analytics; public LeetCode aggregates where available.
-- Durable synchronization jobs and an immutable, versioned, duplicate-safe Chakra ledger. Historical backfills and manual study completion cannot award Chakra; LeetCode rewards remain disabled.
-- Problem discovery, source-platform solve links, Training Gym tracks and session restoration.
-- Private study workspace, question/general notes, sheets, follows, and accepted viewer/editor sharing.
-- Provider contest calendar, private subscriptions, and iCalendar reminder export.
-- Privacy-controlled portfolios, profile editing, and own-account SVG share cards.
-- Metric-specific public rankings and approval-based college societies, memberships, and administrator review.
-- Original Blender-authored animated cube hero with pause and reduced-motion fallback; charcoal dashboard surfaces inspired by supplied references.
+Supabase migrations define profiles, colleges, societies, provider sync and submission records, problems, learning paths, and the reward ledger. Row-level security protects private records; server handlers validate the current user and ownership before privileged access. Google OAuth uses Supabase PKCE; email/password, confirmation, recovery, and sign-out are implemented. Session cookies are refreshed by `src/proxy.ts`. See [database](docs/database.md), [authentication](docs/authentication.md), and [API](docs/api.md).
 
-Implementation is not equivalent to complete acceptance. See [recording feature map](VIDEO_FEATURE_MAP.md) for verified journeys, unsupported integrations, and remaining work.
+Codeforces provides public submission and contest history. LeetCode provides public profile aggregates but no individual accepted-submission evidence suitable for current rewards. Other connected providers focus on ownership and public metadata. See [integrations](docs/integrations.md).
 
-## Verification commands
+Symm AI plans the roadmap first, persists lesson outlines, and generates details or language variants on demand. Its database jobs can be recovered by request execution or the cron path. Reading a lesson does not itself award coins. See [Symm AI](docs/symm-ai.md) and [Chakra](docs/chakra.md).
 
-```sh
-npm run typecheck
-npm test
-npm run build
-node scripts/check-landing.mjs
-node scripts/check-hero-motion.mjs
-```
+## Commands
 
-There is no configured lint command. `scripts/test-auth-recovery.mjs` and `scripts/test-study-flow.mjs` require a running local app and server credentials. They create isolated temporary test identities and remove them afterward; the recovery test generates links without sending emails. Database transaction tests in `scripts/sql/` roll back their fixtures. Review live-project scripts before running them.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server on port 8080 |
+| `npm run typecheck` | TypeScript check |
+| `npm test` | Vitest suite; live tests are opt-in |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build on port 8080 |
+| `npm run format.fix` | Format with Prettier |
 
-## Data and deployment
+There is currently no lint script or CI workflow. Browser and SQL integration scripts under `scripts/` have separate requirements; inspect them before use against any database.
 
-Reviewed additive migrations are in `supabase/migrations/`. Production data must not be reset. Provider synchronization is dispatched by `GET /api/jobs/sync`, authenticated with `CRON_SECRET`; `vercel.json` schedules one daily invocation. Higher-volume deployments need an appropriately provisioned job cadence. Deployment environment and scheduler execution must be verified separately.
+## Deployment and limitations
 
-Vercel is configured for Next.js in `vercel.json`. API URLs are dispatched through one App Router route at `src/app/api/[...path]/route.ts`; their handlers live under `server/next-api/` and `server/api-handlers/`. This keeps the deployment within the Hobby plan's function limit while retaining the existing URLs and server-side authorization checks.
+`vercel.json` selects Next.js and schedules `/api/jobs/sync` daily. Deployment needs server secrets, migrations, Auth redirect configuration, and an authorized cron request. Job throughput is limited by serverless execution time and the schedule. Gemini and provider availability affect generation and synchronization; no throughput benchmark is asserted here. See [deployment](docs/deployment.md).
 
-The profile-verification Edge Function independently validates authenticated users. See [architecture](architecture.md), [database design](api-and-database-design.md), [design system](DESIGN.md), and [implementation plan](IMPLEMENTATION_PLAN.md).
+## Contributing and license
 
-## Hero assets
-
-`public/hero/algogym-cube.glb` and `algogym-cubes-poster.webp` are original local Blender outputs. Rebuild using:
-
-```powershell
-& 'C:\Program Files\Blender Foundation\Blender 4.1\blender.exe' --background --factory-startup --python scripts/build-hero-cubes.py
-```
-
-The editable `.blend` is saved to ignored `.local-backups/algogym-hero.blend`. Browser animation uses the existing Three.js dependency and loads separately from the page; it does not require a Higgsfield account or external media request.
-
-## October 18: coding connections and self-service societies
-
-- The landing and account panels list Codeforces, LeetCode, CodeChef, AtCoder, GitHub and GeeksforGeeks. The connection dialog uses a searchable provider sidebar and a focused verification pane, stacking on mobile with keyboard focus restoration.
-- All six have server-side ownership challenges. Additional public fields: CodeChef Full Name, AtCoder Affiliation, GitHub Bio (official REST API), and GeeksforGeeks public Bio. CodeChef/AtCoder use an exact field match; GitHub/GFG require the complete token separated from other text. Provider responses fail closed when identity or the expected field cannot be established.
-- Tokens expire after ten minutes, are stored as hashes, and are rate-limited and bound to the authenticated user/platform/canonical handle. Replacement invalidates old tokens; unique ownership remains enforced atomically. GitHub uses a public-bio challenge, not OAuth.
-- Ownership verification and statistics synchronization are separate. Activity sync remains Codeforces/LeetCode only. The four added providers do not yet supply analytics or Chakra awards.
-- Society creation is immediate for signed-in users, with only a name required; college and description are optional. No evidence URL, custom slug or administrator approval is required. The creator receives an active organizer membership. The existing internal `approved` visibility state is reused without claiming institutional verification.
-- Active members can retrieve a persistent 64-character invite token through an authorized RPC. Public invite pages expose only society identity and description. Joining requires an authenticated POST; repeated joins are idempotent and suspended memberships cannot bypass restrictions. QR images are generated locally on the server with qrcode; no external QR service receives invitations.
-- Multiple group memberships are supported while retaining the existing single competitive membership rule. CP duels remain a v2 idea and are not implemented.
-
-### Database deployment and verification
-
-Applied additive migrations `20261017143000_extended_profile_verification.sql` and `20261018001000_self_service_societies.sql` to the existing project. Existing records were preserved. The profile-verification Edge Function was redeployed with internal bearer-token authentication retained.
-
-Commands:
-- `npm run dev` — http://localhost:8080
-- `npm run typecheck`, `npm test`, `npm run build`
-- `node scripts/test-connections-societies.mjs` — real temporary account/API/browser checks; requires configured server credentials, local app, and Chrome/Edge. Fixtures are removed afterward.
-- `node scripts/check-extra-public-profiles.mjs` — live public field retrieval.
-- `node scripts/check-landing-layout.mjs` — responsive landing checks at five widths.
-
-Evidence: 42 unit tests passed; TypeScript and production build passed. Rollback SQL tests cover new society permissions and ownership challenge expiry/replacement/cross-user/duplicate protections. Live deployed-function checks generated challenges for all four additional providers and rejected incorrect or absent public codes. Actual successful external ownership confirmation still requires a profile owner to place their issued code on that platform; this was not simulated or claimed as an end-to-end success. A production frontend deployment and interactive Google acceptance are separate release gates.
+Read [contributing](docs/contributing.md), branch from the current main branch, keep changes focused, and run the available checks before a pull request. No license file is present; no open-source license is implied.
