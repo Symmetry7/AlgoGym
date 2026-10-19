@@ -25,7 +25,6 @@ const schema = z
       .trim()
       .regex(/^[a-zA-Z0-9_-]{3,30}$/)
       .optional(),
-    isPublic: z.boolean().optional(),
     bio: z.string().trim().max(1000).optional(),
     countryCode: z
       .string()
@@ -85,7 +84,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const mapping = {
       displayName: "display_name",
       username: "username",
-      isPublic: "is_public",
       bio: "bio",
       countryCode: "country_code",
       websiteUrl: "website_url",
@@ -107,20 +105,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .json({
             error: `Enter a valid ${key === "githubUrl" ? "GitHub" : key === "linkedinUrl" ? "LinkedIn" : "X"} profile URL.`,
           });
-    if (value.isPublic && !value.username) {
-      const { data } = await client
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .single();
-      if (!data?.username)
-        return res
-          .status(400)
-          .json({
-            error:
-              "Choose an AlgoGym username in Settings before making your profile public.",
-          });
-    }
     const { data, error } = await client
       .from("profiles")
       .update(update)

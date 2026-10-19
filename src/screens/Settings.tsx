@@ -12,7 +12,6 @@ import { countryCodes, countryLabel } from "@/lib/countries";
 interface SettingsProfile {
   display_name: string | null;
   username: string | null;
-  is_public: boolean;
   bio: string;
   country_code: string | null;
   website_url: string | null;
@@ -34,7 +33,6 @@ export default function Settings() {
   const [fields, setFields] = useState({
     displayName: "",
     username: "",
-    isPublic: false,
     bio: "",
     countryCode: "",
     websiteUrl: "",
@@ -51,7 +49,6 @@ export default function Settings() {
       setFields({
         displayName: p.display_name ?? "",
         username: p.username ?? "",
-        isPublic: p.is_public,
         bio: p.bio ?? "",
         countryCode: p.country_code ?? "",
         websiteUrl: p.website_url ?? "",
@@ -108,13 +105,13 @@ export default function Settings() {
       <div className="mx-auto max-w-3xl space-y-7">
         <header>
           <p className="mb-2 text-xs text-muted-foreground">
-            Your identity and visibility
+            Your identity
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">
             Edit Profile
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Keep your portfolio accurate and choose what you share.
+            Keep your public coding portfolio accurate.
           </p>
         </header>
         {query.error && (
@@ -272,30 +269,11 @@ export default function Settings() {
                 </p>
               </section>
               <section className="space-y-4 rounded-lg border bg-card p-5 sm:p-6">
-                <h2 className="text-sm font-medium">Public visibility</h2>
-                <label className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={fields.isPublic}
-                    onChange={(event) =>
-                      setFields({ ...fields, isPublic: event.target.checked })
-                    }
-                    className="mt-1 size-4 accent-primary"
-                  />
-                  <span>
-                    <span className="block text-sm">
-                      Make my coding portfolio public
-                    </span>
-                    <span className="mt-2 block text-xs leading-6 text-muted-foreground">
-                      Your name, bio, college, country, portfolio links,
-                      verified coding handles, and synchronized coding
-                      statistics become visible. Email, saved questions, private
-                      notes and sheets remain private.
-                    </span>
-                  </span>
-                </label>
-                {query.data?.profile.is_public &&
-                  query.data.profile.username && (
+                <h2 className="text-sm font-medium">Public portfolio link</h2>
+                <p className="text-xs leading-6 text-muted-foreground">
+                  Your coding profile is public. Your email, saved questions, notes, and sheets stay private.
+                </p>
+                {query.data?.profile.username && (
                     <p className="flex flex-wrap items-center gap-2 text-xs">
                       <Link
                         href={`/u/${query.data.profile.username}`}

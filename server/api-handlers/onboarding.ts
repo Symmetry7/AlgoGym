@@ -45,6 +45,24 @@ export default async function handler(
       return response
         .status(401)
         .json({ error: "Sign in to set up your profile." });
+    const { data: existing, error: existingError } = await client
+      .from("profiles")
+      .select("username,is_public")
+      .eq("id", user.id)
+      .single();
+    if (existingError || !existing)
+      return response.status(503).json({ error: "Profile setup is temporarily unavailable." });
+    if (!existing.is_public || !existing.username) {
+      const { error: publicError } = await client
+        .from("profiles")
+        .update({
+          is_public: true,
+          username: existing.username ?? `user_${user.id.replaceAll("-", "").slice(0, 24)}`,
+        })
+        .eq("id", user.id);
+      if (publicError)
+        return response.status(503).json({ error: "Your public profile could not be prepared." });
+    }
     if (request.method === "PATCH") {
       const parsed = schema.safeParse(request.body);
       if (!parsed.success)

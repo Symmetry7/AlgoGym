@@ -248,9 +248,9 @@ export default function TrainingGym({
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
             [
-              "Verified progress",
-              tracker.data?.overview.verifiedSolves?.toLocaleString() ?? "—",
-              "Codeforces unique accepted problems",
+              "Total solves",
+              tracker.data?.overview.totalSolves?.toLocaleString() ?? "—",
+              "Codeforces history + LeetCode profile",
             ],
             [
               "Coins earned",
@@ -324,7 +324,7 @@ export default function TrainingGym({
               </h2>
               <p className="text-xs text-muted-foreground">
                 {tracker.data?.historyComplete
-                  ? `${problems.filter((problem) => solved.has(problem.id)).length} verified complete`
+                  ? `${problems.filter((problem) => solved.has(problem.id)).length} completed`
                   : "Completion appears after full synchronization"}
               </p>
             </div>
@@ -381,7 +381,7 @@ export default function TrainingGym({
                   <div
                     className="mt-4 h-1 overflow-hidden rounded bg-muted"
                     role="progressbar"
-                    aria-label={`${item.title} verified completion`}
+                    aria-label={`${item.title} completion`}
                     aria-valuenow={
                       tracker.data?.historyComplete ? progress : undefined
                     }
@@ -398,7 +398,7 @@ export default function TrainingGym({
                   <div className="mt-2 flex justify-between gap-2 text-[11px] text-muted-foreground">
                     <span>
                       {tracker.data?.historyComplete
-                        ? `${done}/${rows.length} verified · ${progress}%`
+                        ? `${done}/${rows.length} completed · ${progress}%`
                         : "Verification pending"}
                     </span>
                     <span className="inline-flex items-center gap-1 text-primary">

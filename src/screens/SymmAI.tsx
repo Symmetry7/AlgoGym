@@ -1016,10 +1016,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             <div className="symm-library-layout">
               <aside className="symm-library-sidebar" aria-label="Symm AI sections">
                 <p className="symm-library-sidebar-title">SYMM AI</p>
-                <Link href="/training/symm">New learning path</Link>
                 <Link href="/training/symm/library" aria-current="page">My Library</Link>
-                <Link href="/training">Training Gym</Link>
-                <p className="symm-library-sidebar-note">Your saved paths stay here so you can return to any lesson.</p>
               </aside>
             <section
               id="library"

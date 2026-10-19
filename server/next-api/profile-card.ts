@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
           chakra: summary.data.chakra,
           rating: cf.data?.summary.rating ?? null,
           publicURL:
-            p.is_public && p.username
+            p.username
               ? `algogym.vercel.app/u/${p.username}`
               : null,
           platforms: (accounts.data ?? []).map((item) => item.platform),

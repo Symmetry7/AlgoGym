@@ -8,8 +8,8 @@ import {
   Code2,
   GitBranch,
   Users,
-  Zap,
 } from "lucide-react";
+import { CoinMark } from "./ChakraMark";
 import { CodingPlatformMark, codingProviders } from "./CodingPlatformMark";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
 import { LandingWaves } from "./LandingWaves";
@@ -92,7 +92,7 @@ export function LandingFeatures({ children }: { children: ReactNode }) {
             </span>
             <h3>Coin rewards</h3>
             <div className="chakra-emblem" aria-hidden="true">
-              <Zap strokeWidth={1.2} />
+              <CoinMark />
             </div>
             <p>
               Eligible accepted solutions earn Coins based on difficulty. Each

@@ -3,11 +3,11 @@ import {
   CartesianGrid,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { MeasuredChartContainer as ResponsiveContainer } from "./MeasuredChartContainer";
 const tooltipStyle = {
   background: "#151820",
   border: "1px solid #303746",
@@ -30,7 +30,8 @@ export function RatingChart({
 }) {
   const data = history
     .filter((item) => item.provider === provider)
-    .map((item) => ({ ...item, timestamp: Date.parse(item.date) }));
+    .filter((item) => Number.isFinite(item.rating) && Number.isFinite(Date.parse(item.date)))
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
   if (!data.length)
     return (
       <div className="flex h-64 items-center justify-center rounded-md border border-dashed px-6 text-center text-sm leading-6 text-muted-foreground">
@@ -52,9 +53,7 @@ export function RatingChart({
           >
             <CartesianGrid stroke="#252A36" vertical={false} />
             <XAxis
-              dataKey="timestamp"
-              type="number"
-              domain={["dataMin", "dataMax"]}
+              dataKey="date"
               tickFormatter={(value) =>
                 new Date(value).toLocaleDateString(undefined, {
                   month: "short",
@@ -107,6 +106,10 @@ export function RatingChart({
             />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+        <time dateTime={data[0].date}>{new Date(data[0].date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</time>
+        {data.length > 1 && <time dateTime={data.at(-1)!.date}>{new Date(data.at(-1)!.date).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</time>}
       </div>
       <details className="mt-2 text-xs text-muted-foreground">
         <summary className="cursor-pointer hover:text-foreground">

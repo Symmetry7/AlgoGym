@@ -78,23 +78,12 @@ export default function ProfileCard() {
           <Button
             variant="outline"
             onClick={() => void copy()}
-            disabled={
-              !account.data?.profile.is_public || !account.data.profile.username
-            }
+            disabled={!account.data?.profile.username}
           >
             <Copy size={14} />
             Copy public portfolio link
           </Button>
         </div>
-        {!account.data?.profile.is_public && (
-          <p className="text-xs leading-6 text-muted-foreground">
-            Your portfolio is private. You can download the card, or{" "}
-            <Link href="/settings" className="text-primary">
-              choose public visibility in Settings
-            </Link>{" "}
-            before sharing a portfolio link.
-          </p>
-        )}
       </div>
     </Layout>
   );

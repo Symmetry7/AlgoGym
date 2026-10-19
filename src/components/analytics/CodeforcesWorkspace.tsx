@@ -8,18 +8,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
   ComposedChart,
   Line,
   ReferenceArea,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { MeasuredChartContainer as ResponsiveContainer } from "./MeasuredChartContainer";
 import { useCodeforcesCatalog as useCatalog } from "@/hooks/use-codeforces-catalog";
 import { jsonRequest } from "@/hooks/use-account";
 import { useAuth } from "@/contexts/AuthContext";
@@ -233,6 +230,7 @@ function Submissions({ rows }: { rows: CFSubmission[] }) {
     [rows, filter],
   );
   const summary = useMemo(() => submissionSummary(filtered), [filtered]);
+  const maxTempo = Math.max(1, ...summary.tempo.map((item) => item.count));
   const tags = [...new Set(rows.flatMap((row) => row.tags))].sort();
   const languages = [
     ...new Set(rows.flatMap((row) => (row.language ? [row.language] : []))),
@@ -330,32 +328,21 @@ function Submissions({ rows }: { rows: CFSubmission[] }) {
         </p>
         {summary.tempo.length ? (
           <div
-            className="mt-5 h-44"
+            className="mt-5"
             role="img"
-            aria-label="Daily submission volume"
+            aria-label={`Daily submission volume across ${summary.tempo.length} active dates`}
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={summary.tempo} margin={{ left: -25, right: 5 }}>
-                <CartesianGrid vertical={false} stroke="#252A36" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fill: "#98A2B3", fontSize: 10 }}
-                  minTickGap={50}
-                  tickFormatter={(value) => value.slice(5)}
+            <div className={`flex h-40 items-end gap-1 overflow-x-auto border-b border-[#34343f] pb-1 ${summary.tempo.length <= 3 ? "justify-center" : ""}`}>
+              {summary.tempo.map((day) => (
+                <span
+                  key={day.date}
+                  title={`${day.date}: ${day.count} submission ${day.count === 1 ? "attempt" : "attempts"}`}
+                  className="min-w-2 max-w-7 flex-1 rounded-t-sm bg-[#8e77c6] transition-colors hover:bg-[#b8a0f4]"
+                  style={{ height: `${Math.max(4, day.count / maxTempo * 100)}%` }}
                 />
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fill: "#98A2B3", fontSize: 10 }}
-                />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar
-                  dataKey="count"
-                  name="Attempts"
-                  fill="#8e77c6"
-                  isAnimationActive={false}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+              ))}
+            </div>
+            <div className="mt-2 flex justify-between text-[10px] text-muted-foreground"><span>{summary.tempo[0].date}</span>{summary.tempo.length > 1 && <span>{summary.tempo.at(-1)?.date}</span>}</div>
           </div>
         ) : (
           <p className="py-8 text-sm text-muted-foreground">
@@ -894,6 +881,7 @@ function RatedHistory({ ratings }: { ratings: CFRating[] }) {
     number: index + 1,
     delta: row.before === null ? null : row.rating - row.before,
   }));
+  const maxAbsDelta = Math.max(1, ...deltas.map((value) => Math.abs(value)));
   const maxRating = Math.max(1500, ...rows.map((row) => row.rating));
   const minRating = Math.max(
     0,
@@ -1051,31 +1039,15 @@ function RatedHistory({ ratings }: { ratings: CFRating[] }) {
             <p className="mb-1 mt-3 text-[11px] text-muted-foreground">
               Per-contest change · same contest order
             </p>
-            <div
-              className="h-28"
-              role="img"
-              aria-label="Positive and negative rating changes for each contest"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ left: -15, right: 15 }}>
-                  <XAxis dataKey="number" hide />
-                  <YAxis tick={{ fill: "#98A2B3", fontSize: 10 }} />
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    labelFormatter={(number) =>
-                      rows[Number(number) - 1]?.name ?? String(number)
-                    }
-                  />
-                  <Bar dataKey="delta" name="Change" isAnimationActive={false}>
-                    {data.map((row) => (
-                      <Cell
-                        key={row.contestId}
-                        fill={(row.delta ?? 0) >= 0 ? "#50b88c" : "#dc737d"}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="relative h-28 overflow-x-auto" role="img" aria-label="Positive and negative rating changes for each contest">
+              <div className="absolute inset-x-0 top-1/2 border-t border-border" />
+              <div className="relative flex h-full items-stretch gap-1">
+                {data.map((row) => (
+                  <span key={row.contestId} className="relative min-w-2 max-w-6 flex-1" title={`${row.name}: ${row.delta === null ? "change unavailable" : `${row.delta >= 0 ? "+" : ""}${row.delta} rating`}`}>
+                    {row.delta !== null && <span className={`absolute inset-x-0 rounded-sm ${row.delta >= 0 ? "bg-emerald-400/80" : "bg-rose-400/80"}`} style={{ height: `${Math.max(2, Math.abs(row.delta) / maxAbsDelta * 48)}%`, ...(row.delta >= 0 ? { bottom: "50%" } : { top: "50%" }) }} />}
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-muted-foreground">
               {rankBands

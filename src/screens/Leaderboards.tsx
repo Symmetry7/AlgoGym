@@ -351,9 +351,7 @@ export default function Leaderboards() {
             ) : (
               user && (
                 <p className="rounded-md border p-4 text-xs leading-6 text-muted-foreground">
-                  {account.data?.profile.is_public
-                    ? "Your account or group does not meet this metric’s eligibility in the selected population."
-                    : "Your portfolio is private. Make it public to opt into eligible rankings."}{" "}
+                  Your account or group does not meet this metric’s eligibility in the selected population.{" "}
                   <Link href="/settings" className="text-primary">
                     Profile settings
                   </Link>

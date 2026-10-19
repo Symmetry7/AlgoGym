@@ -441,7 +441,7 @@
     0 0 0 27px #b99bea03;
   color: #c5a3f5;
 }
-.chakra-emblem svg {
+.chakra-emblem img {
   width: 49px;
   height: 49px;
 }
@@ -985,7 +985,7 @@
     height: 65px;
     margin: 10px 0 24px;
   }
-  .story-rewards .chakra-emblem svg {
+  .story-rewards .chakra-emblem img {
     width: 36px;
     height: 36px;
   }

@@ -1,35 +1,12 @@
 "use client";
-import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Portfolio } from "@/components/analytics/Portfolio";
 import { TrackerFeedback } from "@/components/analytics/TrackerFeedback";
 import { useTracker } from "@/hooks/use-tracker";
-import { useAccount, jsonRequest } from "@/hooks/use-account";
+import { useAccount } from "@/hooks/use-account";
 export default function Profile() {
   const account = useAccount();
   const tracker = useTracker(0);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
-  const privacy = async (isPublic: boolean) => {
-    setPending(true);
-    setError("");
-    try {
-      await jsonRequest("/api/account/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublic }),
-      });
-      await account.refetch();
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Visibility could not be changed.",
-      );
-    } finally {
-      setPending(false);
-    }
-  };
   return (
     <Layout>
       <div className="space-y-6">
@@ -42,11 +19,6 @@ export default function Profile() {
           </h2>
         </header>
         <TrackerFeedback tracker={tracker} />
-        {error && (
-          <p role="alert" className="text-sm text-rose-300">
-            {error}
-          </p>
-        )}
         {account.error && (
           <p role="alert" className="text-sm text-rose-300">
             {account.error.message}
@@ -56,8 +28,6 @@ export default function Profile() {
           <Portfolio
             owner
             data={{ ...tracker.data, profile: account.data.profile }}
-            privacyPending={pending}
-            onPrivacyChange={(value) => void privacy(value)}
           />
         ) : (
           <div

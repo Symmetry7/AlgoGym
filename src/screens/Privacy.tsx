@@ -11,7 +11,7 @@ export default function Privacy() {
             Privacy policy
           </h1>
           <p className="text-sm text-muted-foreground">
-            Last updated October 17, 2026
+            Last updated October 19, 2026
           </p>
         </header>
         <p className="leading-7 text-muted-foreground">
@@ -27,6 +27,16 @@ export default function Privacy() {
             basic profile information, such as your name and profile picture,
             through Supabase Authentication. Google sign-in is used to create
             and maintain your AlgoGym session.
+          </p>
+        </section>
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold">Public coding portfolios</h2>
+          <p className="leading-7 text-muted-foreground">
+            AlgoGym coding portfolios are public when you sign in. Your name,
+            username, profile photo, bio, college, connected coding handles,
+            and synchronized coding statistics may be visible to other people.
+            Your email, saved questions, private notes, and learning paths are
+            not part of the public portfolio.
           </p>
         </section>
         <section className="space-y-2">

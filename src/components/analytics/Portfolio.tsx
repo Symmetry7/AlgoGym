@@ -13,11 +13,13 @@ import {
   ShieldCheck,
   Share2,
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { MeasuredChartContainer as ResponsiveContainer } from "./MeasuredChartContainer";
 import { SiGithub, SiLinkedin, SiX } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { ChakraMark } from "@/components/brand/ChakraMark";
 import { ConnectedProfilesPanel } from "@/components/auth/ConnectedProfilesPanel";
+import "./portfolio.css";
 import { RatingChart, Distribution } from "./Charts";
 import { ActivityHeatmap } from "./ActivityHeatmap";
 import { activityStreaks } from "@/lib/activity-streaks";
@@ -140,21 +142,17 @@ function DifficultyRing({
 export function Portfolio({
   data,
   owner = false,
-  privacyPending = false,
-  onPrivacyChange,
 }: {
   data: PortfolioData;
   owner?: boolean;
-  privacyPending?: boolean;
-  onPrivacyChange?: (value: boolean) => void;
 }) {
   const [tab, setTab] = useState("overview");
-  const [ratingProvider, setRatingProvider] = useState("codeforces");
   const [heatmapDays, setHeatmapDays] = useState(365);
   const [allTopics, setAllTopics] = useState(false);
   const { profile } = data;
   const cf = data.snapshots.find((item) => item.provider === "codeforces");
   const lc = data.snapshots.find((item) => item.provider === "leetcode");
+  const totalSolves = (data.overview.verifiedSolves ?? 0) + (lc?.summary.totalSolved ?? 0);
   const streaks = activityStreaks(data.activity);
   const milestones = [1, 100, 500, 1000].filter(
     (value) =>
@@ -172,36 +170,20 @@ export function Portfolio({
   ];
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="overflow-hidden rounded-lg border bg-card">
-        <div className="flex items-center justify-between gap-3 border-b px-5 py-3">
-          <span className="text-[11px] text-muted-foreground">
-            {profile.is_public ? "Public portfolio" : "Private portfolio"}
-          </span>
-          {owner ? (
-            <label className="flex items-center gap-2 text-[11px]">
-              <span className="sr-only">Public portfolio visibility</span>
-              <input
-                type="checkbox"
-                role="switch"
-                checked={profile.is_public ?? false}
-                disabled={privacyPending}
-                onChange={(event) => onPrivacyChange?.(event.target.checked)}
-                className="size-4 accent-primary"
-              />
-            </label>
-          ) : (
-            <Globe size={13} className="text-muted-foreground" />
-          )}
+      <aside className="portfolio-identity overflow-hidden rounded-xl border bg-card">
+        <div className="portfolio-cover flex items-center justify-between gap-3 px-5 py-3">
+          <span className="text-[10px] font-semibold tracking-[.16em]">ALGOGYM / PROFILE</span>
+          <Globe size={13} className="text-muted-foreground" />
         </div>
-        <div className="p-5">
-          <div className="flex items-start justify-between gap-3">
-            <span className="grid size-20 place-items-center overflow-hidden rounded-full border bg-primary/10 text-2xl font-semibold text-primary">
+        <div className="portfolio-identity-body p-5">
+          <div className="portfolio-portrait-row">
+            <span className="portfolio-portrait grid size-24 place-items-center overflow-hidden rounded-full bg-primary/10 text-2xl font-semibold text-primary">
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
                   alt=""
-                  width={80}
-                  height={80}
+                  width={96}
+                  height={96}
                   className="size-full object-cover"
                 />
               ) : (
@@ -220,11 +202,11 @@ export function Portfolio({
               </Link>
             )}
           </div>
-          <h1 className="mt-5 break-words text-xl font-semibold tracking-tight">
+          <h1 className="mt-4 break-words text-center text-xl font-semibold tracking-tight">
             {profile.display_name ?? profile.username ?? "AlgoGym member"}
           </h1>
           {profile.username && (
-            <p className="mt-1 text-xs text-primary">@{profile.username}</p>
+            <p className="mt-1 text-center text-xs text-[#f2a56d]">@{profile.username}</p>
           )}
           <p className="mt-4 whitespace-pre-wrap break-words text-xs leading-6 text-muted-foreground">
             {profile.bio ||
@@ -232,7 +214,7 @@ export function Portfolio({
                 ? "Tell your story. Add a short bio in your profile settings."
                 : "Competitive programmer on AlgoGym.")}
           </p>
-          <div className="mt-4 flex gap-4">
+          <div className="mt-4 flex justify-center gap-4">
             {[
               [profile.website_url, Globe, "Website"],
               [profile.github_url, SiGithub, "GitHub"],
@@ -284,7 +266,7 @@ export function Portfolio({
               </Link>
             </Button>
           )}
-          {profile.is_public && profile.username && owner && (
+          {profile.username && owner && (
             <Link
               href={`/u/${profile.username}`}
               className="mt-3 flex items-center justify-center gap-1 text-[11px] text-muted-foreground"
@@ -317,10 +299,10 @@ export function Portfolio({
               <div className="grid grid-cols-2 gap-3">
                 <Section title="Total solves">
                   <p className="mt-4 text-3xl font-semibold tabular-nums">
-                    {format(data.overview.verifiedSolves)}
+                    {format(totalSolves)}
                   </p>
                   <p className="mt-3 text-[10px] leading-5 text-muted-foreground">
-                    Codeforces unique accepted problems
+                    Codeforces history and LeetCode profile
                   </p>
                 </Section>
                 <Section title="Active days">
@@ -410,22 +392,10 @@ export function Portfolio({
                     )}
                   </div>
                 </Section>
-                <Section title="Rating progression">
-                  <div className="mb-4 mt-4 flex gap-1">
-                    {["codeforces", "leetcode"].map((provider) => (
-                      <button
-                        key={provider}
-                        aria-pressed={ratingProvider === provider}
-                        onClick={() => setRatingProvider(provider)}
-                        className={`rounded px-3 py-2 text-xs capitalize ${ratingProvider === provider ? "bg-muted text-foreground" : "text-muted-foreground"}`}
-                      >
-                        {provider}
-                      </button>
-                    ))}
-                  </div>
+                <Section title="Codeforces rating progression">
                   <RatingChart
                     history={data.ratingHistory}
-                    provider={ratingProvider}
+                    provider="codeforces"
                   />
                 </Section>
                 <Section
