@@ -11,6 +11,16 @@
 .symm-showcase-copy {
   max-width: 530px;
 }
+.symm-film { min-width: 0; margin: 0; }
+.symm-film video { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid #34313c; border-radius: 14px; background: #101115; }
+.symm-film figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 14px; font-size: 13px; }
+.symm-film figcaption span, .symm-film details { color: #aaa8ba; font-size: 12px; }
+.symm-film details { margin-top: 14px; line-height: 1.7; }
+.symm-film summary { cursor: pointer; }
+.symm-film details p { margin-top: 12px; }
+.symm-showcase > .symm-preview { grid-column: 1 / -1; width: min(100%, 1000px); justify-self: center; }
+.light .symm-film figcaption { color: #27232e; }
+.light .symm-film figcaption span, .light .symm-film details { color: #635c70; }
 .symm-showcase-eyebrow,
 .symm-preview-label {
   font-size: 10px !important;
@@ -89,9 +99,7 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: #443453;
-  color: #cab4ed;
-  font-size: 18px;
+  background: #060b0a;
 }
 .symm-preview-demo {
   margin-left: auto;

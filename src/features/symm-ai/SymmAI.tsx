@@ -24,13 +24,13 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Highlight, themes, type Language } from "prism-react-renderer";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { RichText, CodeExample } from "./LessonContent";
+
+
+
 import "katex/dist/katex.min.css";
 import { SymmMark } from "@/components/brand/SymmMark";
-import { SymmAtmosphere } from "./SymmAtmosphere";
+import { SymmSidebar } from "./SymmSidebar";
 import "./symm-workspace.css";
 import { ChakraMark } from "@/components/brand/ChakraMark";
 import {
@@ -150,90 +150,6 @@ const codeLanguage = (value?: string) => {
   return normalized;
 };
 
-function RichText({ children }: { children: string }) {
-  return (
-    <div className="prose prose-invert max-w-none text-[14px] leading-[1.8] prose-headings:text-[#f8f7fc] prose-p:text-[#c8c5d2] prose-strong:text-[#f8f7fc] prose-a:text-[#c8b7fa] prose-pre:overflow-x-auto prose-pre:bg-[#111117] prose-code:text-[#d5c5ff]">
-      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-        {children}
-      </ReactMarkdown>
-    </div>
-  );
-}
-
-function CodeExample({ code, language }: { code: string; language?: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  };
-  const supported = [
-    "javascript",
-    "typescript",
-    "python",
-    "java",
-    "cpp",
-    "c",
-    "go",
-    "rust",
-    "sql",
-    "bash",
-  ];
-  const normalized = codeLanguage(language) || "text";
-  return (
-    <div className="my-5 overflow-hidden rounded-xl border border-[#34343f] bg-[#121218]">
-      <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-2 text-[11px] text-[#aaa8ba]">
-        <span className="font-mono uppercase tracking-wide">
-          {language || "Code"}
-        </span>
-        <button
-          type="button"
-          onClick={() => void copy()}
-          className="inline-flex items-center gap-1.5 rounded px-2 py-1 hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
-          aria-label="Copy code"
-        >
-          {copied ? <Check size={13} /> : <Copy size={13} />}
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <Highlight
-        theme={themes.vsDark}
-        code={code.trim()}
-        language={
-          (supported.includes(normalized) ? normalized : "markup") as Language
-        }
-      >
-        {({ tokens, getLineProps, getTokenProps }) => (
-          <pre className="max-w-full overflow-x-auto p-4 font-mono text-[12px] leading-6">
-            <code>
-              {tokens.map((line, index) => (
-                <div
-                  key={index}
-                  {...getLineProps({ line })}
-                  className="table-row"
-                >
-                  <span className="table-cell select-none pr-5 text-right text-[#767485]">
-                    {index + 1}
-                  </span>
-                  <span className="table-cell whitespace-pre">
-                    {line.map((token, tokenIndex) => (
-                      <span key={tokenIndex} {...getTokenProps({ token })} />
-                    ))}
-                  </span>
-                </div>
-              ))}
-            </code>
-          </pre>
-        )}
-      </Highlight>
-    </div>
-  );
-}
-
 function GridDiagram() {
   const values = [
     [1, 1, 1, 1],
@@ -242,8 +158,8 @@ function GridDiagram() {
     [1, 4, 10, 20],
   ];
   return (
-    <figure className="my-6 rounded-xl border border-[#34343f] bg-[#181820] p-5">
-      <figcaption className="mb-4 text-xs text-[#aaa8ba]">
+    <figure className="my-6 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] p-5">
+      <figcaption className="mb-4 text-xs text-[var(--symm-muted)]">
         Paths to each cell when you can move right or down
       </figcaption>
       <div
@@ -254,14 +170,14 @@ function GridDiagram() {
           row.map((value, x) => (
             <div
               key={`${y}-${x}`}
-              className={`flex aspect-square items-center justify-center rounded-md border font-mono text-sm ${x === 3 && y === 3 ? "border-[#b8a0f4] bg-[#34274a] text-[#e5daff]" : "border-[#464457] bg-[#272630] text-[#cfccd8]"}`}
+              className={`flex aspect-square items-center justify-center rounded-md border font-mono text-sm ${x === 3 && y === 3 ? "border-[#b8a0f4] bg-[var(--symm-accent-surface)] text-[var(--symm-accent-text)]" : "border-[var(--symm-border)] bg-[var(--symm-elevated)] text-[var(--symm-muted)]"}`}
             >
               {value}
             </div>
           )),
         )}
       </div>
-      <p className="mt-4 text-center text-xs text-[#aaa8ba]">
+      <p className="mt-4 text-center text-xs text-[var(--symm-muted)]">
         Each interior cell is the sum of the cell above and the cell to its
         left.
       </p>
@@ -277,7 +193,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={100}
-      className="h-1.5 overflow-hidden rounded-full bg-[#34343f]"
+      className="h-1.5 overflow-hidden rounded-full bg-[var(--symm-elevated)]"
     >
       <div
         className="h-full rounded-full bg-[#b8a0f4] transition-[width] duration-300 motion-reduce:transition-none"
@@ -319,6 +235,14 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (pathId || libraryMode) return;
+    const params = new URLSearchParams(window.location.search);
+    const suggestedTopic = params.get("topic")?.trim();
+    if (suggestedTopic) setTopic(suggestedTopic.slice(0, 180));
+    const suggestedGoal = params.get("goal");
+    if (suggestedGoal && ["fundamentals", "interview", "competitive", "mastery"].includes(suggestedGoal)) setGoal(suggestedGoal);
+  }, [pathId, libraryMode]);
   useEffect(() => {
     const savedWidth = Number(window.localStorage.getItem("symm-tutor-width"));
     if (Number.isFinite(savedWidth) && savedWidth >= 300 && savedWidth <= 520)
@@ -716,27 +640,27 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
     user?.user_metadata?.full_name ?? user?.email ?? "Learner",
   );
   return (
-    <div className={`min-h-screen font-sans text-[#f8f7fc] ${pathId || libraryMode ? "bg-[#131319]" : "symm-home-shell"}`}>
-      {!pathId && !libraryMode && <SymmAtmosphere />}
-      <div className="relative z-10 mx-auto max-w-[1700px]">
+    <div className={`symm-theme min-h-screen font-sans text-[var(--symm-text)] ${!pathId ? "symm-product-shell" : ""} ${pathId || libraryMode ? "bg-[var(--symm-bg)]" : "symm-home-shell"}`}>
+      {!pathId && <SymmSidebar paths={home?.paths ?? []} activeRoute={libraryMode ? "/training/symm/library" : "/training/symm"} />}
+      <div className="relative z-10 mx-auto w-full min-w-0 max-w-[1700px]">
         <nav
           aria-label="Symm AI navigation"
-          className={`flex h-[68px] items-center justify-between gap-3 border-b px-4 sm:px-8 lg:px-10 ${pathId ? "border-[#34343f]" : "symm-home-nav"}`}
+          className={`flex h-[68px] items-center justify-between gap-3 border-b px-4 sm:px-8 lg:px-10 ${pathId ? "border-[var(--symm-border)]" : "symm-home-nav"}`}
         >
           <div className="flex min-w-0 items-center gap-4">
             <Link
               href="/training"
-              className="flex size-9 items-center justify-center rounded-lg text-[#aaa8ba] transition-colors hover:bg-[#1d1d25] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
+              className="flex size-9 items-center justify-center rounded-lg text-[var(--symm-muted)] transition-colors hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
               aria-label="Back to Training Gym"
             >
               <ArrowLeft size={18} />
             </Link>
-            <span className="h-5 w-px bg-[#34343f]" aria-hidden="true" />
+            <span className="h-5 w-px bg-[var(--symm-elevated)]" aria-hidden="true" />
             <Link
               href="/training/symm"
               className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-.02em]"
             >
-              <span className="flex size-9 items-center justify-center rounded-lg bg-[#28232f]">
+              <span className="flex size-9 items-center justify-center rounded-lg bg-[var(--symm-elevated)]">
                 <SymmMark className="size-7 object-contain" />
               </span>
               Symm AI
@@ -746,7 +670,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             {pathId || libraryMode ? (
               <Link
                 href="/training/symm"
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[#c9c6d2] hover:bg-[#1d1d25] hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
               >
                 <Plus size={14} />
                 <span className="hidden sm:inline">New Path</span>
@@ -760,7 +684,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   composer.current?.focus();
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[#c9c6d2] hover:bg-[#1d1d25] hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
               >
                 <Plus size={14} />
                 <span className="hidden sm:inline">New Path</span>
@@ -768,7 +692,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             )}
             <Link
               href="/training/symm/library"
-              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[#c9c6d2] hover:bg-[#1d1d25] hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
             >
               <Library size={14} />
               <span className="hidden sm:inline">My Library</span>
@@ -783,7 +707,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             ) : (
               <span
                 title={avatarName}
-                className="ml-2 flex size-8 items-center justify-center rounded-full border border-[#4b4659] bg-[#34274a] text-xs font-medium text-[#ded1ff]"
+                className="ml-2 flex size-8 items-center justify-center rounded-full border border-[var(--symm-border)] bg-[var(--symm-accent-surface)] text-xs font-medium text-[var(--symm-accent-text)]"
               >
                 {avatarName[0]?.toUpperCase()}
               </span>
@@ -797,8 +721,8 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             <div className="symm-home-stage mx-auto max-w-[900px]">
               <div className="symm-home-heading text-center">
                 <p className="symm-home-kicker">SYMM AI / LEARNING WORKSPACE</p>
-                <h1>Start with a question.</h1>
-                <p>Follow it all the way to understanding.</p>
+                <h1>What do you want to master?</h1>
+                <p>Learn competitive programming from first principles.</p>
               </div>
               <div className="symm-home-composer">
                 <label className="sr-only" htmlFor="symm-topic">
@@ -827,15 +751,27 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                 />
                 <div className="symm-home-composer-footer">
                   <div className="symm-home-preferences flex flex-wrap items-center gap-2 text-xs">
+                    <div role="group" aria-label="Programming language" className="symm-home-language-selector">
+                      {(["cpp", "java", "python"] as const).map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          aria-pressed={language === option}
+                          onClick={() => void chooseLanguage(option)}
+                        >
+                          {option === "cpp" ? "C++17" : option === "java" ? "Java 17" : "Python 3"}
+                        </button>
+                      ))}
+                    </div>
                     <button
                       type="button"
                       onClick={() => setCustomize(!customize)}
                       aria-expanded={customize}
                       aria-controls="symm-customize"
-                      className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#45414f] bg-[#25242e] px-3 text-[#e7e1f2] transition-colors hover:border-[#8c7cae] hover:bg-[#302d3b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
+                      className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)] px-3 text-[var(--symm-text)] transition-colors hover:border-[#8c7cae] hover:bg-[var(--symm-elevated)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
                     >
                       <span>Customize path</span>
-                      <span className="hidden text-[#aaa8ba] sm:inline">
+                      <span className="hidden text-[var(--symm-muted)] sm:inline">
                         {level[0].toUpperCase() + level.slice(1)} · {hours}
                         h/week
                       </span>
@@ -864,10 +800,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                 {customize && (
                   <div
                     id="symm-customize"
-                    className="mt-4 grid gap-5 border-t border-[#34343f] pt-5 sm:grid-cols-2"
+                    className="mt-4 grid gap-5 border-t border-[var(--symm-border)] pt-5 sm:grid-cols-2"
                   >
                     <fieldset className="min-w-0">
-                      <legend className="mb-2 text-xs font-medium text-[#e7e1f2]">
+                      <legend className="mb-2 text-xs font-medium text-[var(--symm-text)]">
                         Starting point
                       </legend>
                       <div className="flex flex-wrap gap-1.5">
@@ -879,18 +815,18 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                             type="button"
                             aria-pressed={level === option}
                             onClick={() => setLevel(option)}
-                            className={`min-h-9 rounded-md border px-3 text-xs capitalize transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] ${level === option ? "border-[#b8a0f4] bg-[#34274a] text-[#f8f7fc]" : "border-[#45414f] text-[#aaa8ba] hover:text-white"}`}
+                            className={`min-h-9 rounded-md border px-3 text-xs capitalize transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] ${level === option ? "border-[#b8a0f4] bg-[var(--symm-accent-surface)] text-[var(--symm-text)]" : "border-[var(--symm-border)] text-[var(--symm-muted)] hover:text-[var(--symm-text)]"}`}
                           >
                             {option}
                           </button>
                         ))}
                       </div>
-                      <p className="mt-2 text-[11px] leading-4 text-[#858293]">
+                      <p className="mt-2 text-[11px] leading-4 text-[var(--symm-muted)]">
                         Sets how much background each lesson explains.
                       </p>
                     </fieldset>
                     <fieldset className="min-w-0">
-                      <legend className="mb-2 text-xs font-medium text-[#e7e1f2]">
+                      <legend className="mb-2 text-xs font-medium text-[var(--symm-text)]">
                         Learning goal
                       </legend>
                       <div className="flex flex-wrap gap-1.5">
@@ -907,20 +843,20 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                             type="button"
                             aria-pressed={goal === value}
                             onClick={() => setGoal(value)}
-                            className={`min-h-9 rounded-md border px-3 text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] ${goal === value ? "border-[#b8a0f4] bg-[#34274a] text-[#f8f7fc]" : "border-[#45414f] text-[#aaa8ba] hover:text-white"}`}
+                            className={`min-h-9 rounded-md border px-3 text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] ${goal === value ? "border-[#b8a0f4] bg-[var(--symm-accent-surface)] text-[var(--symm-text)]" : "border-[var(--symm-border)] text-[var(--symm-muted)] hover:text-[var(--symm-text)]"}`}
                           >
                             {label}
                           </button>
                         ))}
                       </div>
                     </fieldset>
-                    <div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#34343f] pt-4">
+                    <div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--symm-border)] pt-4">
                       <label
                         htmlFor="symm-hours"
-                        className="text-xs text-[#e7e1f2]"
+                        className="text-xs text-[var(--symm-text)]"
                       >
                         Study time{" "}
-                        <span className="ml-2 text-[#aaa8ba]">
+                        <span className="ml-2 text-[var(--symm-muted)]">
                           {hours} hours each week
                         </span>
                       </label>
@@ -940,17 +876,17 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   </div>
                 )}
               </div>
-              <p className="mt-3 text-center text-[11px] text-[#858293]">
+              <p className="mt-3 text-center text-[11px] text-[var(--symm-muted)]">
                 Press Enter to create a path · Shift + Enter for a new line
               </p>
               {busy === "roadmap" && (
                 <div
                   role="status"
-                  className="mt-7 flex items-center gap-3 rounded-xl border border-[#484554] bg-[#1d1d25] px-5 py-4 text-sm text-[#d9d3e8]"
+                  className="mt-7 flex items-center gap-3 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] px-5 py-4 text-sm text-[var(--symm-text)]"
                 >
                   <LoaderCircle
                     size={17}
-                    className="shrink-0 animate-spin text-[#b8a0f4]"
+                    className="shrink-0 animate-spin text-[var(--symm-accent-text)]"
                   />
                   <span>
                     <strong className="font-medium text-white">
@@ -987,7 +923,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
               {success && (
                 <p
                   role="status"
-                  className="mt-5 rounded-lg border border-[#b8a0f4]/30 bg-[#34274a] p-3 text-sm text-[#e5dcff]"
+                  className="mt-5 rounded-lg border border-[#b8a0f4]/30 bg-[var(--symm-accent-surface)] p-3 text-sm text-[var(--symm-accent-text)]"
                 >
                   {success}
                 </p>
@@ -1004,7 +940,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                       setTopic(`Teach me ${suggestion} from the fundamentals.`);
                       composer.current?.focus();
                     }}
-                    className="rounded-full border border-[#45414f] px-3.5 py-2 text-[12px] text-[#bbb8c8] transition-colors duration-150 hover:border-[#b8a0f4] hover:bg-[#25222e] hover:text-white"
+                    className="rounded-full border border-[var(--symm-border)] px-3.5 py-2 text-[12px] text-[var(--symm-muted)] transition-colors duration-150 hover:border-[#b8a0f4] hover:bg-[var(--symm-elevated)] hover:text-[var(--symm-text)]"
                   >
                     {suggestion}
                   </button>
@@ -1014,45 +950,42 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             )}
             {libraryMode && (
             <div className="symm-library-layout">
-              <aside className="symm-library-sidebar" aria-label="Symm AI sections">
-                <p className="symm-library-sidebar-title">SYMM AI</p>
-                <Link href="/training/symm/library" aria-current="page">My Library</Link>
-              </aside>
             <section
               id="library"
               className="symm-library-content min-w-0"
             >
               <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[.16em] text-[#aaa8ba]">
+                  <p className="text-[11px] uppercase tracking-[.16em] text-[var(--symm-muted)]">
                     YOUR WORKSPACE
                   </p>
                   <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">
                     My Library
                   </h1>
-                  <p className="mt-2 text-sm text-[#aaa8ba]">Pick up where you left off.</p>
+                  <p className="mt-2 text-sm text-[var(--symm-muted)]">Pick up where you left off.</p>
                 </div>
                 <div className="relative w-full sm:w-64">
                   <Search
                     size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#858293]"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--symm-muted)]"
                   />
                   <label htmlFor="symm-search" className="sr-only">
                     Search learning paths
                   </label>
                   <input
                     id="symm-search"
+                    autoFocus
                     value={librarySearch}
                     onChange={(event) => setLibrarySearch(event.target.value)}
                     placeholder="Search your library"
-                    className="h-9 w-full rounded-lg border border-[#34343f] bg-[#1d1d25] pl-9 pr-3 text-xs outline-none focus:border-[#b8a0f4]"
+                    className="h-9 w-full rounded-lg border border-[var(--symm-border)] bg-[var(--symm-surface)] pl-9 pr-3 text-xs outline-none focus:border-[#b8a0f4]"
                   />
                 </div>
               </div>
               {loading ? (
                 <p
                   role="status"
-                  className="flex items-center gap-2 py-8 text-sm text-[#aaa8ba]"
+                  className="flex items-center gap-2 py-8 text-sm text-[var(--symm-muted)]"
                 >
                   <LoaderCircle size={16} className="animate-spin" />
                   Loading paths…
@@ -1062,21 +995,21 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   {visiblePaths.map((path) => (
                     <div
                       key={path.id}
-                      className="symm-library-card group flex min-w-0 flex-col gap-5 rounded-xl border border-[#34343f] bg-[#1d1d25] p-5"
+                      className="symm-library-card group flex min-w-0 flex-col gap-5 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] p-5"
                     >
                       <Link
                         href={`/training/symm/${path.id}`}
                         className="min-w-0 flex-1 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
                       >
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <span className="truncate text-sm font-medium group-hover:text-[#d6c6ff]">
+                          <span className="truncate text-sm font-medium group-hover:text-[var(--symm-accent-text)]">
                             {path.title}
                           </span>
-                          <span className="text-[11px] text-[#858293]">
+                          <span className="text-[11px] text-[var(--symm-muted)]">
                             {path.moduleCount ?? 0} modules
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-[#aaa8ba]">
+                        <p className="mt-1 text-xs text-[var(--symm-muted)]">
                           {path.status === "ready"
                             ? `${percent(path.completedCount ?? 0, path.lessonCount ?? 0)}% complete`
                             : path.status === "failed"
@@ -1094,9 +1027,9 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           />
                         </div>
                       </Link>
-                      <div className="flex items-center justify-between border-t border-[#34343f] pt-3"><Link
+                      <div className="flex items-center justify-between border-t border-[var(--symm-border)] pt-3"><Link
                         href={`/training/symm/${path.id}`}
-                        className="inline-flex items-center gap-1 text-xs text-[#d7c8f7]"
+                        className="inline-flex items-center gap-1 text-xs text-[var(--symm-accent-text)]"
                       >
                         Continue <ArrowRight size={14} />
                       </Link>
@@ -1104,7 +1037,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                         type="button"
                         onClick={() => setDeletePath(path)}
                         aria-label={`Delete ${path.title}`}
-                        className="flex size-9 items-center justify-center rounded-lg text-[#858293] hover:bg-[#2a252e] hover:text-rose-200"
+                        className="flex size-9 items-center justify-center rounded-lg text-[var(--symm-muted)] hover:bg-[var(--symm-elevated)] hover:text-rose-200"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -1113,7 +1046,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   ))}
                 </div>
               ) : (
-                <p className="py-7 text-sm text-[#aaa8ba]">
+                <p className="py-7 text-sm text-[var(--symm-muted)]">
                   {librarySearch
                     ? "No paths match your search."
                     : "Your courses will appear here after you create your first path."}
@@ -1128,7 +1061,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             {loading && !detail ? (
               <p
                 role="status"
-                className="flex items-center gap-2 py-12 text-sm text-[#aaa8ba]"
+                className="flex items-center gap-2 py-12 text-sm text-[var(--symm-muted)]"
               >
                 <LoaderCircle size={17} className="animate-spin" />
                 Loading learning path…
@@ -1139,7 +1072,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                 role="status"
                 aria-live="polite"
               >
-                <p className="text-xs uppercase tracking-[.18em] text-[#b8a0f4]">
+                <p className="text-xs uppercase tracking-[.18em] text-[var(--symm-accent-text)]">
                   Symm AI
                 </p>
                 <h1 className="mt-4 text-3xl font-semibold tracking-tight">
@@ -1147,7 +1080,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                 </h1>
                 {detail?.path.status === "failed" ? (
                   <>
-                    <p className="mt-4 text-sm text-[#aaa8ba]">
+                    <p className="mt-4 text-sm text-[var(--symm-muted)]">
                       The curriculum could not be completed. Your request is
                       saved.
                     </p>
@@ -1178,12 +1111,12 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   </>
                 ) : (
                   <>
-                    <p className="mt-4 flex items-center gap-2 text-sm text-[#aaa8ba]">
+                    <p className="mt-4 flex items-center gap-2 text-sm text-[var(--symm-muted)]">
                       <LoaderCircle size={16} className="animate-spin" />{" "}
                       Mapping concepts and building your curriculum. This page
                       updates when it is ready.
                     </p>
-                    <div className="mt-8 h-1 w-full overflow-hidden rounded-full bg-[#34343f]">
+                    <div className="mt-8 h-1 w-full overflow-hidden rounded-full bg-[var(--symm-elevated)]">
                       <div className="h-full w-1/3 animate-pulse rounded-full bg-[#b8a0f4]" />
                     </div>
                   </>
@@ -1196,30 +1129,30 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
               </section>
             ) : detail ? (
               <>
-                <header className="mx-auto max-w-[1380px] border-b border-[#34343f] py-7 sm:py-9">
+                <header className="mx-auto max-w-[1380px] border-b border-[var(--symm-border)] py-7 sm:py-9">
                   <Link
                     href="/training/symm/library"
-                    className="inline-flex items-center gap-1.5 text-xs text-[#aaa8ba] hover:text-white"
+                    className="inline-flex items-center gap-1.5 text-xs text-[var(--symm-muted)] hover:text-[var(--symm-text)]"
                   >
                     <ArrowLeft size={13} /> My Library
                   </Link>
                   <div className="mt-5 flex flex-wrap items-end justify-between gap-5">
                     <div className="max-w-[760px]">
-                      <p className="mb-2 text-[11px] font-medium uppercase tracking-[.16em] text-[#b8a0f4]">
+                      <p className="mb-2 text-[11px] font-medium uppercase tracking-[.16em] text-[var(--symm-accent-text)]">
                         Learning path · {detail.path.level}
                       </p>
                       <h1 className="text-[clamp(1.9rem,3.3vw,3rem)] font-semibold leading-tight tracking-[-.045em]">
                         {detail.path.title}
                       </h1>
-                      <p className="mt-3 max-w-[650px] text-sm leading-6 text-[#aaa8ba]">
+                      <p className="mt-3 max-w-[650px] text-sm leading-6 text-[var(--symm-muted)]">
                         {detail.path.description}
                       </p>
-                      <p className="mt-3 text-xs text-[#858293]">{detail.modules.length} modules · {detail.lessons.length} lessons · About {Math.round(detail.path.estimated_minutes / 60)} hours</p>
-                      {detail.path.prerequisites.length > 0 && <p className="mt-2 text-xs text-[#aaa8ba]">Before you begin: {detail.path.prerequisites.join(" · ")}</p>}
-                      <div role="group" aria-label="Code language" className="mt-5 inline-flex rounded-lg border border-[#45414f] bg-[#1d1d25] p-1">
-                        {(["cpp", "java", "python"] as const).map((option) => <button key={option} type="button" onClick={() => void chooseLanguage(option)} aria-pressed={language === option} className={`rounded-md px-3 py-1.5 text-xs transition-colors ${language === option ? "bg-[#b8a0f4] text-[#17131f]" : "text-[#aaa8ba] hover:text-white"}`}>{option === "cpp" ? "C++17" : option === "java" ? "Java 17" : "Python 3"}</button>)}
+                      <p className="mt-3 text-xs text-[var(--symm-muted)]">{detail.modules.length} modules · {detail.lessons.length} lessons · About {Math.round(detail.path.estimated_minutes / 60)} hours</p>
+                      {detail.path.prerequisites.length > 0 && <p className="mt-2 text-xs text-[var(--symm-muted)]">Before you begin: {detail.path.prerequisites.join(" · ")}</p>}
+                      <div role="group" aria-label="Code language" className="mt-5 inline-flex rounded-lg border border-[var(--symm-border)] bg-[var(--symm-surface)] p-1">
+                        {(["cpp", "java", "python"] as const).map((option) => <button key={option} type="button" onClick={() => void chooseLanguage(option)} aria-pressed={language === option} className={`rounded-md px-3 py-1.5 text-xs transition-colors ${language === option ? "bg-[#b8a0f4] text-[#17131f]" : "text-[var(--symm-muted)] hover:text-[var(--symm-text)]"}`}>{option === "cpp" ? "C++17" : option === "java" ? "Java 17" : "Python 3"}</button>)}
                       </div>
-                      <Link href={`/training/symm?topic=${encodeURIComponent(detail.path.topic)}&level=${detail.path.level}&goal=${detail.path.goal}`} className="ml-4 inline-flex items-center gap-1 text-xs text-[#b8a0f4] hover:text-white">Create another version <ArrowRight size={12} /></Link>
+                      <Link href={`/training/symm?topic=${encodeURIComponent(detail.path.topic)}&level=${detail.path.level}&goal=${detail.path.goal}`} className="ml-4 inline-flex items-center gap-1 text-xs text-[var(--symm-accent-text)] hover:text-[var(--symm-text)]">Create another version <ArrowRight size={12} /></Link>
                     </div>
                   </div>
                 </header>
@@ -1240,7 +1173,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                 {success && (
                   <div
                     role="status"
-                    className="mx-auto mt-5 max-w-[1380px] rounded-lg border border-[#b8a0f4]/30 bg-[#34274a] p-3 text-sm text-[#e5dcff]"
+                    className="mx-auto mt-5 max-w-[1380px] rounded-lg border border-[#b8a0f4]/30 bg-[var(--symm-accent-surface)] p-3 text-sm text-[var(--symm-accent-text)]"
                   >
                     {success}
                   </div>
@@ -1254,9 +1187,9 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   <aside
                     className={`${outlineOpen ? "fixed inset-0 z-40 flex bg-black/70 p-3" : "hidden"} lg:sticky lg:top-5 lg:block lg:self-start`}
                   >
-                    <div className="flex max-h-[90vh] w-[min(330px,90vw)] flex-col overflow-hidden rounded-xl border border-[#34343f] bg-[#1d1d25] lg:max-h-[calc(100vh-2.5rem)] lg:w-auto">
-                      <div className="flex items-center justify-between border-b border-[#34343f] px-4 py-3">
-                        <h2 className="text-xs font-semibold uppercase tracking-[.12em] text-[#aaa8ba]">
+                    <div className="flex max-h-[90vh] w-[min(330px,90vw)] flex-col overflow-hidden rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] lg:max-h-[calc(100vh-2.5rem)] lg:w-auto">
+                      <div className="flex items-center justify-between border-b border-[var(--symm-border)] px-4 py-3">
+                        <h2 className="text-xs font-semibold uppercase tracking-[.12em] text-[var(--symm-muted)]">
                           Curriculum
                         </h2>
                         <button
@@ -1274,7 +1207,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                             setSelected(null);
                             setOutlineOpen(false);
                           }}
-                          className={`mb-2 flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs ${!selected ? "bg-[#34274a] text-[#eee8ff]" : "text-[#aaa8ba] hover:bg-[#2a2934]"}`}
+                          className={`mb-2 flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs ${!selected ? "bg-[var(--symm-accent-surface)] text-[var(--symm-accent-text)]" : "text-[var(--symm-muted)] hover:bg-[var(--symm-elevated)]"}`}
                         >
                           <Library size={14} /> Course overview
                         </button>
@@ -1290,17 +1223,17 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                             return (
                               <li
                                 key={module.id}
-                                className="border-t border-[#34343f]"
+                                className="border-t border-[var(--symm-border)]"
                               >
                                 <button
                                   onClick={() =>
                                     setExpanded(isOpen ? null : module.id)
                                   }
                                   aria-expanded={isOpen}
-                                  className="flex w-full items-center gap-2 rounded-lg px-2 py-3 text-left text-xs hover:bg-[#2a2934]"
+                                  className="flex w-full items-center gap-2 rounded-lg px-2 py-3 text-left text-xs hover:bg-[var(--symm-elevated)]"
                                 >
                                   <span
-                                    className={`flex size-7 shrink-0 items-center justify-center rounded-md font-mono text-[11px] ${done === moduleLessons.length && done > 0 ? "bg-[#34274a] text-[#d6c6ff]" : "bg-[#2a2934] text-[#aaa8ba]"}`}
+                                    className={`flex size-7 shrink-0 items-center justify-center rounded-md font-mono text-[11px] ${done === moduleLessons.length && done > 0 ? "bg-[var(--symm-accent-surface)] text-[var(--symm-accent-text)]" : "bg-[var(--symm-elevated)] text-[var(--symm-muted)]"}`}
                                   >
                                     {done === moduleLessons.length &&
                                     done > 0 ? (
@@ -1310,10 +1243,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     )}
                                   </span>
                                   <span className="min-w-0 flex-1">
-                                    <span className="block truncate font-medium text-[#e9e6f0]">
+                                    <span className="block truncate font-medium text-[var(--symm-text)]">
                                       {module.title}
                                     </span>
-                                    <span className="mt-0.5 block text-[10px] text-[#858293]">
+                                    <span className="mt-0.5 block text-[10px] text-[var(--symm-muted)]">
                                       {done}/{moduleLessons.length} lessons
                                     </span>
                                   </span>
@@ -1333,7 +1266,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                           onClick={() =>
                                             void openLesson(lesson)
                                           }
-                                          className={`flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-[11px] leading-4 ${selected === lesson.id ? "bg-[#34274a] text-[#ede5ff]" : "text-[#aaa8ba] hover:bg-[#2a2934] hover:text-white"}`}
+                                          className={`flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-[11px] leading-4 ${selected === lesson.id ? "bg-[var(--symm-accent-surface)] text-[var(--symm-accent-text)]" : "text-[var(--symm-muted)] hover:bg-[var(--symm-elevated)] hover:text-[var(--symm-text)]"}`}
                                         >
                                           {completedIds.has(lesson.id) ? (
                                             <Check
@@ -1362,7 +1295,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   <div className="min-w-0">
                     <button
                       onClick={() => setOutlineOpen(true)}
-                      className="mb-4 inline-flex items-center gap-2 rounded-lg border border-[#34343f] px-3 py-2 text-xs text-[#ddd8e8] lg:hidden"
+                      className="mb-4 inline-flex items-center gap-2 rounded-lg border border-[var(--symm-border)] px-3 py-2 text-xs text-[var(--symm-text)] lg:hidden"
                     >
                       <Menu size={15} /> Curriculum
                     </button>
@@ -1371,14 +1304,14 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                         <section className="symm-course-progress" aria-label="Course progress">
                           <div className="flex flex-wrap items-start justify-between gap-4">
                             <div className="flex items-center gap-3">
-                              {avatarUrl ? <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="size-11 rounded-full object-cover" /> : <span className="flex size-11 items-center justify-center rounded-full bg-[#34274a] text-sm">{avatarName[0]?.toUpperCase()}</span>}
-                              <div><p className="text-base font-medium">Welcome back, {avatarName.split(" ")[0]}.</p><p className="text-xs text-[#aaa8ba]">Your next lesson is ready when you are.</p></div>
+                              {avatarUrl ? <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="size-11 rounded-full object-cover" /> : <span className="flex size-11 items-center justify-center rounded-full bg-[var(--symm-accent-surface)] text-sm">{avatarName[0]?.toUpperCase()}</span>}
+                              <div><p className="text-base font-medium">Welcome back, {avatarName.split(" ")[0]}.</p><p className="text-xs text-[var(--symm-muted)]">Your next lesson is ready when you are.</p></div>
                             </div>
                             <button onClick={() => { const next = orderedLessons.find((lesson) => !completedIds.has(lesson.id)) ?? orderedLessons[0]; if (next) void openLesson(next); }} className="rounded-lg bg-[#b8a0f4] px-4 py-2.5 text-xs font-semibold text-[#17131f] hover:bg-[#d4c3ff]">Continue learning <ArrowRight size={14} className="ml-1 inline" /></button>
                           </div>
                           <div className="mt-7 flex justify-between text-xs"><span>{completedIds.size} of {orderedLessons.length} lessons complete</span><span className="font-medium tabular-nums">{percent(completedIds.size, orderedLessons.length)}%</span></div>
                           <div className="symm-course-progress-track mt-2" role="progressbar" aria-valuenow={percent(completedIds.size, orderedLessons.length)} aria-valuemin={0} aria-valuemax={100} aria-label="Course completion"><span style={{ width: `${percent(completedIds.size, orderedLessons.length)}%` }} /></div>
-                          <div className="mt-2 flex justify-between text-[11px] text-[#858293]"><span>First lesson</span><span>Course complete</span></div>
+                          <div className="mt-2 flex justify-between text-[11px] text-[var(--symm-muted)]"><span>First lesson</span><span>Course complete</span></div>
                         </section>
                         <section
                           aria-label="Learning roadmap"
@@ -1387,7 +1320,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           <h2 className="mb-6 text-lg font-medium">
                             The roadmap
                           </h2>
-                          <ol className="symm-roadmap-grid grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                          <ol className="symm-roadmap-grid grid gap-3">
                             {detail.modules.map((module, index) => {
                               const moduleLessons = detail.lessons.filter(
                                 (lesson) => lesson.module_id === module.id,
@@ -1405,7 +1338,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   style={{ "--module-index": index } as CSSProperties}
                                 >
                                   <span
-                                    className={`absolute left-5 top-5 z-10 flex size-[29px] items-center justify-center rounded-full border bg-[#131319] font-mono text-[10px] ${finished ? "border-[#b8a0f4] text-[#b8a0f4]" : "border-[#6b647a] text-[#aaa8ba]"}`}
+                                    className={`absolute left-5 top-5 z-10 flex size-[29px] items-center justify-center rounded-full border bg-[var(--symm-bg)] font-mono text-[10px] ${finished ? "border-[#b8a0f4] text-[var(--symm-accent-text)]" : "border-[var(--symm-border)] text-[var(--symm-muted)]"}`}
                                   >
                                     {finished ? (
                                       <Check size={14} />
@@ -1422,14 +1355,14 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                       )
                                     }
                                     aria-expanded={expanded === module.id}
-                                    className="symm-roadmap-card w-full rounded-xl border border-[#34343f] bg-[#1d1d25] p-5 pt-16 text-left transition-colors hover:border-[#6d5c8c]"
+                                    className="symm-roadmap-card w-full rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] p-5 pl-16 text-left transition-colors hover:border-[#6d5c8c]"
                                   >
                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                      <span className="text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                      <span className="text-[10px] uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                         Module{" "}
                                         {String(index + 1).padStart(2, "0")}
                                       </span>
-                                      <span className="flex items-center gap-1 text-[11px] text-[#858293]">
+                                      <span className="flex items-center gap-1 text-[11px] text-[var(--symm-muted)]">
                                         <Clock3 size={12} />{" "}
                                         {module.estimated_minutes} min ·{" "}
                                         {moduleLessons.length} lessons
@@ -1438,7 +1371,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     <h3 className="mt-2 text-[16px] font-medium">
                                       {module.title}
                                     </h3>
-                                    <p className="mt-1 text-xs leading-5 text-[#aaa8ba]">
+                                    <p className="mt-1 text-xs leading-5 text-[var(--symm-muted)]">
                                       {module.description}
                                     </p>
                                     <div className="mt-4 flex items-center gap-3">
@@ -1451,7 +1384,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                           label={`${module.title} progress`}
                                         />
                                       </div>
-                                      <span className="text-[11px] text-[#aaa8ba]">
+                                      <span className="text-[11px] text-[var(--symm-muted)]">
                                         {done}/{moduleLessons.length} completed
                                       </span>
                                       <ChevronDown
@@ -1461,7 +1394,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     </div>
                                   </button>
                                   {expanded === module.id && (
-                                    <div className="mt-2 space-y-1 rounded-xl border border-[#34343f] bg-[#1a1a22] p-2">
+                                    <div className="mt-2 space-y-1 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] p-2">
                                       {moduleLessons.map(
                                         (lesson, lessonIndex) => (
                                           <button
@@ -1469,9 +1402,9 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                             onClick={() =>
                                               void openLesson(lesson)
                                             }
-                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs text-[#d8d5e0] hover:bg-[#292735]"
+                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs text-[var(--symm-text)] hover:bg-[var(--symm-elevated)]"
                                           >
-                                            <span className="font-mono text-[#858293]">
+                                            <span className="font-mono text-[var(--symm-muted)]">
                                               {String(lessonIndex + 1).padStart(
                                                 2,
                                                 "0",
@@ -1483,7 +1416,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                             {completedIds.has(lesson.id) ? (
                                               <Check
                                                 size={14}
-                                                className="text-[#b8a0f4]"
+                                                className="text-[var(--symm-accent-text)]"
                                               />
                                             ) : (
                                               <ArrowRight size={13} />
@@ -1501,10 +1434,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                       </div>
                     ) : (
                       active && (
-                        <article className="mx-auto max-w-[830px] rounded-xl border border-[#34343f] bg-[#1d1d25] px-5 py-6 sm:px-8 sm:py-9">
+                        <article className="mx-auto max-w-[830px] rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] px-5 py-6 sm:px-8 sm:py-9">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                              <p className="text-[11px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                              <p className="text-[11px] uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                 Module{" "}
                                 {String(
                                   (activeModule?.position ?? 0) + 1,
@@ -1515,14 +1448,14 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                               <h2 className="mt-3 text-[clamp(1.6rem,3vw,2.3rem)] font-semibold tracking-[-.04em]">
                                 {active.title}
                               </h2>
-                              <p className="mt-2 text-[12px] text-[#858293]">
+                              <p className="mt-2 text-[12px] text-[var(--symm-muted)]">
                                 Generated by Symm AI · Read, question, and
                                 practice at your own pace.
                               </p>
                             </div>
                             <button
                               onClick={() => setTutorOpen(true)}
-                              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#5d5072] bg-[#25212f] px-3 py-2 text-xs font-medium text-[#eadfff] transition-colors hover:border-[#a28ac8] hover:bg-[#34274a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
+                              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)] px-3 py-2 text-xs font-medium text-[var(--symm-text)] transition-colors hover:border-[#a28ac8] hover:bg-[var(--symm-accent-surface)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4]"
                             >
                               <SymmMark className="size-6 object-contain" /> Ask
                               tutor
@@ -1530,14 +1463,14 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           </div>
                           {active.status === "ready" && active.content ? (
                             <div className="mt-8">
-                              <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-[#34343f] pb-5">
-                                <span className="text-xs text-[#aaa8ba]">
+                              <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--symm-border)] pb-5">
+                                <span className="text-xs text-[var(--symm-muted)]">
                                   Code language
                                 </span>
                                 <div
                                   role="group"
                                   aria-label="Lesson code language"
-                                  className="inline-flex rounded-lg border border-[#45414f] bg-[#15151c] p-0.5"
+                                  className="inline-flex rounded-lg border border-[var(--symm-border)] bg-[var(--symm-bg)] p-0.5"
                                 >
                                   {(["cpp", "java", "python"] as const).map(
                                     (option) => (
@@ -1549,7 +1482,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                         onClick={() =>
                                           void chooseLanguage(option)
                                         }
-                                        className={`rounded-md px-2.5 py-1.5 text-xs transition-colors disabled:opacity-50 ${language === option ? "bg-[#b8a0f4] text-[#18151f]" : "text-[#aaa8ba] hover:text-white"}`}
+                                        className={`rounded-md px-2.5 py-1.5 text-xs transition-colors disabled:opacity-50 ${language === option ? "bg-[#b8a0f4] text-[#18151f]" : "text-[var(--symm-muted)] hover:text-[var(--symm-text)]"}`}
                                       >
                                         {option === "cpp"
                                           ? "C++"
@@ -1564,7 +1497,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                               {busy === "language" && (
                                 <p
                                   role="status"
-                                  className="mb-4 text-xs text-[#aaa8ba]"
+                                  className="mb-4 text-xs text-[var(--symm-muted)]"
                                 >
                                   Preparing the selected code language…
                                 </p>
@@ -1586,7 +1519,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   <button
                                     type="button"
                                     onClick={() => void retryCodeVariant()}
-                                    className="mb-5 rounded-lg border border-[#554967] px-3 py-2 text-xs text-[#d8c5ff] hover:bg-[#34274a]"
+                                    className="mb-5 rounded-lg border border-[var(--symm-border)] px-3 py-2 text-xs text-[var(--symm-accent-text)] hover:bg-[var(--symm-accent-surface)]"
                                   >
                                     Prepare{" "}
                                     {language === "cpp"
@@ -1601,11 +1534,11 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     />
                                   </button>
                                 )}
-                              <div className="rounded-lg border-l-2 border-[#b8a0f4] bg-[#34274a]/40 px-4 py-3">
-                                <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[#c9b4ff]">
+                              <div className="rounded-lg border-l-2 border-[#b8a0f4] bg-[var(--symm-accent-surface)]/40 px-4 py-3">
+                                <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                   Learning objective
                                 </p>
-                                <p className="mt-1 text-sm leading-6 text-[#e6dfed]">
+                                <p className="mt-1 text-sm leading-6 text-[var(--symm-text)]">
                                   {activeModule?.objectives?.[0] ??
                                     `Understand ${active.title} and explain it in your own words.`}
                                 </p>
@@ -1616,8 +1549,8 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 </RichText>
                               </div>
                               {active.content.workedExample && (
-                                <section className="mt-8 rounded-lg border border-[#4b405c] bg-[#26212f] p-5">
-                                  <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[#c9b4ff]">
+                                <section className="mt-8 rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)] p-5">
+                                  <p className="text-[10px] font-medium uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                     Worked example
                                   </p>
                                   <h3 className="mt-3 text-base font-medium">
@@ -1639,9 +1572,9 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                               {active.content.sections.map((section, index) => (
                                 <section
                                   key={index}
-                                  className="mt-9 border-t border-[#34343f] pt-7"
+                                  className="mt-9 border-t border-[var(--symm-border)] pt-7"
                                 >
-                                  <p className="text-[10px] font-mono text-[#b8a0f4]">
+                                  <p className="text-[10px] font-mono text-[var(--symm-accent-text)]">
                                     {String(index + 1).padStart(2, "0")}
                                   </p>
                                   <h3 className="mt-2 text-lg font-semibold tracking-[-.02em]">
@@ -1651,8 +1584,8 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     <RichText>{section.explanation}</RichText>
                                   </div>
                                   {section.example && (
-                                    <div className="mt-5 rounded-lg border border-[#3b3947] bg-[#25242e] p-4">
-                                      <p className="mb-2 text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                                    <div className="mt-5 rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)] p-4">
+                                      <p className="mb-2 text-[10px] uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                         Worked example
                                       </p>
                                       <RichText>{section.example}</RichText>
@@ -1682,7 +1615,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 .map((variant) => (
                                   <section
                                     key={variant.language}
-                                    className="mt-9 border-t border-[#34343f] pt-7"
+                                    className="mt-9 border-t border-[var(--symm-border)] pt-7"
                                   >
                                     <h3 className="text-lg font-semibold">
                                       Implementation in{" "}
@@ -1700,11 +1633,11 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   </section>
                                 ))}
                               {active.content.commonMistakes?.length ? (
-                                <section className="mt-9 border-t border-[#34343f] pt-7">
+                                <section className="mt-9 border-t border-[var(--symm-border)] pt-7">
                                   <h3 className="text-base font-medium">
                                     Common mistakes
                                   </h3>
-                                  <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-[#c8c5d2]">
+                                  <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-[var(--symm-muted)]">
                                     {active.content.commonMistakes.map(
                                       (mistake, index) => (
                                         <li key={index}>{mistake}</li>
@@ -1713,19 +1646,19 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   </ul>
                                 </section>
                               ) : null}
-                              <section className="mt-9 border-t border-[#34343f] pt-7">
-                                <p className="text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                              <section className="mt-9 border-t border-[var(--symm-border)] pt-7">
+                                <p className="text-[10px] uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                   Knowledge check
                                 </p>
                                 <h3 className="mt-2 text-lg font-medium">
                                   Explain it in your own words
                                 </h3>
-                                <div className="mt-4 rounded-lg border border-[#3b3947] bg-[#25242e] p-4">
+                                <div className="mt-4 rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)] p-4">
                                   <p className="text-sm leading-6">
                                     {active.content.questions[questionIndex] ??
                                       active.content.questions[0]}
                                   </p>
-                                  <p className="mt-2 text-[11px] text-[#858293]">
+                                  <p className="mt-2 text-[11px] text-[var(--symm-muted)]">
                                     Question {questionIndex + 1} of{" "}
                                     {active.content.questions.length}
                                   </p>
@@ -1744,7 +1677,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     }
                                     rows={3}
                                     placeholder="Write your reasoning here…"
-                                    className="mt-4 w-full resize-y rounded-lg border border-[#484554] bg-[#181820] p-3 text-sm outline-none focus:border-[#b8a0f4]"
+                                    className="mt-4 w-full resize-y rounded-lg border border-[var(--symm-border)] bg-[var(--symm-surface)] p-3 text-sm outline-none focus:border-[#b8a0f4]"
                                   />
                                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                                     <button
@@ -1758,7 +1691,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                       disabled={
                                         active.content.questions.length < 2
                                       }
-                                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#514b60] bg-[#2d2b36] px-3 py-2 text-xs font-medium text-[#ded8ea] transition-colors hover:border-[#b8a0f4] hover:bg-[#342f40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] disabled:cursor-not-allowed disabled:opacity-40"
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)] px-3 py-2 text-xs font-medium text-[var(--symm-text)] transition-colors hover:border-[#b8a0f4] hover:bg-[var(--symm-elevated)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] disabled:cursor-not-allowed disabled:opacity-40"
                                     >
                                       Next question <ArrowRight size={13} />
                                     </button>
@@ -1777,7 +1710,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   </div>
                                 </div>
                               </section>
-                              <section className="mt-9 border-t border-[#34343f] pt-7">
+                              <section className="mt-9 border-t border-[var(--symm-border)] pt-7">
                                 <h3 className="text-base font-medium">
                                   Key takeaways
                                 </h3>
@@ -1786,11 +1719,11 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     (takeaway, index) => (
                                       <li
                                         key={index}
-                                        className="flex gap-3 text-sm leading-6 text-[#c8c5d2]"
+                                        className="flex gap-3 text-sm leading-6 text-[var(--symm-muted)]"
                                       >
                                         <Check
                                           size={15}
-                                          className="mt-1 shrink-0 text-[#b8a0f4]"
+                                          className="mt-1 shrink-0 text-[var(--symm-accent-text)]"
                                         />
                                         {takeaway}
                                       </li>
@@ -1798,18 +1731,18 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   )}
                                 </ul>
                               </section>
-                              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[#34343f] pt-6">
+                              <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--symm-border)] pt-6">
                                 <div>
                                   <button
                                     onClick={() => setReportOpen(!reportOpen)}
-                                    className="text-[11px] text-[#858293] underline underline-offset-4 hover:text-white"
+                                    className="text-[11px] text-[var(--symm-muted)] underline underline-offset-4 hover:text-[var(--symm-text)]"
                                   >
                                     Report an issue with this lesson
                                   </button>
                                   {reportSaved && (
                                     <span
                                       role="status"
-                                      className="ml-2 text-[11px] text-[#b8a0f4]"
+                                      className="ml-2 text-[11px] text-[var(--symm-accent-text)]"
                                     >
                                       Feedback saved
                                     </span>
@@ -1846,10 +1779,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 </button>
                               </div>
                               {reportOpen && (
-                                <div className="mt-4 rounded-lg border border-[#34343f] p-4">
+                                <div className="mt-4 rounded-lg border border-[var(--symm-border)] p-4">
                                   <label
                                     htmlFor="symm-report"
-                                    className="text-xs text-[#aaa8ba]"
+                                    className="text-xs text-[var(--symm-muted)]"
                                   >
                                     What should we improve?
                                   </label>
@@ -1860,7 +1793,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                       setReportReason(event.target.value)
                                     }
                                     rows={3}
-                                    className="mt-2 w-full rounded-lg border border-[#45414f] bg-[#181820] p-3 text-sm outline-none focus:border-[#b8a0f4]"
+                                    className="mt-2 w-full rounded-lg border border-[var(--symm-border)] bg-[var(--symm-surface)] p-3 text-sm outline-none focus:border-[#b8a0f4]"
                                   />
                                   <button
                                     onClick={() => void report()}
@@ -1868,28 +1801,28 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                       reportReason.trim().length < 10 ||
                                       Boolean(busy)
                                     }
-                                    className="mt-2 rounded-lg bg-[#34274a] px-3 py-2 text-xs text-[#e7dcff] disabled:opacity-50"
+                                    className="mt-2 rounded-lg bg-[var(--symm-accent-surface)] px-3 py-2 text-xs text-[var(--symm-accent-text)] disabled:opacity-50"
                                   >
                                     Send feedback
                                   </button>
                                 </div>
                               )}
-                              <p className="mt-4 text-[11px] text-[#858293]">
+                              <p className="mt-4 text-[11px] text-[var(--symm-muted)]">
                                 Lesson completion records study progress. Coins
                                 requires an eligible accepted solve.
                               </p>
                             </div>
                           ) : (
-                            <div className="mt-8 rounded-xl border border-dashed border-[#4a4654] bg-[#181820] p-8 text-center">
+                            <div className="mt-8 rounded-xl border border-dashed border-[var(--symm-border)] bg-[var(--symm-surface)] p-8 text-center">
                               {busy === `lesson:${active.id}` ? (
                                 <LoaderCircle
                                   size={24}
-                                  className="mx-auto animate-spin text-[#b8a0f4]"
+                                  className="mx-auto animate-spin text-[var(--symm-accent-text)]"
                                 />
                               ) : (
                                 <BookOpen
                                   size={24}
-                                  className="mx-auto text-[#b8a0f4]"
+                                  className="mx-auto text-[var(--symm-accent-text)]"
                                 />
                               )}
                               <h3 className="mt-3 text-sm font-medium">
@@ -1898,7 +1831,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                   ? "This lesson needs another attempt"
                                   : "Preparing your lesson"}
                               </h3>
-                              <p className="mt-2 text-xs text-[#aaa8ba]">
+                              <p className="mt-2 text-xs text-[var(--symm-muted)]">
                                 {busy === `lesson:${active.id}`
                                   ? "Building the explanation and examples. Your lesson will open automatically."
                                   : "Lessons are generated when you open them and saved for later."}
@@ -1929,17 +1862,17 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                     {active &&
                       activeModule &&
                       detail.path.category === "competitive" && (
-                        <section className="mx-auto mt-6 max-w-[830px] rounded-xl border border-[#34343f] bg-[#1d1d25] p-5 sm:p-7">
+                        <section className="mx-auto mt-6 max-w-[830px] rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] p-5 sm:p-7">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                              <p className="text-[10px] uppercase tracking-[.14em] text-[#b8a0f4]">
+                              <p className="text-[10px] uppercase tracking-[.14em] text-[var(--symm-accent-text)]">
                                 Apply what you learned
                               </p>
                               <h3 className="mt-2 text-lg font-medium">
                                 Practice problems
                               </h3>
                             </div>
-                            <span className="text-[11px] text-[#858293]">
+                            <span className="text-[11px] text-[var(--symm-muted)]">
                               Total solves update after sync
                             </span>
                           </div>
@@ -1972,26 +1905,26 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                       href={problem.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex flex-wrap items-center gap-3 py-3 text-xs hover:text-[#d5c5ff]"
+                                      className="flex flex-wrap items-center gap-3 py-3 text-xs hover:text-[var(--symm-accent-text)]"
                                     >
                                       <span className="min-w-0 flex-1">
-                                        <span className="mr-2 text-[#858293]">
+                                        <span className="mr-2 text-[var(--symm-muted)]">
                                           {problem.provider}
                                         </span>
                                         {problem.title}
                                       </span>
-                                      <span className="text-[#aaa8ba]">
+                                      <span className="text-[var(--symm-muted)]">
                                         {problem.cf_rating ??
                                           problem.lc_difficulty}
                                       </span>
                                       {verified && (
-                                        <span className="text-[#b8a0f4]">
+                                        <span className="text-[var(--symm-accent-text)]">
                                           Verified
                                         </span>
                                       )}
                                       {reward &&
                                         problem.provider === "codeforces" && (
-                                          <span className="inline-flex items-center gap-1 text-[#aaa8ba]">
+                                          <span className="inline-flex items-center gap-1 text-[var(--symm-muted)]">
                                             <ChakraMark className="size-3" />
                                             {reward}
                                           </span>
@@ -2002,25 +1935,25 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 })}
                             </div>
                           ) : (
-                            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-[#aaa8ba]">
+                            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-[var(--symm-muted)]">
                               No matching catalog problems yet.
                               <button
                                 onClick={() =>
                                   void retryRecommendations(activeModule.id)
                                 }
                                 disabled={Boolean(busy)}
-                                className="text-[#cdbbf7] underline disabled:opacity-50"
+                                className="text-[var(--symm-accent-text)] underline disabled:opacity-50"
                               >
                                 Search catalog again
                               </button>
                             </div>
                           )}
-                          <div className="mt-5 flex gap-5 border-t border-[#34343f] pt-4 text-[11px] text-[#aaa8ba]">
+                          <div className="mt-5 flex gap-5 border-t border-[var(--symm-border)] pt-4 text-[11px] text-[var(--symm-muted)]">
                             <a
                               href="https://usaco.guide/"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="hover:text-white"
+                              className="hover:text-[var(--symm-text)]"
                             >
                               USACO Guide ↗
                             </a>
@@ -2028,7 +1961,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                               href="https://youkn0wwho.academy/topic-list"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="hover:text-white"
+                              className="hover:text-[var(--symm-text)]"
                             >
                               YouKn0wWho Academy ↗
                             </a>
@@ -2036,17 +1969,17 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                         </section>
                       )}
                     {detail.path.category === "competitive" && (
-                      <section className="mx-auto mt-6 max-w-[830px] rounded-xl border border-[#34343f] bg-[#1d1d25] p-5 sm:p-6">
+                      <section className="mx-auto mt-6 max-w-[830px] rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] p-5 sm:p-6">
                         <div className="flex items-center gap-2">
                           <ChakraMark className="size-5" />
                           <h3 className="text-sm font-medium">
                             Module rewards
                           </h3>
-                          <span className="ml-auto text-[11px] text-[#b8a0f4]">
+                          <span className="ml-auto text-[11px] text-[var(--symm-accent-text)]">
                             25 Coins each
                           </span>
                         </div>
-                        <p className="mt-2 text-xs leading-5 text-[#aaa8ba]">
+                        <p className="mt-2 text-xs leading-5 text-[var(--symm-muted)]">
                           Complete the lessons and one new eligible verified
                           practice solve in the module. Each solve can support
                           one module reward.
@@ -2079,10 +2012,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 key={module.id}
                                 className="flex flex-wrap items-center gap-2 py-3 text-xs"
                               >
-                                <span className="min-w-0 flex-1 text-[#d8d5e0]">
+                                <span className="min-w-0 flex-1 text-[var(--symm-text)]">
                                   {module.title}
                                 </span>
-                                <span className="text-[#858293]">
+                                <span className="text-[var(--symm-muted)]">
                                   {awarded
                                     ? "Awarded"
                                     : !done
@@ -2099,7 +2032,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                     !done ||
                                     !eligible
                                   }
-                                  className="rounded-md border border-[#5d5075] px-2.5 py-1.5 text-[#ddcfff] hover:bg-[#34274a] disabled:cursor-not-allowed disabled:opacity-45"
+                                  className="rounded-md border border-[var(--symm-border)] px-2.5 py-1.5 text-[var(--symm-accent-text)] hover:bg-[var(--symm-accent-surface)] disabled:cursor-not-allowed disabled:opacity-45"
                                 >
                                   {awarded
                                     ? "Claimed"
@@ -2117,18 +2050,18 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   {selected && tutorOpen && (
                     <section
                       aria-label="Symm AI tutor"
-                      className={`symm-tutor-panel fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-xl border border-[#45414f] bg-[#1d1d25] shadow-2xl xl:sticky xl:top-5 xl:z-auto xl:h-[min(780px,calc(100vh-2.5rem))] xl:rounded-xl xl:shadow-none ${tutorTall ? "h-[94vh]" : "h-[80vh]"}`}
+                      className={`symm-tutor-panel fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] shadow-2xl xl:sticky xl:top-5 xl:z-auto xl:h-[min(780px,calc(100vh-2.5rem))] xl:rounded-xl xl:shadow-none ${tutorTall ? "h-[94vh]" : "h-[80vh]"}`}
                     >
-                      <div className="flex items-center justify-between gap-2 border-b border-[#34343f] px-4 py-3.5">
+                      <div className="flex items-center justify-between gap-2 border-b border-[var(--symm-border)] px-4 py-3.5">
                         <div className="flex min-w-0 items-center gap-2.5">
-                          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-[#655278] bg-[#28232f]">
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-[var(--symm-border)] bg-[var(--symm-elevated)]">
                             <SymmMark className="size-8 object-contain" />
                           </span>
                           <div className="min-w-0">
-                            <h3 className="text-sm font-semibold text-[#f8f7fc]">
+                            <h3 className="text-sm font-semibold text-[var(--symm-text)]">
                               Symm tutor
                             </h3>
-                            <p className="truncate text-[11px] text-[#aaa8ba]">
+                            <p className="truncate text-[11px] text-[var(--symm-muted)]">
                               {active?.title}
                             </p>
                           </div>
@@ -2142,23 +2075,23 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 ? "Reduce tutor height"
                                 : "Expand tutor height"
                             }
-                            className="rounded-md p-2 text-[#aaa8ba] hover:bg-[#2d2b36] hover:text-white xl:hidden"
+                            className="rounded-md p-2 text-[var(--symm-muted)] hover:bg-[var(--symm-elevated)] hover:text-[var(--symm-text)] xl:hidden"
                           >
                             <Maximize2 size={16} />
                           </button>
                           <button
                             onClick={() => setTutorOpen(false)}
                             aria-label="Close tutor"
-                            className="rounded-md p-2 text-[#aaa8ba] hover:bg-[#2d2b36] hover:text-white"
+                            className="rounded-md p-2 text-[var(--symm-muted)] hover:bg-[var(--symm-elevated)] hover:text-[var(--symm-text)]"
                           >
                             <X size={17} />
                           </button>
                         </div>
                       </div>
-                      <div className="hidden items-center justify-between gap-3 border-b border-[#34343f] px-4 py-2.5 xl:flex">
+                      <div className="hidden items-center justify-between gap-3 border-b border-[var(--symm-border)] px-4 py-2.5 xl:flex">
                         <label
                           htmlFor="symm-tutor-width"
-                          className="text-[11px] text-[#aaa8ba]"
+                          className="text-[11px] text-[var(--symm-muted)]"
                         >
                           Panel width
                         </label>
@@ -2181,11 +2114,11 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           className="symm-range w-28 accent-[#b8a0f4]"
                         />
                       </div>
-                      <p className="px-4 pt-4 text-xs leading-5 text-[#aaa8ba]">Ask about <span className="text-[#ddd3ee]">{active?.title}</span>. We’ll work through it together.</p>
+                      <p className="px-4 pt-4 text-xs leading-5 text-[var(--symm-muted)]">Ask about <span className="text-[var(--symm-text)]">{active?.title}</span>. We’ll work through it together.</p>
                       {active?.status !== "ready" && (
                         <p
                           role="status"
-                          className="mx-4 mt-3 rounded-md border border-[#4b405c] bg-[#292532] px-3 py-2 text-xs leading-5 text-[#cfc0e5]"
+                          className="mx-4 mt-3 rounded-md border border-[var(--symm-border)] bg-[var(--symm-elevated)] px-3 py-2 text-xs leading-5 text-[var(--symm-accent-text)]"
                         >
                           Your lesson is being prepared. Tutoring opens when the
                           content is ready.
@@ -2220,7 +2153,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                                 Boolean(busy) || active?.status !== "ready"
                               }
                               onClick={() => void askTutor(prompt)}
-                              className="rounded-full border border-[#45414f] bg-[#25242e] px-3 py-2 text-left text-xs text-[#e4ddec] transition-colors hover:border-[#8772a7] hover:bg-[#302b3a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] disabled:opacity-45"
+                              className="rounded-full border border-[var(--symm-border)] bg-[var(--symm-elevated)] px-3 py-2 text-left text-xs text-[var(--symm-text)] transition-colors hover:border-[#8772a7] hover:bg-[var(--symm-elevated)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b8a0f4] disabled:opacity-45"
                             >
                               {label}
                             </button>
@@ -2235,16 +2168,16 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           detail.conversation.map((item) => (
                             <div
                               key={item.id}
-                              className={`symm-tutor-message rounded-lg p-3.5 text-[13px] leading-6 ${item.role === "user" ? "ml-5 bg-[#302a3c]" : "mr-5 bg-[#25252b]"}`}
+                              className={`symm-tutor-message rounded-lg p-3.5 text-[13px] leading-6 ${item.role === "user" ? "ml-5 bg-[var(--symm-elevated)]" : "mr-5 bg-[var(--symm-elevated)]"}`}
                             >
-                              <p className="mb-2 text-[10px] uppercase tracking-[.1em] text-[#b8a0f4]">
+                              <p className="mb-2 text-[10px] uppercase tracking-[.1em] text-[var(--symm-accent-text)]">
                                 {item.role === "user" ? "You" : "Symm AI"}
                               </p>
                               <RichText>{item.message}</RichText>
                             </div>
                           ))
                         ) : (
-                          <p className="text-xs leading-5 text-[#858293]">
+                          <p className="text-xs leading-5 text-[var(--symm-muted)]">
                             Choose a starting point above, or write your own
                             question below.
                           </p>
@@ -2255,7 +2188,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           event.preventDefault();
                           void askTutor(message);
                         }}
-                        className="border-t border-[#34343f] p-3"
+                        className="border-t border-[var(--symm-border)] p-3"
                       >
                         {error && (
                           <p
@@ -2268,7 +2201,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                         <label htmlFor="symm-message" className="sr-only">
                           Ask the tutor
                         </label>
-                        <div className="symm-tutor-composer flex items-center gap-2 rounded-xl border border-[#45414f] bg-[#181820] px-2 focus-within:border-[#9e83e7]">
+                        <div className="symm-tutor-composer flex items-center gap-2 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] px-2 focus-within:border-[#9e83e7]">
                           <input
                             id="symm-message"
                             value={message}
@@ -2318,10 +2251,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
           if (!open) setDeletePath(null);
         }}
       >
-        <AlertDialogContent className="border-[#45414f] bg-[#1d1d25] text-[#f8f7fc]">
+        <AlertDialogContent className="border-[var(--symm-border)] bg-[var(--symm-surface)] text-[var(--symm-text)]">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this learning path?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[#aaa8ba]">
+            <AlertDialogDescription className="text-[var(--symm-muted)]">
               The curriculum, lessons, tutor conversation, and study progress
               for “{deletePath?.title}” will be permanently removed. Verified
               problem solves and Coins awards remain in your account.
@@ -2336,7 +2269,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             </p>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-[#45414f] bg-transparent text-[#e9e6f0] hover:bg-[#292831]">
+            <AlertDialogCancel className="border-[var(--symm-border)] bg-transparent text-[var(--symm-text)] hover:bg-[var(--symm-elevated)]">
               Keep path
             </AlertDialogCancel>
             <AlertDialogAction

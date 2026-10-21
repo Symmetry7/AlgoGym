@@ -10,5 +10,5 @@ import { AuthGate } from "@/components/auth/AuthGate";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
-  return <QueryClientProvider client={queryClient}><ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}><AuthProvider><TooltipProvider><AuthGate>{children}</AuthGate><Toaster /></TooltipProvider></AuthProvider></ThemeProvider></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange><AuthProvider><TooltipProvider><AuthGate>{children}</AuthGate><Toaster /></TooltipProvider></AuthProvider></ThemeProvider></QueryClientProvider>;
 }

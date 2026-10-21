@@ -1512,6 +1512,16 @@
 .hero-wave-letter svg { display:block; width:100%; height:100%; overflow:visible; fill:none; stroke:#ad89e8; stroke-width:6; stroke-linecap:square; stroke-linejoin:miter; }
 .hero-workspace-text { color:#bda5ef; background:linear-gradient(105deg,#ab86e5 0%,#c6b2f2 60%,#ae96d9 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 
+.landing-lab-pricing { border-top: 1px solid #28242d; background: #100e13; }
+.landing-lab-pricing-inner { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(40px, 8vw, 120px); width: min(1120px, calc(100% - 96px)); margin: auto; padding: clamp(70px, 9vw, 130px) 0; }
+.landing-lab-pricing h2 { margin: 12px 0 16px; color: #f4eef5; font-size: clamp(30px, 3vw, 43px); letter-spacing: -.045em; line-height: 1.13; }
+.landing-lab-pricing p:not(.landing-kicker) { max-width: 440px; color: #aaa2b0; font-size: 15px; line-height: 1.65; }
+.landing-lab-pricing a { display: inline-flex; align-items: center; gap: 9px; margin-top: 24px; color: #d4bffa; font-size: 13px; font-weight: 600; }
+.landing-lab-pricing a:hover { color: white; }
+.landing-lab-pricing a:focus-visible { outline: 2px solid #b8a0f4; outline-offset: 4px; }
+.landing-footer { flex-wrap: wrap; }
+@media (max-width: 700px) { .landing-lab-pricing-inner { grid-template-columns: 1fr; width: calc(100% - 40px); } }
+
 /* Fine flowing ribbons fill the quiet areas below the hero without covering content. */
 .landing-feature-sections { position:relative; isolation:isolate; }
 .landing-wave-backdrop { position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }

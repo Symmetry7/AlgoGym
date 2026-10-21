@@ -1,5 +1,5 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -16,6 +16,7 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  RefreshCw,
   Settings,
   Share2,
   Trophy,
@@ -40,16 +41,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
+import { SymmMark } from "@/components/brand/SymmMark";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 const primary = [
   ["/dashboard", "Dashboard", LayoutDashboard],
   ["/problems", "Problems", Compass],
+  ["/upsolve", "Upsolve", RefreshCw],
   ["/workspace", "My Workspace", BookOpen],
   ["/notes", "My Notes", FileText],
-  ["/training", "Training", GraduationCap],
   ["/statistics", "Statistics", Activity],
   ["/contests", "Contests", CalendarDays],
+] as const;
+const learning = [
+  ["/training/symm", "Symm AI", BookOpen],
+  ["/training", "Training Gym", GraduationCap],
+  ["/resources", "Resources", FileText],
 ] as const;
 const community = [
   ["/leaderboards", "Leaderboards", Trophy],
@@ -69,6 +76,9 @@ export function Layout({
   const [compact, setCompact] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  useEffect(() => {
+    setCompact(window.localStorage.getItem("algogym-sidebar-compact") === "true");
+  }, []);
   const name =
     account.data?.profile.display_name ||
     user?.user_metadata.full_name ||
@@ -107,6 +117,8 @@ export function Layout({
           const active =
             href === "/workspace"
               ? pathname === "/workspace" || pathname === "/sheets"
+              : href === "/training"
+                ? pathname === "/training"
               : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
@@ -118,12 +130,13 @@ export function Layout({
               className={cn(
                 "flex h-10 items-center gap-3 rounded-md px-3 text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active
-                  ? "bg-foreground text-background"
+                  ? href === "/training/symm" ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-200" : "bg-foreground text-background"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                href === "/training/symm" && !active && "font-medium text-foreground",
                 small && "justify-center px-0",
               )}
             >
-              <Icon size={17} strokeWidth={1.7} />
+              {href === "/training/symm" ? <SymmMark className="size-[19px] rounded object-contain" /> : <Icon size={17} strokeWidth={1.7} />}
               <span className={small ? "sr-only" : ""}>{label}</span>
             </Link>
           );
@@ -145,6 +158,7 @@ export function Layout({
         className="flex-1 space-y-7 overflow-y-auto px-3 py-6"
       >
         {group("Workspace", primary, small)}
+        {group("Learning", learning, small)}
         {group("Community", community, small)}
         {group(
           "Account",
@@ -156,6 +170,7 @@ export function Layout({
         )}
       </nav>
       <div className="border-t p-3">
+        {!small && <Link href="/pricing" className="mb-2 block rounded-xl border border-border bg-muted/50 p-3 text-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><strong className="block text-foreground">Go further with AlgoGym Pro</strong><span className="mt-1 block text-muted-foreground">Explore advanced training and Symm AI plans.</span><span className="mt-2 block font-medium text-foreground">Explore Pro →</span></Link>}
         {user ? (
           <button
             disabled={signingOut}
@@ -222,7 +237,7 @@ export function Layout({
             </Sheet>
             <button
               className="hidden rounded p-1.5 text-muted-foreground hover:bg-muted lg:block"
-              onClick={() => setCompact(!compact)}
+              onClick={() => { const next = !compact; setCompact(next); window.localStorage.setItem("algogym-sidebar-compact", String(next)); }}
               aria-label={compact ? "Expand sidebar" : "Collapse sidebar"}
             >
               {compact ? (
@@ -232,7 +247,7 @@ export function Layout({
               )}
             </button>
             <p className="truncate text-xs text-muted-foreground">
-              {[...primary, ...community].find(
+              {[...primary, ...learning, ...community].find(
                 ([href]) => href === pathname,
               )?.[1] ??
                 (pathname === "/profile"
@@ -243,6 +258,7 @@ export function Layout({
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/pricing" className="hidden rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:inline-flex">Explore Pro ↗</Link>
             <ThemeToggle />
             {onOpenHandleModal && (
               <Button variant="outline" size="sm" onClick={onOpenHandleModal}>

@@ -1,0 +1,24 @@
+.lesson-rich-text { color: #c8cbd3; font-size: 15px; line-height: 1.85; overflow-wrap: anywhere; }
+.lesson-rich-text > :first-child { margin-top: 0; }
+.lesson-rich-text > :last-child { margin-bottom: 0; }
+.lesson-rich-text p { margin: 1em 0; }
+.lesson-rich-text h1, .lesson-rich-text h2, .lesson-rich-text h3, .lesson-rich-text h4 { color: #f5f7fa; font-weight: 600; line-height: 1.35; margin: 1.6em 0 .65em; letter-spacing: -.025em; }
+.lesson-rich-text h1 { font-size: 1.7em; }.lesson-rich-text h2 { font-size: 1.4em; }.lesson-rich-text h3 { font-size: 1.17em; }
+.lesson-rich-text ul, .lesson-rich-text ol { margin: 1em 0; padding-left: 1.6em; }
+.lesson-rich-text ul { list-style: disc; }.lesson-rich-text ol { list-style: decimal; }
+.lesson-rich-text li { padding-left: .3em; margin: .5em 0; }
+.lesson-rich-text li::marker { color: #a997d0; }
+.lesson-rich-text strong { color: #f5f7fa; font-weight: 650; }
+.lesson-rich-text a { color: #c4b4f0; text-decoration: underline; text-underline-offset: 3px; }
+.lesson-rich-text :not(pre) > code { padding: .15em .4em; border: 1px solid #3a3d48; border-radius: 5px; background: #252733; color: #d7c8fa; font-size: .87em; }
+.lesson-rich-text blockquote { margin: 1.4em 0; border-left: 3px solid #a997d0; padding: .3em 1.2em; background: #242330; }
+.lesson-table-scroll { max-width: 100%; overflow-x: auto; margin: 1.5em 0; border: 1px solid #34343f; border-radius: 9px; }
+.lesson-rich-text table { border-collapse: collapse; width: 100%; font-size: .9em; }
+.lesson-rich-text th, .lesson-rich-text td { padding: .7em 1em; border-bottom: 1px solid #34343f; text-align: left; }
+.lesson-rich-text th { color: #f5f7fa; background: #24252e; font-weight: 600; }
+.lesson-rich-text .katex-display { overflow-x: auto; overflow-y: hidden; padding: 1em .5em; margin: 1.4em 0; background: #20212a; border-radius: 8px; }
+.lesson-code pre { margin: 0; }.lesson-code code { font-size: inherit; }
+.light .lesson-rich-text { color: #474d59; }.light .lesson-rich-text :is(h1,h2,h3,h4,strong,th) { color: #202530; }
+.light .lesson-rich-text a { color: #634293; }.light .lesson-rich-text :not(pre) > code { color: #634293; background: #eeeaf4; border-color: #dcd5e8; }
+.light .lesson-rich-text blockquote, .light .lesson-rich-text th, .light .lesson-rich-text .katex-display { background: #f0edf5; }
+.light .lesson-table-scroll, .light .lesson-rich-text td, .light .lesson-rich-text th { border-color: #dedee6; }

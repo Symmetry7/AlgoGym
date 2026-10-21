@@ -36,6 +36,7 @@ const routes: Record<string, () => Promise<RouteModule>> = {
   symm: () => import("@/../server/next-api/symm"),
   sync: () => import("@/../server/next-api/sync"),
   tracker: () => import("@/../server/next-api/tracker"),
+  upsolve: () => import("@/../server/next-api/upsolve"),
 };
 
 export const dynamic = "force-dynamic";

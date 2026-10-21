@@ -26,6 +26,7 @@ import {
   secondsRemaining,
 } from "@/lib/training";
 import type { Problem } from "@/lib/types";
+import { ThemeRounds } from "./ThemeRounds";
 type Session = {
   problemIds: string[];
   trackId: string;
@@ -38,6 +39,7 @@ const EMPTY_SESSION: Session = {
   deadline: null,
   pausedSeconds: 7200,
 };
+const LEVEL_NAMES = ["Foundations", "Core Algorithms", "Intermediate Problem Solving", "Advanced Algorithms", "Expert Competitive Programming"] as const;
 export default function TrainingGym({
   selectedTrackId,
   onOpenHandleModal,
@@ -49,6 +51,7 @@ export default function TrainingGym({
   const [requesting, setRequesting] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [minutes, setMinutes] = useState(120);
+  const [trainingView, setTrainingView] = useState<"rounds" | "tracks">(selectedTrackId ? "tracks" : "rounds");
   const key = `algogym:training-session:${user?.id ?? "anonymous"}`;
   const [session, setSession] = usePersistentState<Session>(key, EMPTY_SESSION);
   const beforeSync = useRef<{
@@ -187,7 +190,7 @@ export default function TrainingGym({
                 "Choose a focus. Solve at the source. Track verified progress."}
             </p>
           </div>
-          <Button
+          <div className="flex flex-wrap items-center gap-2"><Link href="/resources" className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-xs font-medium transition-colors hover:bg-muted">Learning resources <ArrowRight size={14} /></Link><Link href="/upsolve" className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-xs font-medium transition-colors hover:bg-muted">Upsolve attempted problems <ArrowRight size={14} /></Link><Button
             variant="outline"
             className="bg-transparent"
             onClick={() => void sync()}
@@ -206,7 +209,7 @@ export default function TrainingGym({
             {requesting || tracker.isSyncing
               ? "Synchronizing…"
               : "Check for solves"}
-          </Button>
+          </Button></div>
         </header>
         {error && (
           <p
@@ -245,6 +248,11 @@ export default function TrainingGym({
               </Link>
             </div>
           )}
+        <nav aria-label="Training views" className="flex items-center gap-6 border-b text-sm">
+          {([['rounds','Themed rounds'],['tracks','Topic tracks']] as const).map(([value,label])=><button key={value} type="button" onClick={()=>setTrainingView(value)} aria-current={trainingView===value?'page':undefined} className={`border-b-2 px-1 pb-3 transition-colors ${trainingView===value?'border-primary text-foreground':'border-transparent text-muted-foreground hover:text-foreground'}`}>{label}</button>)}
+          <Link href="/sheets" className="pb-3 text-muted-foreground hover:text-foreground">Practice sheets</Link>
+        </nav>
+        {trainingView === "rounds" ? <ThemeRounds userId={user?.id??'anonymous'} problems={catalog.problems} solves={tracker.data?.solves??[]} solvedIds={tracker.data?.solvedIds??[]} ready={Boolean(tracker.data?.historyComplete && tracker.data.accounts.some(a=>a.platform==='codeforces'))} syncing={tracker.isSyncing||requesting} onSync={()=>void sync()}/> : <>
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
             [
@@ -342,11 +350,11 @@ export default function TrainingGym({
             )}
           </section>
         ) : (
-          <section
-            aria-label="Training tracks"
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {TRAINING_TRACKS.map((item) => {
+          <section aria-label="Training levels" className="space-y-8">
+            {LEVEL_NAMES.map((levelName, levelIndex) => <div key={levelName}>
+              <div className="mb-3 flex items-baseline gap-3"><span className="text-xs font-semibold text-primary">LEVEL {String(levelIndex + 1).padStart(2, "0")}</span><h2 className="text-lg font-semibold tracking-tight">{levelName}</h2></div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {TRAINING_TRACKS.filter((item) => item.level === levelIndex + 1).map((item) => {
               const rows = trackProblems(catalog.problems, item.id);
               const done = rows.filter((problem) =>
                 solved.has(problem.id),
@@ -416,6 +424,8 @@ export default function TrainingGym({
                 </article>
               );
             })}
+              </div>
+            </div>)}
           </section>
         )}
         <section className="rounded-lg border bg-card p-5 sm:p-6">
@@ -504,6 +514,7 @@ export default function TrainingGym({
             </div>
           )}
         </section>
+        </>}
         <p className="text-xs leading-6 text-muted-foreground">
           Each eligible Codeforces problem can earn coins once after account
           synchronization, including problems solved before you joined.

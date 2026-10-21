@@ -12,4 +12,5 @@ export async function proxy(request: NextRequest) {
   await supabase.auth.getUser();
   return response;
 }
-export const config = { matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"] };
+// Next internals include the development WebSocket, not only static assets.
+export const config = { matcher: ["/((?!api|_next/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"] };

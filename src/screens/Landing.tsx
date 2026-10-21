@@ -29,6 +29,7 @@ const links = [
   ["Training", "/training"],
   ["Leaderboards", "/leaderboards"],
   ["Communities", "/societies"],
+  ["Pricing", "/pricing"],
 ] as const;
 
 function GoogleStart() {
@@ -171,16 +172,35 @@ export default function Landing() {
             </div>
           </section>
         </section>
+        <SymmShowcase />
         <LandingFeatures>
           <GoogleStart />
         </LandingFeatures>
-        <SymmShowcase />
+        <section className="landing-lab-pricing" aria-label="Plans and the team behind AlgoGym">
+          <div className="landing-lab-pricing-inner">
+            <div>
+              <p className="landing-kicker">Go further</p>
+              <h2>Choose your pace.</h2>
+              <p>Start with Symm AI and structured practice. See the planned Pro and Premium learning options.</p>
+              <Link href="/pricing">Explore plans <ArrowRight size={17} /></Link>
+            </div>
+            <div>
+              <p className="landing-kicker">Our lab</p>
+              <h2>Built with InseLabs.</h2>
+              <p>AlgoGym is shaped by a small technology team focused on thoughtful learning tools.</p>
+              <a href="https://www.inselabs.com/" target="_blank" rel="noopener noreferrer">Visit InseLabs <ArrowUpRight size={17} /></a>
+            </div>
+          </div>
+        </section>
       </main>
       <footer className="landing-footer">
         <Link href="/" aria-label="AlgoGym home">
           <AlgoGymLogo className="w-[104px]" />
         </Link>
         <span>A workspace for competitive programmers.</span>
+        <Link href="/pricing">Pricing</Link>
+        <a href="https://www.inselabs.com/" target="_blank" rel="noopener noreferrer">Our Lab</a>
+        <a href="https://www.linkedin.com/company/inselabs/" target="_blank" rel="noopener noreferrer">Contact</a>
         <Link href="/privacy">Privacy</Link>
       </footer>
     </div>

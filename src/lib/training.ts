@@ -14,13 +14,14 @@ export function chakraFor(provider: string, difficulty: number | string | undefi
   return null;
 }
 export const TRAINING_TRACKS = [
-  { id: "fundamentals", title: "CP Fundamentals", description: "Build confidence with the essentials.", min: 800, max: 1100, tags: [] },
-  { id: "implementation", title: "Implementation", description: "Turn a clear idea into correct code.", min: 800, max: 1600, tags: ["implementation"] },
-  { id: "greedy", title: "Greedy Algorithms", description: "Learn when a local choice is enough.", min: 1000, max: 1800, tags: ["greedy"] },
-  { id: "binary-search", title: "Binary Search", description: "Search the answer space precisely.", min: 1200, max: 2000, tags: ["binary search"] },
-  { id: "dynamic-programming", title: "Dynamic Programming", description: "Recognize states, transitions, and repeated work.", min: 1200, max: 2400, tags: ["dp"] },
-  { id: "graphs-trees", title: "Graphs and Trees", description: "Explore structure, paths, and connectivity.", min: 1200, max: 2400, tags: ["graphs", "trees"] },
-  { id: "advanced", title: "Advanced Problem Solving", description: "Stretch beyond familiar patterns.", min: 2200, max: 3500, tags: [] },
+  { id: "fundamentals", level: 1, title: "CP Fundamentals", description: "Build confidence with the essentials.", min: 800, max: 1100, tags: [] },
+  { id: "implementation", level: 1, title: "Implementation", description: "Turn a clear idea into correct code.", min: 800, max: 1600, tags: ["implementation"] },
+  { id: "greedy", level: 2, title: "Greedy Algorithms", description: "Learn when a local choice is enough.", min: 1000, max: 1800, tags: ["greedy"] },
+  { id: "binary-search", level: 2, title: "Binary Search", description: "Search the answer space precisely.", min: 1200, max: 2000, tags: ["binary search"] },
+  { id: "dynamic-programming", level: 3, title: "Dynamic Programming", description: "Recognize states, transitions, and repeated work.", min: 1200, max: 2400, tags: ["dp"] },
+  { id: "graphs-trees", level: 3, title: "Graphs and Trees", description: "Explore structure, paths, and connectivity.", min: 1200, max: 2400, tags: ["graphs", "trees"] },
+  { id: "advanced", level: 4, title: "Advanced Problem Solving", description: "Stretch beyond familiar patterns.", min: 2200, max: 2799, tags: [] },
+  { id: "expert", level: 5, title: "Expert Competitive Programming", description: "Work through the most demanding rated problems.", min: 2800, max: 3500, tags: [] },
 ] as const;
 export function trackProblems(problems: Problem[], id: string) {
   const track = TRAINING_TRACKS.find((item) => item.id === id);

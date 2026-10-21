@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { SymmMark } from "@/components/brand/SymmMark";
 import "@/screens/symm-showcase.css";
 
 type Language = "cpp" | "java" | "python";
@@ -39,7 +40,7 @@ export default function SymmShowcase() {
         <h2 id="symm-showcase-title">
           Learn competitive programming <span>from first principles.</span>
         </h2>
-        <p>Ask anything. Build understanding. Master every concept.</p>
+        <p>Understand the logic. Master the patterns. Solve with confidence.</p>
         <div className="symm-showcase-action">
           {user ? (
             <Link href="/training/symm">
@@ -74,12 +75,21 @@ export default function SymmShowcase() {
           )}
         </div>
       </div>
+      <figure className="symm-film">
+        <video controls playsInline preload="none" poster="/media/symm-intro-poster.webp" aria-label="Meet Symm AI, a 42-second silent product introduction">
+          <source src="/media/symm-intro.webm" type="video/webm" />
+          <track kind="captions" src="/media/symm-intro.vtt" srcLang="en" label="English" />
+          Your browser cannot play this video. Read the introduction below.
+        </video>
+        <figcaption>Meet Symm AI <span>42 seconds · silent product demonstration</span></figcaption>
+        <details><summary>Read video transcript</summary><p>Learning algorithms shouldn’t feel like guesswork. Meet Symm AI: a question becomes a journey. Start with your question and choose C++17, Java 17, or Python 3. Explore prerequisites, modules, lessons, and practice. Understand why it works through reasoning, worked examples, and Socratic questions. Turn understanding into deliberate practice. Learn competitive programming from first principles.</p></details>
+      </figure>
       <div
         className="symm-preview"
         aria-label="Interactive preview of a Symm AI learning path"
       >
         <div className="symm-preview-top">
-          <span className="symm-preview-mark">✳</span>
+          <span className="symm-preview-mark"><SymmMark className="size-6 rounded-md object-contain" /></span>
           <span>SYMM AI</span>
           <span className="symm-preview-demo">PRODUCT PREVIEW</span>
         </div>

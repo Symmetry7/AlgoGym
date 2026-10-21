@@ -40,7 +40,7 @@ export const lessonSchema = z.object({
       }),
     )
     .min(5)
-    .max(10),
+    .max(12),
   questions: z.array(z.string().trim().min(10).max(500)).min(2).max(6),
   takeaways: z.array(short).min(2).max(8),
   commonMistakes: z.array(short).min(2).max(6),
@@ -335,12 +335,12 @@ export async function generateLesson(
     ]),
   ].join(" ");
   const wordCount = text.trim().split(/\s+/).length;
-  if (wordCount >= 900 || base.sections.length >= 10) return base;
+  if (wordCount >= 900) return base;
   // A second, narrow request deepens the lesson without delaying the roadmap.
   // Keep the validated base if the optional expansion fails.
   try {
     const extra = await generate(
-      "Add substantive, nonrepetitive first-principles teaching to this lesson. Return JSON with sections: 1-2 objects, each with heading, detailed explanation (aim 250-350 words), and optional concrete example. Focus on reasoning or a worked edge case missing from the existing lesson. Do not repeat its introduction, code, or existing section headings. Use Markdown and valid LaTeX where relevant. Do not include code or unverified external claims.",
+      "Add substantive, nonrepetitive first-principles teaching to this lesson. Return JSON with sections: 2 objects, each with heading, detailed explanation (aim 300-450 words), and optional concrete example. Develop a missing derivation, worked edge case, or correctness argument. Do not repeat its introduction, code, or existing section headings. Use Markdown and valid LaTeX where relevant. Do not include code or unverified external claims.",
       JSON.stringify({
         path,
         module,
@@ -360,7 +360,7 @@ export async function generateLesson(
       ...base,
       sections: [
         ...base.sections,
-        ...extra.sections.slice(0, 10 - base.sections.length),
+        ...extra.sections.slice(0, 12 - base.sections.length),
       ],
     });
     return merged.success ? merged.data : base;
