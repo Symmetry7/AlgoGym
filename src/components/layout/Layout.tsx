@@ -60,6 +60,7 @@ const primary = [
 const learning = [
   ["/training/symm", "Symm AI", BookOpen],
   ["/training", "Training Gym", GraduationCap],
+  ["/interview-preparations", "Interview Preparations", GraduationCap],
   ["/resources", "Resources", FileText],
 ] as const;
 const community = [
