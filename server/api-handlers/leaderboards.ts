@@ -17,6 +17,7 @@ const schema = z
     collegeId: z.string().uuid().optional(),
     societyId: z.string().uuid().optional(),
     offset: z.coerce.number().int().min(0).max(100000).default(0),
+    period: z.enum(["week", "month", "all"]).default("all"),
   })
   .strict();
 export default async function handler(req: ApiRequest, res: ApiResponse) {
@@ -33,7 +34,16 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const { client, flushCookies } = serverSupabase(req, res);
   try {
     const value = parsed.data;
-    const { data, error } = await client.rpc("read_leaderboard", {
+    if (value.period !== "all" && (value.scope !== "individual" || value.metric !== "unique_solves" || value.country))
+      return res.status(400).json({ error: "Time periods are available for verified individual solves only." });
+    const periodSolves = value.period !== "all" && value.scope === "individual" && value.metric === "unique_solves" && !value.country;
+    const { data, error } = await client.rpc(periodSolves ? "read_verified_solve_leaderboard" : "read_leaderboard", periodSolves ? {
+      p_period: value.period,
+      p_college: value.collegeId ?? null,
+      p_society: value.societyId ?? null,
+      p_offset: value.offset,
+      p_limit: 50,
+    } : {
       p_scope: value.scope,
       p_metric: value.metric,
       p_country: value.country ?? null,

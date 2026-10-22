@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Medal, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { CollegeAutocomplete } from "@/components/auth/CollegeAutocomplete";
@@ -41,18 +41,39 @@ const metrics = [
 export default function Leaderboards() {
   const { user } = useAuth();
   const account = useAccount();
+  const preference = useQuery({ queryKey:["leaderboard-college",user?.id], queryFn:()=>jsonRequest<{college:College|null}>("/api/leaderboards/preference"), enabled:Boolean(user), retry:1 });
   const [scope, setScope] = useState("individual");
   const [metric, setMetric] = useState("chakra");
+  const [period, setPeriod] = useState("all");
   const [filter, setFilter] = useState("global");
   const [country, setCountry] = useState("IN");
   const [college, setCollege] = useState<College | null>(null);
   const [society, setSociety] = useState("");
   const [page, setPage] = useState(0);
+  const [preferenceError, setPreferenceError] = useState("");
+  const selectedInitialCollege = useRef(false);
+  useEffect(() => {
+    if (selectedInitialCollege.current || (!preference.data && !(preference.isError && account.data))) return;
+    selectedInitialCollege.current = true;
+    const saved = account.data?.profile.colleges;
+    setCollege(preference.data?.college ?? (account.data?.profile.college_id && saved ? { ...saved, id: account.data.profile.college_id } : null));
+    setFilter("college");
+  }, [preference.data, preference.isError, account.data]);
+  const selectCollege = async (value: College | null) => {
+    setCollege(value);
+    setPage(0);
+    setPreferenceError("");
+    if (!user) return;
+    try { await jsonRequest("/api/leaderboards/preference", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({collegeId:value?.id??null}) }); }
+    catch (reason) { setPreferenceError(reason instanceof Error ? reason.message : "College selection could not be saved."); }
+  };
   const params = new URLSearchParams({
     scope,
     metric,
     offset: String(page * 50),
   });
+  const supportsPeriod = scope === "individual" && metric === "unique_solves" && filter !== "country";
+  if (supportsPeriod) params.set("period", period);
   if (filter === "country") params.set("country", country);
   if (filter === "college" && college) params.set("collegeId", college.id);
   if (filter === "society" && society) params.set("societyId", society);
@@ -108,6 +129,7 @@ export default function Leaderboards() {
             Real, verified progress. Separate metrics. Transparent eligibility.
           </p>
         </header>
+        {preferenceError && <p role="alert" className="text-xs text-destructive">{preferenceError}</p>}
         <nav
           className="flex gap-1 overflow-x-auto border-b pb-3"
           aria-label="Ranked entities"
@@ -145,6 +167,7 @@ export default function Leaderboards() {
             </button>
           ))}
         </div>
+        {supportsPeriod && <div className="flex gap-1" aria-label="Time period">{[["week","This week"],["month","This month"],["all","All time"]].map(([value,label])=><button key={value} aria-pressed={period===value} onClick={()=>{setPeriod(value);setPage(0);}} className={`rounded-md border px-3 py-2 text-xs ${period===value?"border-primary/40 bg-primary/10 text-primary":"text-muted-foreground hover:bg-muted"}`}>{label}</button>)}</div>}
         <div className="flex flex-wrap items-start gap-3">
           <label>
             <span className="mb-2 block text-[11px] text-muted-foreground">
@@ -195,10 +218,7 @@ export default function Leaderboards() {
               </p>
               <CollegeAutocomplete
                 value={college}
-                onSelect={(value) => {
-                  setCollege(value);
-                  setPage(0);
-                }}
+                onSelect={(value) => void selectCollege(value)}
               />
             </div>
           )}
@@ -270,57 +290,15 @@ export default function Leaderboards() {
             {data.podium.length > 0 && (
               <section
                 aria-label="Top ranked participants"
-                className="grid gap-3 sm:grid-cols-3"
+                className={`grid gap-px overflow-hidden rounded-lg border bg-border ${data.podium.length === 3 ? "sm:grid-cols-3" : data.podium.length === 2 ? "sm:grid-cols-2" : ""}`}
               >
-                {[...data.podium]
-                  .sort(
-                    (a, b) =>
-                      (a.rank === 2 ? 0 : a.rank === 1 ? 1 : 2) -
-                      (b.rank === 2 ? 0 : b.rank === 1 ? 1 : 2),
-                  )
-                  .map((entry) => (
-                    <article
-                      key={entry.rank}
-                      className={`rounded-lg border bg-card p-5 ${entry.rank === 1 ? "border-primary/45 sm:-mt-1 sm:mb-1" : ""}`}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
-                          {entry.name.slice(0, 1).toUpperCase()}
-                        </span>
-                        {entry.rank === 1 ? (
-                          <Medal size={25} className="text-amber-400" />
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            #{entry.rank}
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="mt-4 truncate text-sm font-medium">
-                        {entryName(entry)}
-                      </h2>
-                      <p className="mt-1 truncate text-[10px] text-muted-foreground">
-                        {entry.college ??
-                          (entry.username
-                            ? `@${entry.username}`
-                            : "Eligible community")}
-                      </p>
-                      <div className="mt-5 flex items-end justify-between">
-                        <div>
-                          <p className="text-[10px] text-muted-foreground">
-                            {unit}
-                          </p>
-                          <p className="mt-1 text-2xl font-semibold tabular-nums">
-                            {Number(entry.score).toLocaleString(undefined, {
-                              maximumFractionDigits: 2,
-                            })}
-                          </p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          #{entry.rank}
-                        </span>
-                      </div>
-                    </article>
-                  ))}
+                {data.podium.map((entry) => (
+                  <article key={entry.rank} className="flex min-w-0 items-center gap-3 bg-card px-4 py-4">
+                    <span className={`grid size-8 shrink-0 place-items-center rounded-full border font-mono text-xs ${entry.rank === 1 ? "border-amber-500/40 text-amber-400" : "text-muted-foreground"}`}>{entry.rank}</span>
+                    <div className="min-w-0 flex-1"><p className="truncate text-xs font-medium">{entryName(entry)}</p><p className="truncate text-[10px] text-muted-foreground">{entry.college ?? (entry.username ? `@${entry.username}` : "Community")}</p></div>
+                    <span className="shrink-0 font-mono text-sm font-medium tabular-nums">{Number(entry.score).toLocaleString(undefined,{maximumFractionDigits:2})}</span>
+                  </article>
+                ))}
               </section>
             )}
             {data.myEntry ? (

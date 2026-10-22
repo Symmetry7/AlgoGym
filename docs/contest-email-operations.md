@@ -1,0 +1,9 @@
+# Contest and email operations
+
+The society contest builder accepts Codeforces IDs and URLs only. New contests record a verified Codeforces handle at registration. Selected problems remain private in database RPCs until the configured start time; society admins and explicitly approved contest editors may preview them. Existing historical contests keep their stored problems and manual-review records.
+
+`/api/jobs/sync` processes profile jobs, Codeforces contest submissions, and the transactional email outbox. It requires `CRON_SECRET`. Codeforces history is fetched in bounded 200-submission pages with a persistent cursor; submitted timestamps and contest ID/index determine eligibility. The current Vercel cron runs once daily, so standings and emails are **not near-realtime** in production on that schedule. Contest editors can run a bounded sync from the contest manager. A higher-frequency trusted scheduler is required for live standings and timely email delivery. Vercel Hobby cron cannot run more than once daily.
+
+The Resend worker needs server-only `RESEND_API_KEY` and `RESEND_FROM_EMAIL`. With `onboarding@resend.dev`, set `RESEND_TEST_RECIPIENT` to the authorized development recipient; other queued emails are deferred. Use a newly rotated key because an earlier one was shared in conversation. The app origin in email links is `https://algogym.vercel.app`. Production sending to general users requires a separately owned and verified sender domain. In-app notifications work independently of email delivery. Supabase Auth still owns confirmation and recovery emails; configuring Resend for those requires Supabase Auth custom SMTP settings.
+
+Earned Coins and AI learning-path credits remain separate. The exchange is 1,000 Coins for 10 AI credits or 10,000 Coins for 100 AI credits. The exchange RPC locks each user, records an idempotent operation key, and updates both ledgers and balances in one transaction.

@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { processSyncJobs } from "../../sync-worker";
 import { adminSupabase } from "../../admin";
 import { recoverSymmPathJobs } from "../../symm-jobs";
+import { syncDueSocietyContests } from "../../society-contest-sync";
+import { processSocietyEmailOutbox } from "../../society-email";
 export const maxDuration = 60;
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -20,12 +22,14 @@ export async function GET(request: NextRequest) {
       { p_limit: 100 },
     );
     if (error) throw error;
-    const [sync, symm] = await Promise.all([
+    const [sync, symm, contests, emails] = await Promise.all([
       processSyncJobs(3),
       recoverSymmPathJobs(),
+      syncDueSocietyContests(),
+      processSocietyEmailOutbox(),
     ]);
     return NextResponse.json(
-      { queued, ...sync, ...symm },
+      { queued, ...sync, ...symm, contests, emails },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch {

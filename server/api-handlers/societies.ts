@@ -43,7 +43,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             error:
               "This society is unavailable, your membership is restricted, or the join limit was reached.",
           });
-      return res.status(200).json({ membershipId: data, status: "active" });
+      const membership = await client
+        .from("memberships")
+        .select("status")
+        .eq("id", data)
+        .eq("user_id", user.id)
+        .single();
+      if (membership.error) throw membership.error;
+      return res.status(200).json({ membershipId: data, status: membership.data.status });
     }
     const params = new URL(req.url ?? "/", "http://localhost").searchParams;
     const slug = params.get("slug");
@@ -75,6 +82,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const { data, error, count } = await query;
     if (error) throw error;
     const ids = (data ?? []).map((item) => item.id);
+    // Older database deployments remain readable until the additive migration lands.
+    const policyResult = ids.length
+      ? await client.from("societies").select("id,join_policy").in("id", ids)
+      : { data: [] as Array<{ id: string; join_policy: string }> };
+    const policies = new Map((policyResult.data ?? []).map((item) => [item.id, item.join_policy]));
     const summary = await client.rpc("public_society_summary", {
       p_societies: ids,
     });
@@ -104,6 +116,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       .json({
         societies: (data ?? []).map((item) => ({
           ...item,
+          join_policy: policies.get(item.id) ?? "open",
           summary: summary.data?.find((entry: any) => entry.id === item.id) ?? {
             members: 0,
             eligible_members: 0,

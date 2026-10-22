@@ -1,274 +1,75 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, Bell, Shield, Users, Trophy } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
 import { SocietyInvitePanel } from "@/components/auth/SocietyInvitePanel";
+import { MemberComparison } from "@/components/societies/MemberComparison";
 import type { SocietyDirectory } from "./Societies";
+
+type Member = { id: string; userId: string; name: string; username: string | null; role: string; solves7: number; solves30: number; lastVerifiedAt: string | null };
+type Announcement = { id: string; title: string; body: string; pinned: boolean; publishedAt: string; author: string; username: string | null };
+type Workspace = { members: Member[]; announcements: Announcement[]; permissions: { role: string; announce: boolean; manageMembers:boolean } };
+type Notice = { id: string; title: string; body: string | null; href: string; read_at: string | null; created_at: string };
+type PrivateWarning={id:string;reason:string;message:string;acknowledged_at:string|null;explanation:string|null;created_at:string};
+type ContestSummary = { id:string; title:string; description:string; startsAt:string; endsAt:string; state:string; scoring:string; problemCount:number; registrationCount:number };
+const tabs = ["Overview", "Announcements", "Members", "Progress", "Leaderboard", "Contests", "Notifications"] as const;
+type Tab = (typeof tabs)[number];
+function MemberName({ member }: { member: Member }) {
+  const inner = <><span className="grid size-8 shrink-0 place-items-center rounded-full border bg-muted text-xs font-semibold">{member.name.slice(0,1).toUpperCase()}</span><span className="min-w-0"><span className="block truncate text-sm font-medium">{member.name}</span><span className="block truncate text-[11px] text-muted-foreground">{member.username ? `@${member.username}` : "Private profile"}</span></span></>;
+  return member.username ? <Link href={`/u/${member.username}`} className="flex min-w-0 items-center gap-3 hover:text-primary">{inner}</Link> : <div className="flex min-w-0 items-center gap-3">{inner}</div>;
+}
 export default function SocietyDetail({ slug }: { slug: string }) {
   const { user } = useAuth();
-  const [metric, setMetric] = useState("chakra");
-  const [page, setPage] = useState(0);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const query = useQuery({
-    queryKey: ["society-detail", user?.id, slug, page],
-    queryFn: () =>
-      jsonRequest<SocietyDirectory>(
-        `/api/societies?slug=${encodeURIComponent(slug)}&memberOffset=${page * 50}`,
-      ),
-    retry: 1,
-  });
-  const society = query.data?.societies[0];
-  const own = query.data?.memberships.find(
-    (item) => item.society_id === society?.id,
-  );
-  const ranking = useQuery({
-    queryKey: ["society-ranking", society?.id, metric],
-    queryFn: () =>
-      jsonRequest<{
-        entries: Array<{
-          rank: number;
-          name: string;
-          username: string;
-          score: number;
-        }>;
-        methodology: string;
-      }>(
-        `/api/leaderboards?scope=individual&societyId=${society?.id}&metric=${metric}`,
-      ),
-    enabled: Boolean(society),
-    retry: 1,
-  });
-  const join = async () => {
-    setBusy(true);
-    setError("");
-    try {
-      await jsonRequest("/api/societies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ societyId: society?.id }),
-      });
-      await query.refetch();
-    } catch (reason) {
-      setError(
-        reason instanceof Error ? reason.message : "Request could not be sent.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Layout>
-      <div className="mx-auto max-w-6xl space-y-6">
-        <Link
-          href="/societies"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground"
-        >
-          <ArrowLeft size={13} />
-          All communities
-        </Link>
-        {error && (
-          <p role="alert" className="text-sm text-rose-300">
-            {error}
-          </p>
-        )}
-        {query.error ? (
-          <p
-            role="alert"
-            className="rounded-lg border p-7 text-sm text-rose-300"
-          >
-            {query.error.message}
-          </p>
-        ) : query.isLoading ? (
-          <div
-            role="status"
-            aria-label="Loading society"
-            className="h-96 animate-pulse rounded-lg border bg-card"
-          />
-        ) : !society ? (
-          <p className="rounded-lg border p-8 text-sm text-muted-foreground">
-            This society is unavailable or does not exist.
-          </p>
-        ) : (
-          <>
-            <header className="flex flex-wrap items-start justify-between gap-5">
-              <div>
-                <p className="mb-2 text-xs text-muted-foreground">
-                  {society.colleges?.name}
-                </p>
-                <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-                  {society.name}
-                  
-                </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                  {society.description}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {own?.status === "active" && <SocietyInvitePanel societyId={society.id} name={society.name}/>}
-                {own?.status === "active" ? (
-                  <span className="rounded border px-3 py-2 text-xs text-emerald-400">
-                    ✓ Active member
-                  </span>
-                ) : user ? (
-                  <Button size="sm" disabled={busy} onClick={() => void join()}>
-                    Join society
-                  </Button>
-                ) : (
-                  <Button asChild size="sm">
-                    <Link href="/sign-in">Sign in to join</Link>
-                  </Button>
-                )}
-                {own?.status === "active" &&
-                  ["admin", "moderator"].includes(own.role) && (
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={`/societies/${slug}/manage`}>
-                        Manage members
-                      </Link>
-                    </Button>
-                  )}
-              </div>
-            </header>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                ["Members", society.summary.members],
-                ["Eligible CF members", society.summary.eligible_members],
-                [
-                  "Average verified CF rating",
-                  society.summary.average_cf_rating,
-                ],
-              ].map(([label, value]) => (
-                <div
-                  key={String(label)}
-                  className="rounded-lg border bg-card p-4"
-                >
-                  <p className="text-[10px] text-muted-foreground">{label}</p>
-                  <p className="mt-3 text-xl font-semibold tabular-nums">
-                    {typeof value === "number"
-                      ? Math.round(value).toLocaleString()
-                      : "—"}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <section className="rounded-lg border bg-card p-5">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-sm font-medium">Member leaderboard</h2>
-                <label>
-                  <span className="sr-only">Member ranking metric</span>
-                  <select
-                    value={metric}
-                    onChange={(event) => setMetric(event.target.value)}
-                    className="h-9 rounded-md border bg-background px-3 text-xs"
-                  >
-                    <option value="chakra">Coins during membership</option>
-                    <option value="unique_solves">
-                      Total solves during membership
-                    </option>
-                    <option value="codeforces_rating">
-                      Current Codeforces rating
-                    </option>
-                    <option value="leetcode_rating">
-                      Current LeetCode rating
-                    </option>
-                  </select>
-                </label>
-              </div>
-              {ranking.error ? (
-                <p role="alert" className="text-xs text-rose-300">
-                  {ranking.error.message}
-                </p>
-              ) : ranking.isLoading ? (
-                <p role="status" className="text-xs text-muted-foreground">
-                  Loading eligible members…
-                </p>
-              ) : ranking.data?.entries.length ? (
-                <ol className="divide-y">
-                  {ranking.data.entries.map((entry) => (
-                    <li
-                      key={entry.rank}
-                      className="flex items-center gap-4 py-3 text-xs"
-                    >
-                      <span className="w-8 font-mono text-muted-foreground">
-                        #{entry.rank}
-                      </span>
-                      <Link
-                        href={`/u/${entry.username}`}
-                        className="flex-1 hover:text-primary"
-                      >
-                        {entry.name}
-                      </Link>
-                      <span className="font-mono">
-                        {Number(entry.score).toLocaleString()}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="py-8 text-sm text-muted-foreground">
-                  No eligible public member data for this metric yet.
-                </p>
-              )}
-              <p className="mt-5 text-[10px] leading-6 text-muted-foreground">
-                Only opted-in, metric-eligible verified accounts are ranked.
-                Coins and solve counts here start at current membership;
-                platform ratings are kept separate.
-              </p>
-            </section>
-            <section className="rounded-lg border bg-card p-5">
-              <h2 className="mb-5 text-sm font-medium">Public members</h2>
-              {query.data.members.length ? (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {query.data.members.map((member) => (
-                    <Link
-                      key={member.username}
-                      href={`/u/${member.username}`}
-                      className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/30"
-                    >
-                      <span className="grid size-8 place-items-center rounded-full bg-primary/10 text-xs text-primary">
-                        {member.display_name.slice(0, 1)}
-                      </span>
-                      <div>
-                        <p className="text-xs">{member.display_name}</p>
-                        <p className="mt-1 text-[10px] capitalize text-muted-foreground">
-                          {member.role} · @{member.username}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Members with public portfolios will appear here.
-                </p>
-              )}
-              <div className="mt-5 flex justify-end gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={page === 0}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={query.data.members.length < 50}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
-    </Layout>
-  );
+  const [tab,setTab] = useState<Tab>("Overview");
+  const [metric,setMetric] = useState("unique_solves");
+  const [contestView,setContestView] = useState("all");
+  const [announcementSearch,setAnnouncementSearch] = useState("");
+  const [busy,setBusy] = useState(false);
+  const [error,setError] = useState("");
+  const [explanation,setExplanation]=useState<Record<string,string>>({});
+  useEffect(() => { const requested = new URLSearchParams(window.location.search).get("tab"); if (requested === "notifications") setTab("Notifications"); if (requested === "announcements") setTab("Announcements"); }, []);
+  const directory = useQuery({ queryKey:["society-detail",user?.id,slug], queryFn:()=>jsonRequest<SocietyDirectory>(`/api/societies?slug=${encodeURIComponent(slug)}`), retry:1 });
+  const society = directory.data?.societies[0];
+  const own = directory.data?.memberships.find(item=>item.society_id===society?.id);
+  const active = own?.status === "active";
+  const workspace = useQuery({ queryKey:["society-workspace",society?.id], queryFn:()=>jsonRequest<Workspace>(`/api/societies/workspace?societyId=${society?.id}`), enabled:Boolean(society&&active), retry:1 });
+  const notices = useQuery({ queryKey:["society-notifications",user?.id], queryFn:()=>jsonRequest<{notifications:Notice[];unread:number}>("/api/societies/notifications"), enabled:Boolean(user&&active), refetchInterval:45000, retry:1 });
+  const privateWarnings=useQuery({queryKey:["society-private-warnings",society?.id,user?.id],queryFn:()=>jsonRequest<{warnings:PrivateWarning[]}>(`/api/societies/workspace?societyId=${society?.id}&view=warnings`),enabled:Boolean(society&&active&&tab==="Notifications"),retry:1});
+  const ranking = useQuery({ queryKey:["society-ranking",society?.id,metric], queryFn:()=>jsonRequest<{entries:Array<{rank:number;name:string;username:string|null;score:number}>;methodology:string}>(`/api/leaderboards?scope=individual&societyId=${society?.id}&metric=${metric}`), enabled:Boolean(society&&active&&tab==="Leaderboard"), retry:1 });
+  const contests = useQuery({ queryKey:["society-contests",society?.id], queryFn:()=>jsonRequest<{contests:ContestSummary[]}>(`/api/societies/contests?societyId=${society?.id}`), enabled:Boolean(society&&active&&tab==="Contests"), retry:1 });
+  const join = async () => { setBusy(true); setError(""); try { await jsonRequest("/api/societies",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({societyId:society?.id})}); await directory.refetch(); } catch(e) { setError(e instanceof Error?e.message:"Request failed."); } finally { setBusy(false); } };
+  const markRead = async () => { try { await jsonRequest("/api/societies/notifications",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ids:localNotices.filter(n=>!n.read_at).map(n=>n.id)})}); await notices.refetch(); } catch(e) { setError(e instanceof Error?e.message:"Could not update notifications."); } };
+  const acknowledge=async(warningId:string)=>{try{await jsonRequest(`/api/societies/workspace?societyId=${society?.id}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"acknowledgeWarning",warningId,explanation:explanation[warningId]??""})});await privateWarnings.refetch();}catch(e){setError(e instanceof Error?e.message:"Could not acknowledge note.");}};
+  const members = workspace.data?.members ?? [];
+  const announcements = workspace.data?.announcements ?? [];
+  const visibleAnnouncements = announcements.filter(a => `${a.title} ${a.body} ${a.author}`.toLocaleLowerCase().includes(announcementSearch.trim().toLocaleLowerCase()));
+  const societyPath = `/societies/${slug}`;
+  const localNotices = notices.data?.notifications.filter(n=>n.href===societyPath || n.href.startsWith(`${societyPath}/`) || n.href.startsWith(`${societyPath}?`)) ?? [];
+  const localUnread = localNotices.filter(n=>!n.read_at).length;
+  const contestStatus = (contest: ContestSummary) => contest.state === "draft" ? "draft" : contest.state !== "published" ? "completed" : new Date(contest.startsAt).getTime() > Date.now() ? "upcoming" : new Date(contest.endsAt).getTime() > Date.now() ? "live" : "completed";
+  const visibleContests = (contests.data?.contests ?? []).filter(contest => contestView === "all" || contestStatus(contest) === contestView);
+  return <Layout><main className="mx-auto max-w-6xl space-y-6 pb-14">
+    <Link href="/societies" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft size={14}/> Communities</Link>
+    {directory.isLoading ? <div role="status" aria-label="Loading society" className="h-72 animate-pulse rounded-lg border bg-card"/> : directory.error ? <p role="alert" className="rounded-lg border p-6 text-sm text-destructive">{directory.error.message}</p> : !society ? <p className="rounded-lg border p-8 text-sm text-muted-foreground">This society is unavailable.</p> : <>
+      <header className="rounded-xl border bg-card p-6 sm:p-8"><div className="flex flex-wrap items-start justify-between gap-6"><div className="max-w-2xl"><p className="mb-3 text-xs uppercase tracking-[0.18em] text-primary">{society.colleges?.name??"Independent community"}</p><h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{society.name}</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">{society.description||"Practice, compete, and improve together."}</p><div className="mt-5 flex gap-4 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1.5"><Users size={14}/>{society.summary.members} members</span><span className="inline-flex items-center gap-1.5"><Trophy size={14}/>{society.summary.eligible_members} ranked</span></div></div><div className="flex flex-wrap items-center gap-2">{active&&(own?.role==="admin"||workspace.data?.permissions?.manageMembers)&&<SocietyInvitePanel societyId={society.id} name={society.name}/ >}{active?<span className="rounded-md border border-emerald-500/30 px-3 py-2 text-xs capitalize text-emerald-400">{own?.role}</span>:own?.status==="pending"?<span className="rounded-md border border-amber-500/30 px-3 py-2 text-xs text-amber-300">Request pending</span>:society.join_policy==="invite"?<span className="rounded-md border px-3 py-2 text-xs text-muted-foreground">Invitation only</span>:user?<Button disabled={busy} onClick={()=>void join()}>{society.join_policy==="open"?"Join society":"Request to join"}</Button>:<Button asChild><Link href="/sign-in">Sign in to join</Link></Button>}{active&&(own?.role==="admin"||own?.role==="moderator")&&<Button asChild variant="outline"><Link href={`/societies/${slug}/manage`}><Shield size={14}/>Administration</Link></Button>}</div></div></header>
+      {error&&<p role="alert" className="text-sm text-destructive">{error}</p>}
+      {!active?<section className="rounded-lg border bg-card p-7"><h2 className="text-base font-semibold">Inside this society</h2><p className="mt-2 text-sm text-muted-foreground">Members share verified progress, announcements, and contests. {own?.status==="pending"?"An administrator will review your request.":"Join to open the workspace."}</p></section>:<>
+        <nav aria-label="Society workspace" className="flex gap-1 overflow-x-auto border-b pb-2">{tabs.map(item=><button key={item} onClick={()=>setTab(item)} aria-current={tab===item?"page":undefined} className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-xs transition-colors ${tab===item?"bg-foreground text-background":"text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{item==="Notifications"&&<Bell size={13}/ >}{item}{item==="Notifications"&&localUnread?<span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">{localUnread}</span>:null}</button>)}</nav>
+        {workspace.isLoading?<div role="status" aria-label="Loading workspace" className="h-56 animate-pulse rounded-lg border bg-card"/>:workspace.error?<p role="alert" className="rounded-lg border p-6 text-sm text-destructive">{workspace.error.message}</p>:<>
+          {tab==="Overview"&&<div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]"><div className="space-y-5"><div className="grid grid-cols-3 gap-2 sm:gap-3">{[["Members",members.length],["Verified solves · 7d",members.reduce((n,m)=>n+Number(m.solves7),0)],["Verified solves · 30d",members.reduce((n,m)=>n+Number(m.solves30),0)]].map(([label,value])=><div key={label} className="rounded-lg border bg-card p-4"><p className="text-[11px] text-muted-foreground">{label}</p><p className="mt-4 text-2xl font-semibold tabular-nums">{value}</p></div>)}</div><section className="rounded-lg border bg-card p-5"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold">Latest announcements</h2><button onClick={()=>setTab("Announcements")} className="text-xs text-primary">View all</button></div>{announcements.length?announcements.slice(0,3).map(a=><div key={a.id} className="border-b py-4 last:border-0"><p className="text-sm font-medium">{a.title}</p><p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{a.body}</p></div>):<p className="py-5 text-xs text-muted-foreground">No announcements yet.</p>}</section></div><section className="rounded-lg border bg-card p-5"><h2 className="text-sm font-semibold">Members to know</h2><div className="mt-3 divide-y">{[...members].sort((a,b)=>Number(b.solves30)-Number(a.solves30)).slice(0,5).map(m=><div key={m.id} className="flex items-center justify-between gap-3 py-3"><MemberName member={m}/><span className="shrink-0 font-mono text-xs text-muted-foreground">{m.solves30} / 30d</span></div>)}</div></section></div>}
+          {tab==="Announcements"&&<section className="rounded-lg border bg-card"><div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"><h2 className="text-sm font-semibold">Announcements</h2><input aria-label="Search announcements" type="search" placeholder="Search announcements" value={announcementSearch} onChange={event=>setAnnouncementSearch(event.target.value)} className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 sm:w-56"/></div>{visibleAnnouncements.length?visibleAnnouncements.map(a=><article key={a.id} className="border-b px-5 py-5 last:border-0"><div className="flex items-start justify-between gap-3"><h3 className="text-base font-medium">{a.pinned&&<span className="mr-2 rounded border border-primary/30 px-1.5 py-0.5 text-[10px] text-primary">Pinned</span>}{a.title}</h3><time className="shrink-0 text-[11px] text-muted-foreground">{new Date(a.publishedAt).toLocaleDateString()}</time></div><p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">{a.body}</p><p className="mt-3 text-xs text-muted-foreground">By {a.username?<Link href={`/u/${a.username}`} className="hover:text-primary">{a.author}</Link>:a.author}</p></article>):<p className="p-7 text-sm text-muted-foreground">{announcements.length?"No announcements match your search.":"No announcements have been published."}</p>}</section>}
+          {tab==="Members"&&<section className="rounded-lg border bg-card"><h2 className="border-b px-5 py-4 text-sm font-semibold">Members · {members.length}</h2><div className="divide-y">{members.map(m=><div key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><MemberName member={m}/><div className="flex gap-4 text-xs text-muted-foreground"><span className="capitalize">{m.role}</span><span className="font-mono">{m.solves30} solves / 30d</span></div></div>)}</div></section>}
+          {tab==="Progress"&&<section className="overflow-hidden rounded-lg border bg-card"><div className="border-b px-5 py-4"><h2 className="text-sm font-semibold">Verified member activity</h2><p className="mt-1 text-xs text-muted-foreground">Missing sync data is not treated as inactivity.</p></div><div className="overflow-x-auto"><table className="w-full min-w-[610px] text-left text-xs"><thead className="border-b text-muted-foreground"><tr><th className="px-5 py-3 font-medium">Member</th><th className="px-5 py-3 font-medium">7 days</th><th className="px-5 py-3 font-medium">30 days</th><th className="px-5 py-3 font-medium">Last verified solve</th></tr></thead><tbody>{members.map(m=><tr key={m.id} className="border-b last:border-0"><td className="px-5 py-3"><MemberName member={m}/></td><td className="px-5 py-3 font-mono">{m.solves7}</td><td className="px-5 py-3 font-mono">{m.solves30}</td><td className="px-5 py-3 text-muted-foreground">{m.lastVerifiedAt?new Date(m.lastVerifiedAt).toLocaleDateString():"Insufficient data"}</td></tr>)}</tbody></table></div><MemberComparison members={members} currentUserId={user?.id}/></section>}
+          {tab==="Leaderboard"&&<section className="rounded-lg border bg-card"><div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"><h2 className="text-sm font-semibold">Society ranking</h2><select aria-label="Ranking metric" value={metric} onChange={e=>setMetric(e.target.value)} className="h-9 rounded-md border bg-background px-3 text-xs"><option value="unique_solves">Verified solves</option><option value="chakra">Coins</option><option value="codeforces_rating">Codeforces rating</option><option value="leetcode_rating">LeetCode rating</option></select></div>{ranking.isLoading?<p className="p-6 text-xs text-muted-foreground">Loading ranking…</p>:ranking.error?<p role="alert" className="p-6 text-xs text-destructive">{ranking.error.message}</p>:ranking.data?.entries.length?<ol className="divide-y">{ranking.data.entries.map(e=><li key={e.rank} className="flex items-center gap-4 px-5 py-3 text-sm"><span className="w-8 font-mono text-muted-foreground">#{e.rank}</span>{e.username?<Link href={`/u/${e.username}`} className="flex-1 hover:text-primary">{e.name}</Link>:<span className="flex-1">{e.name}</span>}<span className="font-mono">{Number(e.score).toLocaleString()}</span></li>)}</ol>:<p className="p-7 text-sm text-muted-foreground">No eligible members for this metric yet.</p>}<p className="border-t px-5 py-4 text-xs leading-5 text-muted-foreground">{ranking.data?.methodology}</p></section>}
+          {tab==="Contests"&&<section className="rounded-lg border bg-card"><div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4"><div><h2 className="text-sm font-semibold">Society contests</h2><p className="mt-1 text-xs text-muted-foreground">Upcoming, live, and completed contests remain in this archive.</p></div><select aria-label="Contest status" value={contestView} onChange={e=>setContestView(e.target.value)} className="h-9 rounded-md border bg-background px-3 text-xs"><option value="all">All contests</option><option value="upcoming">Upcoming</option><option value="live">Live</option><option value="completed">Completed</option></select></div>{contests.isLoading?<p className="p-6 text-xs text-muted-foreground">Loading contests…</p>:contests.error?<p role="alert" className="p-6 text-xs text-destructive">{contests.error.message}</p>:visibleContests.length?visibleContests.map(c=><Link key={c.id} href={`/societies/${slug}/contests/${c.id}`} className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 last:border-0 hover:bg-muted/30"><div><p className="text-sm font-medium">{c.title}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(c.startsAt).toLocaleString()} · {c.problemCount} problems · {c.scoring.toUpperCase()}</p></div><span className="rounded border px-2 py-1 text-[11px] capitalize text-muted-foreground">{c.state==="published"?new Date(c.startsAt)>new Date()?"Upcoming":new Date(c.endsAt)>new Date()?"Live":"Completed":c.state}</span></Link>):<p className="p-7 text-sm text-muted-foreground">No contests in this view yet.</p>}</section>}
+          {tab==="Notifications"&&<div className="space-y-5"><section className="rounded-lg border bg-card"><div className="flex justify-between border-b px-5 py-4"><h2 className="text-sm font-semibold">Notifications</h2><button disabled={!localNotices.some(n=>!n.read_at)} onClick={()=>void markRead()} className="text-xs text-primary disabled:opacity-40">Mark all read</button></div>{localNotices.length?localNotices.map(n=><Link href={n.href} key={n.id} className={`block border-b px-5 py-4 last:border-0 hover:bg-muted/30 ${!n.read_at?"bg-primary/5":""}`}><div className="flex justify-between gap-3"><p className="text-sm font-medium">{n.title}</p><time className="text-[11px] text-muted-foreground">{new Date(n.created_at).toLocaleString()}</time></div>{n.body&&<p className="mt-1 text-xs text-muted-foreground">{n.body}</p>}</Link>):<p className="p-7 text-sm text-muted-foreground">You are all caught up.</p>}</section>{privateWarnings.data?.warnings.length?<section className="rounded-lg border bg-card"><h2 className="border-b p-4 text-sm font-semibold">Private practice notes</h2>{privateWarnings.data.warnings.map(w=><article key={w.id} className="border-b p-5 last:border-0"><div className="flex justify-between gap-3"><p className="text-sm font-medium">{w.reason.replaceAll("_"," ")}</p><time className="text-[11px] text-muted-foreground">{new Date(w.created_at).toLocaleDateString()}</time></div><p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{w.message}</p>{w.acknowledged_at?<p className="mt-3 text-xs text-emerald-400">Acknowledged{w.explanation?` · ${w.explanation}`:""}</p>:<div className="mt-4 flex flex-wrap gap-2"><input aria-label="Explanation or correction" placeholder="Optional explanation or correction" value={explanation[w.id]??""} onChange={e=>setExplanation({...explanation,[w.id]:e.target.value})} maxLength={2000} className="h-9 min-w-52 flex-1 rounded-md border bg-background px-3 text-xs"/><Button size="sm" variant="outline" onClick={()=>void acknowledge(w.id)}>Acknowledge</Button></div>}</article>)}</section>:null}</div>}
+        </>}
+      </>}
+    </>}
+  </main></Layout>;
 }

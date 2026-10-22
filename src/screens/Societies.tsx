@@ -23,6 +23,7 @@ export interface SocietyData {
   slug: string;
   description: string | null;
   college_id: string | null;
+  join_policy?: "open" | "approval" | "invite";
   colleges: { name: string; city: string | null; state: string | null } | null;
   summary: {
     members: number;
@@ -203,6 +204,12 @@ export default function Societies() {
                         <span className="text-xs text-emerald-400">
                           ✓ Member
                         </span>
+                      ) : membership?.status === "pending" ? (
+                        <span className="text-xs text-amber-300">Request pending</span>
+                      ) : membership?.status === "suspended" ? (
+                        <span className="text-xs text-muted-foreground">Membership unavailable</span>
+                      ) : society.join_policy === "invite" ? (
+                        <span className="text-xs text-muted-foreground">Invitation only</span>
                       ) : user ? (
                         <Button
                           size="sm"
@@ -210,7 +217,7 @@ export default function Societies() {
                           disabled={busy === society.id}
                           onClick={() => void join(society.id)}
                         >
-                          Join society
+                          {society.join_policy === "open" ? "Join society" : "Request to join"}
                         </Button>
                       ) : (
                         <Link href="/sign-in" className="text-xs text-primary">
@@ -259,7 +266,7 @@ export default function Societies() {
           </section>
         )}
         <p className="text-[11px] leading-6 text-muted-foreground">
-          Join a society directly, or share an invite link to bring your friends.
+          Join an open society, request approval, or use an invitation link.
         </p>
       </div>
     </Layout>

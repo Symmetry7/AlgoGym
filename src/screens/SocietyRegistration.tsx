@@ -54,8 +54,8 @@ export default function SocietyRegistration() {
             Create a society
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            A shared space for your programming group. Invite people as soon as
-            you create it.
+            A shared space for your programming group. Review new members or
+            invite people directly.
           </p>
         </header>
         <div className="grid overflow-hidden rounded-2xl border bg-card md:grid-cols-[.8fr_1.2fr]">
@@ -72,8 +72,8 @@ export default function SocietyRegistration() {
             <div className="mt-auto flex gap-3 text-sm leading-6 text-muted-foreground">
               <Link2 className="mt-1 shrink-0 text-primary" size={18} />
               <p>
-                Share your invite link or QR code. Anyone with an AlgoGym
-                account can join.
+                Share an invite link with trusted members. Other students can
+                request access for your review.
               </p>
             </div>
           </aside>

@@ -1,146 +1,80 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, LoaderCircle, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Bell, Check, Shield, Users } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { jsonRequest } from "@/hooks/use-account";
+import { useAuth } from "@/contexts/AuthContext";
+import type { SocietyDirectory } from "./Societies";
+import { ContestManager } from "@/components/societies/ContestManager";
 
-type Request = { id: string; applicant_name: string; requested_at: string };
+type Member = { id: string; userId: string; name: string; username: string | null; role: string; solves7: number; solves30: number; lastVerifiedAt: string | null };
+type Permission = { role: string; reviewRequests: boolean; manageMembers: boolean; viewActivity: boolean; manageContests: boolean; announce: boolean };
+type Workspace = { members: Member[]; permissions: Permission; policy: { minimumWeeklySolves: number; maximumInactiveDays: number } | null };
+type Request = { id: string; name: string; username: string | null; college: string | null; status: string; requestedAt: string; handles: Array<{ platform: string; username: string }> };
+type Moderator = { membershipId: string; name: string; reviewRequests: boolean; manageMembers: boolean; viewActivity: boolean; manageContests: boolean };
+type Warning = { id: string; memberId: string; name: string; reason: string; message: string; createdAt: string; acknowledgedAt: string | null; explanation: string | null };
+type Audit = { id: string; action: string; createdAt: string; metadata: Record<string, unknown> };
+type AdminData = { requests: Request[]; moderators: Moderator[]; warnings: Warning[]; audit: Audit[] };
+const adminTabs = ["Overview", "Requests", "Members", "Announcements", "Activity", "Warnings", "Contests", "Settings", "Audit"] as const;
+type Tab = (typeof adminTabs)[number];
+function ProfileLink({ name, username }: { name: string; username: string | null }) { return username ? <Link href={`/u/${username}`} className="font-medium hover:text-primary">{name}</Link> : <span className="font-medium">{name}</span>; }
+function ModeratorControls({member,existing,busy,onAction}:{member:Member;existing:Moderator|undefined;busy:boolean;onAction:(payload:Record<string,unknown>,success:string)=>Promise<void>}){
+  const [flags,setFlags]=useState({reviewRequests:existing?.reviewRequests??false,manageMembers:existing?.manageMembers??false,viewActivity:existing?.viewActivity??false,manageContests:existing?.manageContests??false});
+  useEffect(()=>{setFlags({reviewRequests:existing?.reviewRequests??false,manageMembers:existing?.manageMembers??false,viewActivity:existing?.viewActivity??false,manageContests:existing?.manageContests??false});},[existing?.reviewRequests,existing?.manageMembers,existing?.viewActivity,existing?.manageContests]);
+  return <div className="flex flex-wrap items-center gap-2"><div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">{(["reviewRequests","manageMembers","viewActivity","manageContests"] as const).map(key=><label key={key} className="inline-flex items-center gap-1"><input type="checkbox" checked={flags[key]} onChange={e=>setFlags({...flags,[key]:e.target.checked})}/>{key.replace(/[A-Z]/g,c=>` ${c.toLowerCase()}`)}</label>)}</div><Button size="sm" variant="outline" disabled={busy} onClick={()=>void onAction({action:"moderator",membershipId:member.id,promote:true,...flags},member.role==="moderator"?"Moderator permissions saved.":"Moderator assigned.")}>{member.role==="moderator"?"Save permissions":"Make moderator"}</Button>{member.role==="moderator"&&<Button size="sm" variant="outline" disabled={busy} onClick={()=>{if(window.confirm("Revoke moderator permissions?"))void onAction({action:"moderator",membershipId:member.id,promote:false,...flags},"Moderator revoked.");}}>Revoke</Button>}</div>;
+}
 export default function SocietyManage({ slug }: { slug: string }) {
-  const [requests, setRequests] = useState<Request[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState("");
-  const load = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await fetch(
-        `/api/societies/manage?slug=${encodeURIComponent(slug)}`,
-        { cache: "no-store" },
-      );
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      setRequests(result.requests);
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Review queue could not be loaded.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    void load();
-  }, [slug]);
-  const decide = async (requestId: string, decision: "active" | "rejected") => {
-    setBusy(requestId);
-    setError("");
-    try {
-      const response = await fetch(
-        `/api/societies/manage?slug=${encodeURIComponent(slug)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ membershipId: requestId, decision }),
-        },
-      );
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      setRequests((items) => items.filter((item) => item.id !== requestId));
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Request could not be updated.",
-      );
-    } finally {
-      setBusy("");
-    }
-  };
-  return (
-    <Layout>
-      <div className="mx-auto max-w-4xl space-y-7">
-        <Link
-          href={`/societies/${slug}`}
-          className="inline-flex items-center gap-2 text-sm text-[#929bae] hover:text-[#e8edf5]"
-        >
-          <ArrowLeft size={15} />
-          Society profile
-        </Link>
-        <header>
-          <p className="mb-2 text-sm text-[#929bae]">Society administration</p>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Membership requests
-          </h1>
-          <p className="mt-2 text-sm text-[#929bae]">
-            Requests are visible to approved society moderators and
-            administrators.
-          </p>
-        </header>
-        {error && (
-          <p role="alert" className="text-sm text-amber-200">
-            {error}
-          </p>
-        )}
-        {loading ? (
-          <p
-            role="status"
-            className="flex items-center gap-2 text-sm text-[#929bae]"
-          >
-            <LoaderCircle size={15} className="animate-spin" />
-            Loading review queue…
-          </p>
-        ) : !requests.length && !error ? (
-          <div className="rounded-md border border-[#252a36] bg-[#10131b] p-5 text-sm text-[#929bae]">
-            There are no pending membership requests.
-          </div>
-        ) : (
-          <div className="divide-y divide-[#252a36] border-y border-[#252a36]">
-            {requests.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="text-sm font-medium">{item.applicant_name}</p>
-                  <p className="mt-1 text-xs text-[#929bae]">
-                    Requested {new Date(item.requested_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    disabled={busy === item.id}
-                    onClick={() => void decide(item.id, "active")}
-                    className="bg-[#a78bfa] text-[#0b0d12] hover:bg-[#b7a2ff]"
-                  >
-                    {busy === item.id ? (
-                      <LoaderCircle className="animate-spin" size={14} />
-                    ) : (
-                      <Check size={14} />
-                    )}
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy === item.id}
-                    onClick={() => void decide(item.id, "rejected")}
-                    className="border-[#2d3342] bg-transparent"
-                  >
-                    <X size={14} />
-                    Decline
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </Layout>
-  );
+  const { user } = useAuth();
+  const [tab,setTab] = useState<Tab>("Overview");
+  const [focusRequest,setFocusRequest]=useState("");
+  const [search,setSearch] = useState("");
+  const [status,setStatus] = useState("pending");
+  const [busy,setBusy] = useState("");
+  const [error,setError] = useState("");
+  const [message,setMessage] = useState("");
+  const [title,setTitle] = useState("");
+  const [body,setBody] = useState("");
+  const [pinned,setPinned] = useState(false);
+  const [warningMember,setWarningMember] = useState("");
+  const [warningReason,setWarningReason] = useState("low_activity");
+  const [warningText,setWarningText] = useState("");
+  const [joinPolicy,setJoinPolicy] = useState("approval");
+  const [weekly,setWeekly] = useState(3);
+  const [inactiveDays,setInactiveDays] = useState(14);
+  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get("request");if(requested){setFocusRequest(requested);setTab("Requests");}},[]);
+  const directory = useQuery({queryKey:["society-manage-directory",user?.id,slug],queryFn:()=>jsonRequest<SocietyDirectory>(`/api/societies?slug=${encodeURIComponent(slug)}`),retry:1});
+  const society = directory.data?.societies[0];
+  const own = directory.data?.memberships.find(m=>m.society_id===society?.id&&m.status==="active");
+  const workspace = useQuery({queryKey:["society-manage-workspace",society?.id],queryFn:()=>jsonRequest<Workspace>(`/api/societies/workspace?societyId=${society?.id}`),enabled:Boolean(own),retry:1});
+  useEffect(()=>{if(society?.join_policy)setJoinPolicy(society.join_policy);},[society?.join_policy]);
+  useEffect(()=>{if(workspace.data?.policy){setWeekly(workspace.data.policy.minimumWeeklySolves);setInactiveDays(workspace.data.policy.maximumInactiveDays);}},[workspace.data?.policy]);
+  const permissions = workspace.data?.permissions;
+  const isAdmin = permissions?.role === "admin";
+  const canReadAdmin = isAdmin||permissions?.reviewRequests||permissions?.viewActivity;
+  const admin = useQuery({queryKey:["society-admin",society?.id],queryFn:()=>jsonRequest<AdminData>(`/api/societies/workspace?societyId=${society?.id}&view=admin`),enabled:Boolean(canReadAdmin),refetchInterval:45000,retry:1});
+  const members = workspace.data?.members ?? [];
+  const requests = (admin.data?.requests??[]).filter(r=>r.status===status&&`${r.name} ${r.username??""} ${r.college??""}`.toLowerCase().includes(search.toLowerCase()));
+  const action = async (payload:Record<string,unknown>,success:string,onSuccess?:()=>void) => { if(!society)return; setBusy(String(payload.action));setError("");setMessage(""); try { await jsonRequest(`/api/societies/workspace?societyId=${society.id}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setMessage(success);onSuccess?.();await Promise.all([workspace.refetch(),admin.refetch(),directory.refetch()]); } catch(e) {setError(e instanceof Error?e.message:"Action failed.");} finally {setBusy("");} };
+  const decide = async (id:string,decision:"active"|"rejected") => { if(!window.confirm(`${decision==="active"?"Approve":"Decline"} this request?`))return;setBusy(id);setError("");try { await jsonRequest(`/api/societies/manage?slug=${encodeURIComponent(slug)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({membershipId:id,decision})});setMessage(decision==="active"?"Member approved.":"Request declined.");await Promise.all([admin.refetch(),workspace.refetch()]);} catch(e) {setError(e instanceof Error?e.message:"Review failed.");} finally {setBusy("");} };
+  const availableTabs = adminTabs.filter(item=>isAdmin||item==="Overview"||item==="Announcements"&&permissions?.announce||item==="Requests"&&permissions?.reviewRequests||item==="Activity"&&permissions?.viewActivity||item==="Members"&&permissions?.manageMembers||item==="Contests"&&permissions?.manageContests);
+  const policy = workspace.data?.policy;
+  const activityStatus = (m:Member) => { if(!m.lastVerifiedAt)return "Insufficient data";const days=(Date.now()-new Date(m.lastVerifiedAt).getTime())/86400000;if(days>(policy?.maximumInactiveDays??14))return "Inactive";if(m.solves7<(policy?.minimumWeeklySolves??3))return "Needs attention";return "Active"; };
+  return <Layout><main className="mx-auto max-w-6xl space-y-6 pb-14"><Link href={`/societies/${slug}`} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft size={14}/> Society workspace</Link><header className="flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-xs uppercase tracking-[0.16em] text-primary">Society administration</p><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{society?.name??"Community"}</h1><p className="mt-2 text-sm text-muted-foreground">Requests, people, activity, and announcements in one place.</p></div>{permissions&&<span className="rounded-md border px-3 py-2 text-xs capitalize text-muted-foreground"><Shield size={13} className="mr-1 inline"/>{permissions.role}</span>}</header>
+    {error&&<p role="alert" className="rounded-md border border-destructive/30 p-3 text-sm text-destructive">{error}</p>}{message&&<p role="status" className="rounded-md border border-emerald-500/30 p-3 text-sm text-emerald-400"><Check size={14} className="mr-2 inline"/>{message}</p>}
+    {directory.isLoading||workspace.isLoading?<div role="status" aria-label="Loading administration" className="h-64 animate-pulse rounded-lg border bg-card"/>:directory.error||workspace.error?<p role="alert" className="rounded-lg border p-6 text-sm text-destructive">{directory.error?.message??workspace.error?.message}</p>:!own?<p role="alert" className="rounded-lg border p-6 text-sm text-muted-foreground">Only active society managers can open this page.</p>:<><nav aria-label="Administration sections" className="flex gap-1 overflow-x-auto border-b pb-2">{availableTabs.map(item=><button key={item} onClick={()=>setTab(item)} aria-current={tab===item?"page":undefined} className={`shrink-0 rounded-md px-3 py-2 text-xs ${tab===item?"bg-foreground text-background":"text-muted-foreground hover:bg-muted"}`}>{item}{item==="Requests"&&admin.data?.requests.filter(r=>r.status==="pending").length?` · ${admin.data.requests.filter(r=>r.status==="pending").length}`:""}</button>)}</nav>{admin.error&&canReadAdmin&&<p role="alert" className="text-sm text-destructive">{admin.error.message}</p>}
+    {tab==="Overview"&&<div className="grid gap-4 sm:grid-cols-3">{([["Members",members.length,Users],["Pending requests",admin.data?.requests.filter(r=>r.status==="pending").length??0,Bell],["Verified solves · 7d",members.reduce((n,m)=>n+Number(m.solves7),0),Check]] as const).map(([label,value,Icon])=><section key={label} className="rounded-lg border bg-card p-5"><Icon size={16} className="text-primary"/><p className="mt-5 text-xs text-muted-foreground">{label}</p><p className="mt-1 text-3xl font-semibold tabular-nums">{value}</p></section>)}<p className="sm:col-span-3 text-xs text-muted-foreground">Figures are calculated from active memberships and stored verified solves.</p></div>}
+    {tab==="Requests"&&<section className="overflow-hidden rounded-lg border bg-card"><div className="flex flex-wrap gap-3 border-b p-4"><Input aria-label="Search requests" placeholder="Search students" value={search} onChange={e=>setSearch(e.target.value)} className="max-w-xs"/><select aria-label="Request status" value={status} onChange={e=>setStatus(e.target.value)} className="rounded-md border bg-background px-3 text-xs"><option value="pending">Pending</option><option value="rejected">Rejected</option></select></div>{requests.length?requests.map(r=><div key={r.id} className={`flex flex-wrap items-center justify-between gap-4 border-b p-4 last:border-0 ${focusRequest===r.id?"bg-primary/10":""}`}><div><ProfileLink name={r.name} username={r.username}/><p className="mt-1 text-xs text-muted-foreground">{r.college??"College not set"} · {new Date(r.requestedAt).toLocaleDateString()}</p><p className="mt-1 text-[11px] text-muted-foreground">{r.handles.map(h=>`${h.platform}: ${h.username}`).join(" · ")||"No connected handles"}</p></div>{r.status==="pending"&&<div className="flex gap-2"><Button size="sm" disabled={busy===r.id} onClick={()=>void decide(r.id,"active")}>Approve</Button><Button size="sm" variant="outline" disabled={busy===r.id} onClick={()=>void decide(r.id,"rejected")}>Decline</Button></div>}</div>):<p className="p-7 text-sm text-muted-foreground">No {status} requests.</p>}</section>}
+    {tab==="Members"&&<section className="rounded-lg border bg-card"><h2 className="border-b p-4 text-sm font-semibold">Member management</h2>{members.map(m=><div key={m.id} className="flex flex-wrap items-center justify-between gap-3 border-b p-4 last:border-0"><div><ProfileLink name={m.name} username={m.username}/><p className="mt-1 text-xs capitalize text-muted-foreground">{m.role}</p></div>{isAdmin&&m.role!=="admin"&&<ModeratorControls member={m} existing={admin.data?.moderators.find(item=>item.membershipId===m.id)} busy={busy==="moderator"} onAction={action}/ >}{permissions?.manageMembers&&m.role!=="admin"&&m.userId!==user?.id&&(isAdmin||m.role==="member")&&<Button size="sm" variant="outline" disabled={busy==="removeMember"} onClick={()=>{if(window.confirm(`Remove ${m.name} from this society? Their history will remain.`))void action({action:"removeMember",membershipId:m.id},"Member removed.");}}>Remove</Button>}</div>)}</section>}
+    {tab==="Announcements"&&<section className="max-w-3xl rounded-lg border bg-card p-5"><h2 className="text-sm font-semibold">Publish an announcement</h2><p className="mt-1 text-xs text-muted-foreground">All active society members receive a notification.</p><form className="mt-5 space-y-3" onSubmit={e=>{e.preventDefault();void action({action:"announcement",title,body,pinned},"Announcement published.",()=>{setTitle("");setBody("");setPinned(false);});}}><Input aria-label="Announcement title" placeholder="Announcement title" value={title} onChange={e=>setTitle(e.target.value)} minLength={3} maxLength={180} required/><textarea aria-label="Announcement body" placeholder="Write an update for your society…" value={body} onChange={e=>setBody(e.target.value)} maxLength={20000} required className="min-h-40 w-full resize-y rounded-md border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"/><label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={pinned} onChange={e=>setPinned(e.target.checked)}/> Pin to top</label><Button disabled={busy==="announcement"||!title.trim()||!body.trim()}>Publish</Button></form></section>}
+    {tab==="Activity"&&<section className="overflow-hidden rounded-lg border bg-card"><div className="border-b p-4"><h2 className="text-sm font-semibold">Activity monitoring</h2><p className="mt-1 text-xs text-muted-foreground">Policy: {policy?.minimumWeeklySolves??3} verified solves per week; {policy?.maximumInactiveDays??14} days maximum without a verified solve. Unconnected or unsynced accounts remain insufficient data.</p></div><div className="overflow-x-auto"><table className="w-full min-w-[680px] text-left text-xs"><thead className="border-b text-muted-foreground"><tr><th className="px-4 py-3 font-medium">Student</th><th className="px-4 py-3 font-medium">7 days</th><th className="px-4 py-3 font-medium">30 days</th><th className="px-4 py-3 font-medium">Last verified</th><th className="px-4 py-3 font-medium">Status</th></tr></thead><tbody>{members.map(m=><tr key={m.id} className="border-b last:border-0"><td className="px-4 py-3"><ProfileLink name={m.name} username={m.username}/></td><td className="px-4 py-3 font-mono">{m.solves7}</td><td className="px-4 py-3 font-mono">{m.solves30}</td><td className="px-4 py-3 text-muted-foreground">{m.lastVerifiedAt?new Date(m.lastVerifiedAt).toLocaleDateString():"No verified data"}</td><td className="px-4 py-3">{activityStatus(m)}</td></tr>)}</tbody></table></div></section>}
+    {tab==="Warnings"&&isAdmin&&<div className="grid gap-5 lg:grid-cols-[1fr_1.2fr]"><section className="rounded-lg border bg-card p-5"><h2 className="text-sm font-semibold">Send private practice note</h2><p className="mt-2 text-xs leading-5 text-muted-foreground">Review the member’s verified activity before sending. Notes are private and limited to one per member every seven days.</p><form className="mt-5 space-y-3" onSubmit={e=>{e.preventDefault();if(window.confirm(`Send this private note?\n\n${warningText}`))void action({action:"warning",memberId:warningMember,reason:warningReason,message:warningText},"Private note sent.",()=>setWarningText(""));}}><select aria-label="Member" value={warningMember} onChange={e=>setWarningMember(e.target.value)} required className="h-10 w-full rounded-md border bg-background px-3 text-sm"><option value="">Choose member</option>{members.filter(m=>m.userId!==user?.id).map(m=><option key={m.userId} value={m.userId}>{m.name} · {m.solves7} solves / 7d</option>)}</select><select aria-label="Reason" value={warningReason} onChange={e=>setWarningReason(e.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm"><option value="low_activity">Low practice activity</option><option value="no_recent_activity">No recent verified activity</option><option value="missed_contests">Missed society contests</option><option value="custom">Custom reminder</option></select><textarea aria-label="Private message" value={warningText} onChange={e=>setWarningText(e.target.value)} minLength={20} maxLength={1000} required placeholder="Write a constructive, specific note…" className="min-h-32 w-full rounded-md border bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"/><Button disabled={busy==="warning"||!warningMember||warningText.trim().length<20}>Send private note</Button></form></section><section className="rounded-lg border bg-card"><h2 className="border-b p-4 text-sm font-semibold">Warning history</h2>{admin.data?.warnings.length?admin.data.warnings.map(w=><article key={w.id} className="border-b p-4 last:border-0"><div className="flex justify-between gap-3"><p className="text-sm font-medium">{w.name}</p><span className="text-[11px] text-muted-foreground">{new Date(w.createdAt).toLocaleDateString()}</span></div><p className="mt-2 text-xs leading-5 text-muted-foreground">{w.message}</p><p className="mt-2 text-[11px] text-muted-foreground">{w.acknowledgedAt?"Acknowledged":"Awaiting acknowledgement"}{w.explanation?` · ${w.explanation}`:""}</p></article>):<p className="p-5 text-sm text-muted-foreground">No private notes sent.</p>}</section></div>}
+    {tab==="Contests"&&society&&<ContestManager societyId={society.id} slug={slug}/>}
+    {tab==="Settings"&&isAdmin&&<section className="max-w-2xl rounded-lg border bg-card p-5"><h2 className="text-sm font-semibold">Society policy</h2><p className="mt-2 text-xs text-muted-foreground">Changing join policy affects new requests only.</p><form className="mt-5 grid gap-4" onSubmit={e=>{e.preventDefault();void action({action:"policy",joinPolicy,weeklySolves:weekly,inactiveDays},"Society policy saved.");}}><label className="grid gap-2 text-xs text-muted-foreground">Joining<select value={joinPolicy} onChange={e=>setJoinPolicy(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm"><option value="approval">Admin approval</option><option value="open">Open joining</option><option value="invite">Invitation only</option></select></label><label className="grid gap-2 text-xs text-muted-foreground">Minimum verified solves each week<Input type="number" min={0} max={1000} value={weekly} onChange={e=>setWeekly(Number(e.target.value))}/></label><label className="grid gap-2 text-xs text-muted-foreground">Days without verified solve before inactive<Input type="number" min={1} max={365} value={inactiveDays} onChange={e=>setInactiveDays(Number(e.target.value))}/></label><Button className="justify-self-start" disabled={busy==="policy"}>Save policy</Button></form></section>}
+    {tab==="Audit"&&isAdmin&&<section className="rounded-lg border bg-card"><h2 className="border-b p-4 text-sm font-semibold">Administrative activity</h2>{admin.data?.audit.length?admin.data.audit.map(a=><div key={a.id} className="flex flex-wrap justify-between gap-2 border-b p-4 text-xs last:border-0"><span>{a.action.replaceAll("."," · ")}</span><time className="text-muted-foreground">{new Date(a.createdAt).toLocaleString()}</time></div>):<p className="p-5 text-sm text-muted-foreground">No administrative changes recorded.</p>}</section>}
+    </>}
+  </main></Layout>;
 }

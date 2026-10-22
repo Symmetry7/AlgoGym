@@ -1,11 +1,9 @@
--- Every account has a public portfolio URL; private study content keeps its RLS.
+-- Every account receives a stable profile URL. Existing visibility choices remain intact.
 update public.profiles
-set is_public = true,
-    username = coalesce(username, 'user_' || substr(replace(id::text, '-', ''), 1, 24))
-where not is_public or username is null;
+set username = 'user_' || substr(replace(id::text, '-', ''), 1, 24)
+where username is null;
 
 alter table public.profiles alter column is_public set default true;
-alter table public.profiles add constraint profiles_always_public check (is_public);
 
 create or replace function public.bootstrap_algogym_profile()
 returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
