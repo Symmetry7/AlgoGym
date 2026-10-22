@@ -12,6 +12,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("removeMember"), membershipId: uuid }).strict(),
   z.object({ action: z.literal("policy"), joinPolicy: z.enum(["open", "approval", "invite"]), weeklySolves: z.number().int().min(0).max(1000), inactiveDays: z.number().int().min(1).max(365) }).strict(),
   z.object({ action: z.literal("announcement"), title: z.string().trim().min(3).max(180), body: z.string().trim().min(1).max(20000), pinned: z.boolean().default(false) }).strict(),
+  z.object({ action: z.literal("deleteAnnouncement"), announcementId: uuid }).strict(),
   z.object({ action: z.literal("warning"), memberId: uuid, reason: z.enum(["low_activity", "no_recent_activity", "missed_contests", "custom"]), message: z.string().trim().min(20).max(1000) }).strict(),
   z.object({ action: z.literal("acknowledgeWarning"), warningId: uuid, explanation: z.string().trim().max(2000) }).strict(),
 ]);
@@ -48,6 +49,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       case "removeMember": operation = client.rpc("remove_society_member", { p_membership: value.membershipId }); break;
       case "policy": operation = client.rpc("set_society_policy", { p_society: societyId, p_join_policy: value.joinPolicy, p_weekly_solves: value.weeklySolves, p_inactive_days: value.inactiveDays }); break;
       case "announcement": operation = client.rpc("publish_society_announcement", { p_society: societyId, p_title: value.title, p_body: value.body, p_pinned: value.pinned }); break;
+      case "deleteAnnouncement": operation = client.rpc("delete_society_announcement", { p_society: societyId, p_announcement: value.announcementId }); break;
       case "warning": operation = client.rpc("send_society_warning", { p_society: societyId, p_member: value.memberId, p_reason: value.reason, p_message: value.message }); break;
       case "acknowledgeWarning": operation = client.rpc("acknowledge_society_warning", { p_warning: value.warningId, p_explanation: value.explanation }); break;
     }

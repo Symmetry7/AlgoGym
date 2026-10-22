@@ -17,6 +17,7 @@ const actions = z.discriminatedUnion("action", [
   z.object({ action:z.literal("claim"), problemId:uuid, proofUrl:z.string().url().max(500) }).strict(),
   z.object({ action:z.literal("verify"), submissionId:uuid, accept:z.boolean() }).strict(),
   z.object({ action:z.literal("syncCodeforces"), contestId:uuid }).strict(),
+  z.object({ action:z.literal("deleteContest"), contestId:uuid }).strict(),
 ]);
 export default async function handler(req:ApiRequest,res:ApiResponse) {
   res.setHeader("Cache-Control","private, no-store");
@@ -99,6 +100,7 @@ export default async function handler(req:ApiRequest,res:ApiResponse) {
       case "register":rpc="register_society_contest";args={p_contest:a.contestId};break;
       case "claim":rpc="claim_society_contest_submission";args={p_problem:a.problemId,p_proof_url:a.proofUrl};break;
       case "verify":rpc="verify_society_contest_submission";args={p_submission:a.submissionId,p_accept:a.accept};break;
+      case "deleteContest":rpc="delete_society_contest";args={p_contest:a.contestId};break;
     }
     const {data,error}=await client.rpc(rpc,args);
     if(error)return res.status(/not authorized|membership/i.test(error.message)?403:400).json({error:error.message});
