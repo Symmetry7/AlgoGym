@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Code2,
   Compass,
+  Crown,
   FileText,
   GraduationCap,
   LayoutDashboard,
@@ -19,12 +20,14 @@ import {
   RefreshCw,
   Settings,
   Share2,
+  Sparkles,
   Trophy,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccount } from "@/hooks/use-account";
+import { useBilling } from "@/hooks/use-billing";
 import {
   Sheet,
   SheetContent,
@@ -41,6 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
+import { CoinMark } from "@/components/brand/ChakraMark";
 import { SymmMark } from "@/components/brand/SymmMark";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -73,6 +77,7 @@ export function Layout({
   const router = useRouter();
   const { user, signOut } = useAuth();
   const account = useAccount();
+  const billing = useBilling();
   const [compact, setCompact] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -170,7 +175,6 @@ export function Layout({
         )}
       </nav>
       <div className="border-t p-3">
-        {!small && <Link href="/pricing" className="mb-2 block rounded-xl border border-border bg-muted/50 p-3 text-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><strong className="block text-foreground">Go further with AlgoGym Pro</strong><span className="mt-1 block text-muted-foreground">Explore advanced training and Symm AI plans.</span><span className="mt-2 block font-medium text-foreground">Explore Pro →</span></Link>}
         {user ? (
           <button
             disabled={signingOut}
@@ -258,7 +262,11 @@ export function Layout({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/pricing" className="hidden rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:inline-flex">Explore Pro ↗</Link>
+            {user&&<div className="flex items-center gap-1.5 sm:gap-2" aria-label="Account balances">
+              {billing.data?.tier!=="free"&&billing.data?.tier&&<Link href="/pricing" className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide",billing.data.tier==="premium"?"border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-200":"border-violet-500/40 bg-violet-500/15 text-violet-700 dark:text-violet-200")}>{billing.data.tier==="premium"?<Crown size={13}/>:<Sparkles size={13}/>}<span className="hidden sm:inline">{billing.data.tier}</span></Link>}
+              <Link href="/statistics" className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-200" title="Gold coins earned from verified solves"><CoinMark className="size-[18px] object-contain" />{billing.data?.coins??"—"}</Link>
+              <Link href="/training/symm" className="inline-flex items-center gap-1 rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-200" title="AI learning path credits"><Sparkles size={14}/>{billing.data?.credits?.available??"—"}</Link>
+            </div>}
             <ThemeToggle />
             {onOpenHandleModal && (
               <Button variant="outline" size="sm" onClick={onOpenHandleModal}>

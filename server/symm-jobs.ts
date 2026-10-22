@@ -2,6 +2,7 @@ import "server-only";
 import { adminSupabase } from "./admin";
 import { generateLesson, generateRoadmap } from "./symm-ai";
 import type { ProgrammingLanguage } from "./symm-ai";
+import { finishPathCredit, reconcilePathCredits } from "./ai-credits";
 
 // The database job is durable; Next's after() starts it promptly and the cron
 // worker can recover queued jobs after an interrupted deployment.
@@ -23,6 +24,7 @@ export async function processSymmPathJob(pathId: string, prefetch = true) {
   if (!claimed.data) return;
   const job = claimed.data;
   const started = Date.now();
+  let roadmapReady = false;
   try {
     const fetched = await admin
       .from("ai_learning_paths")
@@ -30,7 +32,20 @@ export async function processSymmPathJob(pathId: string, prefetch = true) {
       .eq("id", pathId)
       .eq("user_id", job.user_id)
       .single();
-    if (fetched.error || !fetched.data || fetched.data.status !== "generating")
+    if (fetched.error) throw fetched.error;
+    // Recover an interruption after saving the roadmap but before completing
+    // the job, without replacing the successful result or refunding its credit.
+    if (fetched.data?.status === "ready") {
+      roadmapReady = true;
+      await finishPathCredit(admin, job.user_id, pathId, true);
+      const completed = await admin.from("ai_generation_jobs").update({
+        status: "completed", stage: "ready", error_code: null,
+        finished_at: new Date().toISOString(),
+      }).eq("id", job.id);
+      if (completed.error) throw completed.error;
+      return;
+    }
+    if (!fetched.data || fetched.data.status !== "generating")
       throw new Error("The learning path is unavailable.");
     const path = fetched.data;
     const road = await generateRoadmap(
@@ -92,6 +107,12 @@ export async function processSymmPathJob(pathId: string, prefetch = true) {
       })
       .eq("id", pathId);
     if (updated.error) throw updated.error;
+    roadmapReady = true;
+    try {
+      await finishPathCredit(admin,job.user_id,pathId,true);
+    } catch {
+      console.error('symm_credit_settlement_pending', { pathId });
+    }
     await admin
       .from("ai_generation_jobs")
       .update({
@@ -158,6 +179,11 @@ export async function processSymmPathJob(pathId: string, prefetch = true) {
       }
     }
   } catch (error) {
+    if (roadmapReady) {
+      console.error('symm_path_completion_pending', { pathId, error });
+      return;
+    }
+    try { await finishPathCredit(admin,job.user_id,pathId,false); } catch { console.error('symm_credit_release_pending',{pathId}); }
     console.error("symm_path_generation_failed", {
       pathId,
       durationMs: Date.now() - started,
@@ -182,6 +208,7 @@ export async function processSymmPathJob(pathId: string, prefetch = true) {
 
 export async function recoverSymmPathJobs() {
   const admin = adminSupabase();
+  await reconcilePathCredits(admin);
   const stale = new Date(Date.now() - 2 * 60_000).toISOString();
   const pending = await admin
     .from("ai_generation_jobs")

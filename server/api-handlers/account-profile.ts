@@ -10,10 +10,16 @@ const secureURL = z
   .max(300)
   .url()
   .refine((value) => {
-    const url = new URL(value);
-    return (
-      url.protocol === "https:" && !url.username && !url.password && !url.port
-    );
+    // Zod still runs refinements after a URL validation failure, including
+    // the empty-string branch below. Invalid input must not throw here.
+    try {
+      const url = new URL(value);
+      return (
+        url.protocol === "https:" && !url.username && !url.password && !url.port
+      );
+    } catch {
+      return false;
+    }
   }, "Use a public HTTPS URL without credentials.")
   .or(z.literal(""))
   .nullable();

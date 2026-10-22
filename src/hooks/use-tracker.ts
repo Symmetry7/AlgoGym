@@ -33,7 +33,8 @@ export function useTracker(days = 365, provider = "all", autoSync = true) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: value }),
       });
-    await query.refetch();
+    const refreshed = await query.refetch();
+    if (refreshed.isError) throw refreshed.error;
   };
   useEffect(() => {
     if (!autoSync || !user || !query.data || started.current === user.id)

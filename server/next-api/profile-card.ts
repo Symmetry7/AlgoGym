@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runApiHandler } from "../next-adapter";
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
           chakra: summary.data.chakra,
           rating: cf.data?.summary.rating ?? null,
           publicURL:
-            p.username
+            p.is_public && p.username
               ? `algogym.vercel.app/u/${p.username}`
               : null,
           platforms: (accounts.data ?? []).map((item) => item.platform),
@@ -90,11 +90,6 @@ export async function GET(request: NextRequest) {
         "Content-Security-Policy",
         "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox",
       );
-      if (request.nextUrl.searchParams.get("download") === "1")
-        res.setHeader(
-          "Content-Disposition",
-          'attachment; filename="algogym-profile.svg"',
-        );
       return res.end(svg);
     } catch {
       return res

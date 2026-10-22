@@ -19,6 +19,7 @@ import {
 import { processSymmPathJob } from "../symm-jobs";
 import { recommendProblems } from "../symm-recommend";
 import { allowAuthAttempt } from "../auth-policy";
+import { creditsEnabled, readAiCredits, queueCreditPath } from "../ai-credits";
 
 const uuid = z.string().uuid();
 const action = z.discriminatedUnion("action", [
@@ -163,6 +164,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             }),
           })),
           configured: isAiConfigured(),
+          credits: await readAiCredits(admin,user.id),
         });
       }
       if (!uuid.safeParse(pathId).success)
@@ -253,6 +255,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         codeVariants,
         conversation,
         configured: isAiConfigured(),
+        credits: await readAiCredits(admin,user.id),
       });
     }
     const parsed = action.safeParse(req.body);
@@ -278,6 +281,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return res.status(200).json({ language: value.language });
     }
     if (value.action === "path.retry") {
+      if(creditsEnabled()) {
+        const result=await queueCreditPath(admin,user.id,value);
+        after(()=>processSymmPathJob(result.pathId));
+        return res.status(202).json(result);
+      }
       const path = await admin
         .from("ai_learning_paths")
         .select("id,status")
@@ -392,6 +400,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       }
     }
     if (value.action === "path.generate") {
+      if(creditsEnabled()) {
+        if(!isAiConfigured())throw new AiUnavailable('Symm AI is temporarily unavailable.');
+        if(!allowAuthAttempt(`symm-credit-path:${user.id}`,8,60_000))return res.status(429).json({error:'Please wait before creating another path.'});
+        const result=await queueCreditPath(admin,user.id,value);
+        after(()=>processSymmPathJob(result.pathId));
+        return res.status(202).json(result);
+      }
       const prior = await client
         .from("ai_learning_paths")
         .select("id,status")
@@ -707,6 +722,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (saved.error) throw saved.error;
     return res.status(200).json({ messages: saved.data });
   } catch (error) {
+    if(error && typeof error==='object' && 'message' in error && String(error.message).includes('Insufficient AI credits'))return res.status(402).json({error:'No AI credits remaining. Explore plans to continue.',code:'credits_exhausted'});
     const status =
       error instanceof AiUnavailable
         ? 503

@@ -25,11 +25,14 @@ import {
   X,
 } from "lucide-react";
 import { RichText, CodeExample } from "./LessonContent";
+import { CreditDialog, CreditIndicator, type AiCredits } from "./CreditIndicator";
 
 
 
 import "katex/dist/katex.min.css";
 import { SymmMark } from "@/components/brand/SymmMark";
+import { LivingField } from "@/components/brand/LivingField";
+import { SymmKineticType } from "@/components/brand/SymmKineticType";
 import { SymmSidebar } from "./SymmSidebar";
 import "./symm-workspace.css";
 import { ChakraMark } from "@/components/brand/ChakraMark";
@@ -46,6 +49,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
 import { useTracker } from "@/hooks/use-tracker";
+import { useBilling } from "@/hooks/use-billing";
 import { chakraFor } from "@/lib/training";
 import type { Lesson } from "@/../server/symm-ai";
 
@@ -120,15 +124,15 @@ type Detail = {
   }[];
   conversation: Message[];
   configured: boolean;
+  credits?: AiCredits | null;
 };
-type Home = { paths: Path[]; configured: boolean };
+type Home = { paths: Path[]; configured: boolean; credits?: AiCredits | null };
 
 const suggestions = [
-  "Dynamic Programming",
-  "Graph Algorithms",
-  "Binary Search",
-  "Number Theory",
-  "Computer Networks",
+  "Dynamic programming on grids",
+  "Shortest paths in graphs",
+  "Binary search on the answer",
+  "Number theory for contests",
 ];
 const post = <T,>(body: object) =>
   jsonRequest<T>("/api/symm", {
@@ -207,7 +211,9 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
   const router = useRouter();
   const { user } = useAuth();
   const tracker = useTracker(0, "all", false);
+  const billing = useBilling();
   const composer = useRef<HTMLTextAreaElement>(null);
+  const tutorComposer = useRef<HTMLTextAreaElement>(null);
   const attemptedRecommendations = useRef(new Set<string>());
   const [home, setHome] = useState<Home | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -217,6 +223,8 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
   const [hours, setHours] = useState(5);
   const [language, setLanguage] = useState<"cpp" | "java" | "python">("cpp");
   const [customize, setCustomize] = useState(false);
+  const [creditsOpen, setCreditsOpen] = useState(false);
+  const credits = pathId ? detail?.credits : home?.credits;
   const [librarySearch, setLibrarySearch] = useState("");
   const [deletePath, setDeletePath] = useState<Path | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -231,10 +239,18 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
   const [reportReason, setReportReason] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
   const [reportSaved, setReportSaved] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    for (const field of [composer.current, tutorComposer.current]) {
+      if (!field) continue;
+      field.style.height = "auto";
+      field.style.height = `${Math.min(field.scrollHeight, field === composer.current ? 144 : 220)}px`;
+    }
+  }, [topic, message, tutorOpen]);
   useEffect(() => {
     if (pathId || libraryMode) return;
     const params = new URLSearchParams(window.location.search);
@@ -335,6 +351,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
 
   const createPath = async () => {
     if (busy) return;
+    if (credits?.available === 0) {
+      setCreditsOpen(true);
+      return;
+    }
     if (topic.trim().length < 3) {
       setError("Describe what you want to learn in at least three characters.");
       composer.current?.focus();
@@ -359,6 +379,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
           ? cause.message
           : "Your path could not be created. Please retry.",
       );
+      if (cause instanceof Error && 'code' in cause && cause.code === 'credits_exhausted') setCreditsOpen(true);
     } finally {
       setBusy("");
     }
@@ -641,7 +662,9 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
   );
   return (
     <div className={`symm-theme min-h-screen font-sans text-[var(--symm-text)] ${!pathId ? "symm-product-shell" : ""} ${pathId || libraryMode ? "bg-[var(--symm-bg)]" : "symm-home-shell"}`}>
+      {!libraryMode && (!pathId || detail?.path.status !== "ready") && <LivingField intensity="workspace" active={composerFocused || topic.length > 0} />}
       {!pathId && <SymmSidebar paths={home?.paths ?? []} activeRoute={libraryMode ? "/training/symm/library" : "/training/symm"} />}
+      <CreditDialog open={creditsOpen} onOpenChange={setCreditsOpen} credits={credits} />
       <div className="relative z-10 mx-auto w-full min-w-0 max-w-[1700px]">
         <nav
           aria-label="Symm AI navigation"
@@ -658,19 +681,24 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             <span className="h-5 w-px bg-[var(--symm-elevated)]" aria-hidden="true" />
             <Link
               href="/training/symm"
+              aria-label="Symm AI home"
               className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-.02em]"
             >
               <span className="flex size-9 items-center justify-center rounded-lg bg-[var(--symm-elevated)]">
                 <SymmMark className="size-7 object-contain" />
               </span>
-              Symm AI
+              <span className="hidden sm:inline">Symm AI</span>
             </Link>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
+            <CreditIndicator credits={credits} onClick={() => setCreditsOpen(true)} compact />
+            {billing.data?.tier !== "pro" && billing.data?.tier !== "premium" && (
+              <Link href="/pricing" className="symm-upgrade-link">Upgrade to Pro <ArrowRight size={13} /></Link>
+            )}
             {pathId || libraryMode ? (
               <Link
                 href="/training/symm"
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
+                className="symm-nav-secondary inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
               >
                 <Plus size={14} />
                 <span className="hidden sm:inline">New Path</span>
@@ -684,7 +712,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   composer.current?.focus();
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
+                className="symm-nav-secondary inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
               >
                 <Plus size={14} />
                 <span className="hidden sm:inline">New Path</span>
@@ -692,7 +720,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             )}
             <Link
               href="/training/symm/library"
-              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]"
+              className={`${pathId ? "" : "symm-nav-secondary "}inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-[var(--symm-muted)] hover:bg-[var(--symm-surface)] hover:text-[var(--symm-text)]`}
             >
               <Library size={14} />
               <span className="hidden sm:inline">My Library</span>
@@ -701,13 +729,13 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
               <img
                 src={avatarUrl}
                 alt={avatarName}
-                className="ml-2 size-8 rounded-full object-cover"
+                className="ml-2 hidden size-8 rounded-full object-cover sm:block"
                 referrerPolicy="no-referrer"
               />
             ) : (
               <span
                 title={avatarName}
-                className="ml-2 flex size-8 items-center justify-center rounded-full border border-[var(--symm-border)] bg-[var(--symm-accent-surface)] text-xs font-medium text-[var(--symm-accent-text)]"
+                className="ml-2 hidden size-8 items-center justify-center rounded-full border border-[var(--symm-border)] bg-[var(--symm-accent-surface)] text-xs font-medium text-[var(--symm-accent-text)] sm:flex"
               >
                 {avatarName[0]?.toUpperCase()}
               </span>
@@ -720,21 +748,25 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
             {!libraryMode && (
             <div className="symm-home-stage mx-auto max-w-[900px]">
               <div className="symm-home-heading text-center">
-                <p className="symm-home-kicker">SYMM AI / LEARNING WORKSPACE</p>
-                <h1>What do you want to master?</h1>
-                <p>Learn competitive programming from first principles.</p>
+                <SymmMark className="symm-home-mark mx-auto rounded-xl object-contain" />
+                <h1>Meet SYMM AI.</h1>
+                <SymmKineticType className="symm-home-kinetic" />
+                <p>One question can become a way forward.</p>
               </div>
               <div className="symm-home-composer">
                 <label className="sr-only" htmlFor="symm-topic">
                   What do you want to learn?
                 </label>
-                <Search className="symm-home-search" size={22} aria-hidden="true" />
+
                 <textarea
                   ref={composer}
                   id="symm-topic"
                   value={topic}
                   maxLength={180}
+                  aria-describedby="symm-composer-hint"
                   onChange={(event) => setTopic(event.target.value)}
+                  onFocus={() => setComposerFocused(true)}
+                  onBlur={() => setComposerFocused(false)}
                   onKeyDown={(event) => {
                     if (
                       event.key === "Enter" &&
@@ -742,28 +774,33 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                       !event.nativeEvent.isComposing
                     ) {
                       event.preventDefault();
-                      void createPath();
+                      if (topic.trim().length >= 3 && !busy && home?.configured) void createPath();
                     }
                   }}
-                  placeholder="Ask anything..."
-                  rows={2}
+                  placeholder="I want to understand dynamic programming on grids…"
+                  rows={1}
                   className="symm-home-textarea"
                 />
                 <div className="symm-home-composer-footer">
-                  <div className="symm-home-preferences flex flex-wrap items-center gap-2 text-xs">
-                    <div role="group" aria-label="Programming language" className="symm-home-language-selector">
-                      {(["cpp", "java", "python"] as const).map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          aria-pressed={language === option}
-                          onClick={() => void chooseLanguage(option)}
-                        >
-                          {option === "cpp" ? "C++17" : option === "java" ? "Java 17" : "Python 3"}
-                        </button>
-                      ))}
-                    </div>
+                  <label className="sr-only" htmlFor="symm-language">Programming language</label>
+                  <select id="symm-language" className="symm-home-language-select" value={language} onChange={(event) => void chooseLanguage(event.target.value as "cpp" | "java" | "python")}>
+                    <option value="cpp">C++17</option>
+                    <option value="java">Java 17</option>
+                    <option value="python">Python 3</option>
+                  </select>
+                  <div className="symm-home-submit-actions">
                     <button
+                      type="button"
+                      onClick={() => void createPath()}
+                      disabled={Boolean(busy) || !home?.configured || topic.trim().length < 3}
+                      aria-label="Create learning path"
+                      className="symm-home-send"
+                    >
+                      {busy === "roadmap" ? <LoaderCircle size={19} className="animate-spin" /> : <ArrowUp size={20} />}
+                    </button>
+                  </div>
+                </div>
+              </div><div className="symm-customize-separate"><button
                       type="button"
                       onClick={() => setCustomize(!customize)}
                       aria-expanded={customize}
@@ -784,19 +821,6 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                         }
                       />
                     </button>
-                  </div>
-                  <div className="symm-home-submit-actions">
-                    <button
-                      type="button"
-                      onClick={() => void createPath()}
-                      disabled={Boolean(busy) || !home?.configured || topic.trim().length < 3}
-                      aria-label="Create learning path"
-                      className="symm-home-send"
-                    >
-                      {busy === "roadmap" ? <LoaderCircle size={19} className="animate-spin" /> : <ArrowUp size={20} />}
-                    </button>
-                  </div>
-                </div>
                 {customize && (
                   <div
                     id="symm-customize"
@@ -876,7 +900,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                   </div>
                 )}
               </div>
-              <p className="mt-3 text-center text-[11px] text-[var(--symm-muted)]">
+              <p id="symm-composer-hint" className="mt-3 text-center text-[11px] text-[var(--symm-muted)]">
                 Press Enter to create a path · Shift + Enter for a new line
               </p>
               {busy === "roadmap" && (
@@ -1089,6 +1113,10 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                       disabled={Boolean(busy)}
                       onClick={async () => {
                         if (!pathId) return;
+                        if (credits?.available === 0) {
+                          setCreditsOpen(true);
+                          return;
+                        }
                         setBusy("retry");
                         setError("");
                         try {
@@ -1100,6 +1128,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                               ? cause.message
                               : "Could not resume generation.",
                           );
+                          if (cause instanceof Error && 'code' in cause && cause.code === 'credits_exhausted') setCreditsOpen(true);
                         } finally {
                           setBusy("");
                         }
@@ -2168,7 +2197,7 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                           detail.conversation.map((item) => (
                             <div
                               key={item.id}
-                              className={`symm-tutor-message rounded-lg p-3.5 text-[13px] leading-6 ${item.role === "user" ? "ml-5 bg-[var(--symm-elevated)]" : "mr-5 bg-[var(--symm-elevated)]"}`}
+                              className={`symm-tutor-message rounded-lg p-3.5 text-[13px] leading-6 ${item.role === "user" ? "symm-tutor-message-user ml-5" : "symm-tutor-message-assistant mr-5"}`}
                             >
                               <p className="mb-2 text-[10px] uppercase tracking-[.1em] text-[var(--symm-accent-text)]">
                                 {item.role === "user" ? "You" : "Symm AI"}
@@ -2201,14 +2230,22 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
                         <label htmlFor="symm-message" className="sr-only">
                           Ask the tutor
                         </label>
-                        <div className="symm-tutor-composer flex items-center gap-2 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] px-2 focus-within:border-[#9e83e7]">
-                          <input
+                        <div className="symm-tutor-composer flex items-end gap-2 rounded-xl border border-[var(--symm-border)] bg-[var(--symm-surface)] px-2 focus-within:border-[#9e83e7]">
+                          <textarea
+                            ref={tutorComposer}
                             id="symm-message"
                             value={message}
                             onChange={(event) => setMessage(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                                event.preventDefault();
+                                if (message.trim() && !busy && active?.status === "ready") void askTutor(message);
+                              }
+                            }}
                             maxLength={2000}
                             placeholder="Ask a question…"
-                            className="h-11 min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"
+                            rows={1}
+                            className="symm-tutor-textarea min-w-0 flex-1 resize-none bg-transparent px-2 text-sm outline-none"
                           />
                           <button
                             type="submit"

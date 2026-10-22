@@ -1,89 +1,56 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Copy, Download, ArrowLeft } from "lucide-react";
+import { Download, ArrowLeft, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { useAccount } from "@/hooks/use-account";
+import { downloadProfileCard } from "@/lib/profile-card-download";
 import "./profile-card.css";
+
 export default function ProfileCard() {
-  const account = useAccount();
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/u/${account.data?.profile.username}`,
-      );
-      setMessage("Public portfolio link copied.");
-    } catch {
-      setError(
-        "Clipboard access is unavailable. Copy your public profile URL from Settings.",
-      );
-    }
+  const [downloading, setDownloading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const download = async () => {
+    setError("");
+    setDownloading(true);
+    try { await downloadProfileCard(); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Your download failed. Please retry."); }
+    finally { setDownloading(false); }
   };
   return (
     <Layout>
-      <div className="mx-auto max-w-4xl space-y-6">
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/profile">
-            <ArrowLeft size={14} />
-            Back to portfolio
-          </Link>
+      <div className="ag-card-page">
+        <Button asChild variant="ghost" size="sm" className="ag-card-back">
+          <Link href="/profile"><ArrowLeft size={14} />Back to portfolio</Link>
         </Button>
-        <header>
-          <p className="mb-2 text-xs text-muted-foreground">
-            A record worth sharing
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Your AlgoGym Card
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            A downloadable snapshot of your actual synchronized progress.
-            Generating a card does not make your account public.
-          </p>
+        <header className="ag-card-heading">
+          <div>
+            <p className="ag-card-eyebrow">THE WORK ADDS UP</p>
+            <h1>Your progress. Your signature.</h1>
+            <p>A little proof of the hours you put in. Take your AlgoGym card with you.</p>
+          </div>
+          <span className="ag-card-edition">THE CODER CARD <span>01 / PERSONAL EDITION</span></span>
         </header>
-        {error && (
-          <p role="alert" className="text-sm text-rose-300">
-            {error}
-          </p>
-        )}
-        {message && (
-          <p role="status" className="text-sm text-primary">
-            {message}
-          </p>
-        )}
         <div className="ag-card-stage">
           <div className="ag-card-stage-glow" aria-hidden="true" />
           <img
             src="/api/profile-card"
             alt="Your AlgoGym profile card with total solves, active days, coins and Codeforces rating"
-            width={720}
-            height={1000}
-            className="ag-card-preview"
-            onError={() => setError("Your card could not be loaded. Synchronize your profile and retry.")}
+            width={1080} height={720} className="ag-card-preview"
+            onLoad={() => setReady(true)}
+            onError={() => { setReady(false); setError("Your card could not be loaded. Synchronize your profile and retry."); }}
             loading="eager"
           />
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <a
-              href="/api/profile-card?download=1"
-              download="algogym-profile.svg"
-            >
-              <Download size={14} />
-              Download SVG
-            </a>
+        <footer className="ag-card-footer">
+          <div><p>Made from your real progress.</p><span>High-resolution JPEG · Your account stays private.</span></div>
+          <Button onClick={() => void download()} disabled={!ready || downloading} className="ag-card-download">
+            {downloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {downloading ? "Preparing JPEG…" : "Download JPEG"}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => void copy()}
-            disabled={!account.data?.profile.username}
-          >
-            <Copy size={14} />
-            Copy public portfolio link
-          </Button>
-        </div>
+        </footer>
+        {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
       </div>
     </Layout>
   );

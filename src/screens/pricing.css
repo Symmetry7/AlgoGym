@@ -1,4 +1,5 @@
 .pricing-page { min-height: 100svh; background: #090b0c; color: #f8f8fa; font-family: 'Helvetica Neue', Arial, sans-serif; }
+.pricing-content{max-width:900px}.pricing-free-balance{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:42px 0 18px;padding:17px 20px;border:1px solid #343038;border-radius:12px;background:#151317;color:#ddd6e5}.pricing-free-balance span{display:flex;align-items:center;gap:8px}.pricing-free-balance span svg{color:#dfb867}.pricing-free-balance strong{margin-left:auto;color:#f3dcac}.pricing-free-balance small{width:100%;color:#aaa3b0}.pricing-disclosure{margin-top:22px;text-align:center;font-size:12px;color:#9d97a5}.light .pricing-free-balance{background:#fff;color:#383240;border-color:#ddd4e4}.light .pricing-free-balance small{color:#68606d}
 .pricing-nav { width: min(1180px, calc(100% - 48px)); margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 76px; border-bottom: 1px solid #282b2e; }
 .pricing-back { display: inline-flex; align-items: center; gap: 8px; color: #aaaeb2; font-size: 13px; }
 .pricing-back:hover { color: white; }
@@ -70,3 +71,26 @@
 .light .pricing-comparison thead { background: #eeedf3; }
 .light .pricing-card-featured .pricing-credit-line, .light .pricing-card-featured .pricing-price span, .light .pricing-card-featured li { color: #eee6fc; }
 .light .pricing-card-featured li svg { color: #f4eaff; }
+.coin-exchange{margin-top:74px;padding-top:48px;border-top:1px solid #38313e}
+.coin-exchange-heading{display:flex;align-items:end;justify-content:space-between;gap:28px;margin-bottom:26px}
+.coin-exchange-kicker{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#d8b16d}
+.coin-exchange-heading h2{margin-top:9px;font-size:clamp(26px,3vw,35px);font-weight:550;letter-spacing:-.04em}
+.coin-exchange-heading>p{max-width:280px;color:#aaa5b0;font-size:13px;line-height:1.55}
+.coin-exchange-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.coin-exchange-card{min-width:0;border:1px solid #695b45;border-radius:18px;padding:25px 28px;background:linear-gradient(145deg,#292219,#141214);color:#f8f2e8}
+.coin-exchange-card-top{display:flex;align-items:center;gap:12px;color:#e8d7b6;font-size:13px}
+.coin-exchange-image{width:42px;height:42px;object-fit:contain}
+.coin-exchange-value{display:flex;align-items:baseline;gap:9px;margin-top:27px}
+.coin-exchange-value strong{font-size:clamp(38px,4vw,49px);font-weight:650;letter-spacing:-.055em;line-height:1}
+.coin-exchange-value span{font-size:13px;color:#c4b9aa}
+.coin-exchange-card>p{margin-top:8px;color:#e5d8c2;font-size:13px}
+.coin-exchange-card button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:45px;margin-top:29px;border-radius:10px;background:#e7c484;color:#281b0a;font-size:13px;font-weight:700;transition:background .16s ease,transform .16s ease}
+.coin-exchange-card button:hover:not(:disabled){background:#f5d79e;transform:translateY(-1px)}
+.coin-exchange-card button:disabled{opacity:.55;cursor:not-allowed}
+.coin-exchange-card button:focus-visible{outline:2px solid #f5d79e;outline-offset:3px}
+.coin-exchange-balance{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:16px;color:#aaa5b0;font-size:12px}
+.coin-exchange-balance-image{width:20px;height:20px;object-fit:contain}
+.light .pricing-free-balance strong{color:#765320}
+.light .coin-exchange-heading>p,.light .coin-exchange-balance{color:#665f6d}
+@media(max-width:620px){.coin-exchange-heading{display:block}.coin-exchange-heading>p{margin-top:12px}.coin-exchange-grid{grid-template-columns:1fr}.coin-exchange-card{padding:22px}}
+@media(prefers-reduced-motion:reduce){.coin-exchange-card button{transition:none}.coin-exchange-card button:hover:not(:disabled){transform:none}}

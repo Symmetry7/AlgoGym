@@ -1,0 +1,4 @@
+.symm-kinetic { display:block; min-height:1.2em; color:#d4bafa; }
+.symm-kinetic-cursor { display:inline-block; width:2px; height:.85em; margin-left:4px; vertical-align:-.08em; background:currentColor; animation:symm-cursor 1.15s steps(1,end) infinite; }
+@keyframes symm-cursor { 50% { opacity:0; } }
+@media (prefers-reduced-motion:reduce) { .symm-kinetic-cursor { animation:none; opacity:.55; } }

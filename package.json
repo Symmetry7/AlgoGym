@@ -8,7 +8,8 @@
     "start": "next start -p 8080",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "billing:setup": "node scripts/setup-razorpay-plans.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -83,6 +84,7 @@
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.20",
     "globals": "^15.9.0",
+    "playwright-core": "^1.64.1",
     "postcss": "^8.4.47",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.11",

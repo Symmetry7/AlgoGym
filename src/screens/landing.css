@@ -13,13 +13,16 @@
 .landing-skip {
   position: fixed;
   left: 20px;
-  top: -70px;
+  top: 12px;
   z-index: 60;
   padding: 12px;
   background: #211a30;
+  visibility: hidden;
+  transform: translateY(-150%);
 }
-.landing-skip:focus {
-  top: 12px;
+.landing-skip:focus-visible {
+  visibility: visible;
+  transform: none;
 }
 .landing-stage {
   position: relative;
@@ -115,8 +118,11 @@
   z-index: 2;
   width: 49%;
   max-width: 680px;
-  pointer-events: none;
+  pointer-events: auto;
 }
+.hero-symm-link { display:inline-flex; align-items:center; gap:11px; margin-top:28px; min-height:44px; color:#ede0ff; font-size:14px; font-weight:600; text-decoration:underline; text-decoration-color:#b99bea; text-underline-offset:6px; }
+.hero-symm-link:hover { color:#fff; }
+.symm-showcase { scroll-margin-top:40px; }
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -1135,29 +1141,7 @@
   }
 }
 
-/* One-shot scroll entry; no hidden content dependency and no continuous flashing. */
-@keyframes landing-card-enter {
-  from {
-    opacity: 0.25;
-    transform: translateY(22px) scale(0.975);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes landing-border-glint {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  38% {
-    opacity: 0.65;
-  }
-  68% {
-    opacity: 0.2;
-  }
-}
+/* One-shot section entry; content remains visible without JavaScript. */
 @keyframes landing-bars-enter {
   from {
     transform: scaleY(0.12);
@@ -1165,27 +1149,6 @@
   to {
     transform: scaleY(1);
   }
-}
-.landing-feature-sections[data-motion="ready"]
-  :is(
-    .story-card,
-    .discover-row,
-    .brand-monument,
-    .landing-invitation
-  ).is-revealed {
-  animation: landing-card-enter 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.story-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 1px solid #cbb2ef;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-}
-.landing-feature-sections[data-motion="ready"] .story-card.is-revealed::after {
-  animation: landing-border-glint 950ms ease-out both;
 }
 .landing-feature-sections[data-motion="ready"]
   .story-growth.is-revealed
@@ -1539,8 +1502,3 @@
   .hero-wave-letter svg { stroke:currentColor; }
   .landing-wave-backdrop { display:none; }
 }
-
-/* A short, deliberate rhythm beneath the headline. */
-.hero-copy .hero-description { max-width:520px; font-size:clamp(18px,1.6vw,23px); line-height:1.48; letter-spacing:-.02em; color:#d7cddd; }
-.hero-copy .hero-description span { display:inline-block; margin-top:2px; color:#f0e9f7; font-weight:500; }
-@media(max-width:600px) { .hero-copy .hero-description { font-size:17px; line-height:1.5; } }

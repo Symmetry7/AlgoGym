@@ -4,6 +4,10 @@
 
 @layer base {
   :root {
+    --ag-ai-accent: #d0baf2;
+    --ag-ai-surface: #1a1921;
+    --ag-ai-ink: #f7f3fb;
+    --ag-motion-fast: 180ms;
     --background: 0 0% 5%;
     --foreground: 45 8% 94%;
     --muted: 0 0% 15%;

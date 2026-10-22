@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -15,16 +15,19 @@ import {
 } from "@/components/brand/CodingPlatformMark";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
 import { HeroCubes } from "@/components/brand/HeroCubes";
+import { SymmLaunchPreview } from "@/components/brand/SymmLaunchPreview";
 import { LandingFeatures } from "@/components/brand/LandingFeatures";
 import { GoogleMark } from "@/components/auth/GoogleMark";
 import { useAuth } from "@/contexts/AuthContext";
 import "./landing.css";
+import "./landing-launch.css";
 
 const SymmShowcase = dynamic(() => import("@/components/brand/SymmShowcase"), {
   loading: () => <div style={{ minHeight: 500 }} aria-hidden="true" />,
 });
 
 const links = [
+  ["Symm AI", "/#symm-ai"],
   ["Explore", "/problems"],
   ["Training", "/training"],
   ["Leaderboards", "/leaderboards"],
@@ -171,6 +174,21 @@ export default function Landing() {
               </Link>
             </div>
           </section>
+        </section>
+        <section className="symm-launch-section" id="symm-ai" aria-labelledby="symm-launch-title">
+          <div className="symm-launch-inner">
+            <div className="launch-intro">
+              <div>
+                <span className="launch-eyebrow">Introducing SYMM AI</span>
+                <h2 id="symm-launch-title"><span className="launch-line"><span>The path from stuck</span></span><span className="launch-line launch-line--accent"><span>to solved.</span></span></h2>
+              </div>
+              <div className="launch-intro-side">
+                <p>Turn a hard problem into a learning path you can actually follow.</p>
+                <div className="launch-actions"><Link href="/training/symm" className="launch-primary">Start with a question <ArrowRight size={18} /></Link><Link href="#product-preview" className="launch-secondary">Explore the product <ArrowDown size={17} /></Link></div>
+              </div>
+            </div>
+            <SymmLaunchPreview />
+          </div>
         </section>
         <SymmShowcase />
         <LandingFeatures>

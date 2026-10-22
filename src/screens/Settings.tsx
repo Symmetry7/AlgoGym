@@ -168,7 +168,7 @@ export default function Settings() {
                     <Input
                       minLength={3}
                       maxLength={30}
-                      pattern="[a-zA-Z0-9_-]{3,30}"
+                      pattern={"[a-zA-Z0-9_\\-]{3,30}"}
                       value={fields.username}
                       onChange={(event) =>
                         setFields({ ...fields, username: event.target.value })

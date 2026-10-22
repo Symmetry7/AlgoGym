@@ -50,7 +50,10 @@ export async function jsonRequest<T>(
   const response = await fetch(path, { cache: "no-store", ...options });
   const result = await response.json();
   if (!response.ok)
-    throw new Error(result.error || "The request could not be completed.");
+    throw Object.assign(new Error(result.error || "The request could not be completed."), {
+      status: response.status,
+      code: typeof result.code === "string" ? result.code : undefined,
+    });
   return result;
 }
 export function useAccount(enabled = true) {
