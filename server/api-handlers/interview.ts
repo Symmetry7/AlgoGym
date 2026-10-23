@@ -57,12 +57,42 @@ const categoryPlacementSchema = z
       "package-wise",
       "system-design",
       "hr-questions",
+      "interview-questions",
     ]),
     questionId: z.string().regex(/^[a-z0-9-]{2,120}$/),
     position: z.number().int().min(0).max(10000),
     remove: z.boolean().optional(),
   })
   .strict();
+
+type Placement = {
+  company_slug: string;
+  question_id: string;
+  position: number;
+};
+
+// PostgREST limits a single result page. Fetch every placement so directory
+// counts and company sheets remain correct as the catalog grows past 1,000 rows.
+async function readPlacements(
+  client: ReturnType<typeof adminSupabase>,
+  companySlug?: string,
+): Promise<Placement[]> {
+  const rows: Placement[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    let query = client
+      .from("interview_sheet_questions")
+      .select("company_slug,question_id,position")
+      .order("company_slug")
+      .order("position")
+      .range(offset, offset + 999);
+    if (companySlug) query = query.eq("company_slug", companySlug);
+    const { data, error } = await query;
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if ((data?.length ?? 0) < 1000) break;
+  }
+  return rows;
+}
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   res.setHeader("Cache-Control", "private, no-store");
@@ -100,13 +130,9 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       )
         return res.status(400).json({ error: "Invalid view." });
       if (mode === "role")
-        return res
-          .status(200)
-          .json({
-            admin: Boolean(
-              user && (await client.rpc("is_platform_admin")).data,
-            ),
-          });
+        return res.status(200).json({
+          admin: Boolean(user && (await client.rpc("is_platform_admin")).data),
+        });
       if (mode === "admin") {
         if (!user || !(await client.rpc("is_platform_admin")).data)
           return res
@@ -117,37 +143,21 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           await Promise.all([
             admin.from("interview_companies").select("*").order("position"),
             admin.from("interview_questions").select("*").order("title"),
-            admin
-              .from("interview_sheet_questions")
-              .select("*")
-              .order("company_slug")
-              .order("position"),
+            readPlacements(admin),
             admin
               .from("interview_category_questions")
               .select("*")
               .order("category_slug")
               .order("position"),
           ]);
-        if (
-          companies.error ||
-          questions.error ||
-          placements.error ||
-          categoryPlacements.error
-        )
-          throw (
-            companies.error ??
-            questions.error ??
-            placements.error ??
-            categoryPlacements.error
-          );
-        return res
-          .status(200)
-          .json({
-            companies: companies.data,
-            questions: questions.data,
-            placements: placements.data,
-            categoryPlacements: categoryPlacements.data,
-          });
+        if (companies.error || questions.error || categoryPlacements.error)
+          throw companies.error ?? questions.error ?? categoryPlacements.error;
+        return res.status(200).json({
+          companies: companies.data,
+          questions: questions.data,
+          placements,
+          categoryPlacements: categoryPlacements.data,
+        });
       }
       if (mode === "state") {
         if (!user) return res.status(200).json({ state: [] });
@@ -196,33 +206,29 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         .select("slug,name,description,position")
         .order("position");
       if (companies.error) throw companies.error;
-      const placements = await client
-        .from("interview_sheet_questions")
-        .select("company_slug,question_id,position")
-        .order("position")
-        .order("question_id");
-      if (placements.error) throw placements.error;
+      const placements = await readPlacements(
+        client,
+        mode === "sheet" ? (slug ?? undefined) : undefined,
+      );
       if (mode === "directory") {
         const counts = new Map<string, number>();
-        for (const placement of placements.data ?? [])
+        for (const placement of placements)
           counts.set(
             placement.company_slug,
             (counts.get(placement.company_slug) ?? 0) + 1,
           );
-        return res
-          .status(200)
-          .json({
-            companies: (companies.data ?? []).map((company) => ({
-              ...company,
-              count: counts.get(company.slug) ?? 0,
-            })),
-          });
+        return res.status(200).json({
+          companies: (companies.data ?? []).map((company) => ({
+            ...company,
+            count: counts.get(company.slug) ?? 0,
+          })),
+        });
       }
       if (!slug) return res.status(400).json({ error: "Choose a company." });
       const company = companies.data?.find((entry) => entry.slug === slug);
       if (!company)
         return res.status(404).json({ error: "Company sheet not found." });
-      const ids = (placements.data ?? [])
+      const ids = placements
         .filter((entry) => entry.company_slug === slug)
         .map((entry) => entry.question_id);
       const questions = ids.length
@@ -308,13 +314,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             .delete()
             .eq("category_slug", input.categorySlug)
             .eq("question_id", input.questionId)
-        : await admin
-            .from("interview_category_questions")
-            .upsert({
-              category_slug: input.categorySlug,
-              question_id: input.questionId,
-              position: input.position,
-            });
+        : await admin.from("interview_category_questions").upsert({
+            category_slug: input.categorySlug,
+            question_id: input.questionId,
+            position: input.position,
+          });
       if (result.error) throw result.error;
       return res.status(200).json({ ok: true });
     }
@@ -324,22 +328,18 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .delete()
           .eq("company_slug", input.companySlug)
           .eq("question_id", input.questionId)
-      : await admin
-          .from("interview_sheet_questions")
-          .upsert({
-            company_slug: input.companySlug,
-            question_id: input.questionId,
-            position: input.position,
-          });
+      : await admin.from("interview_sheet_questions").upsert({
+          company_slug: input.companySlug,
+          question_id: input.questionId,
+          position: input.position,
+        });
     if (result.error) throw result.error;
     return res.status(200).json({ ok: true });
   } catch {
-    return res
-      .status(503)
-      .json({
-        error:
-          "Interview preparations are temporarily unavailable. Please retry.",
-      });
+    return res.status(503).json({
+      error:
+        "Interview preparations are temporarily unavailable. Please retry.",
+    });
   } finally {
     flushCookies();
   }

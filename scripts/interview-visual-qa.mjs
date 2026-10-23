@@ -138,6 +138,32 @@ try {
         failures.push({ interaction: "mobile-menu" });
     }
     if (width === 430 || width === 1440) {
+      await page.goto(`${origin}/interview-preparations/package-wise`, {
+        waitUntil: "domcontentloaded",
+      });
+      await page
+        .locator(".ip-table tbody tr")
+        .first()
+        .waitFor({ timeout: 30000 });
+      const packageCount = await page.locator(".ip-table tbody tr").count();
+      await page
+        .getByRole("combobox", { name: "Preparation stage" })
+        .selectOption("Challenge");
+      const challengeCount = await page.locator(".ip-table tbody tr").count();
+      if (
+        packageCount < 50 ||
+        challengeCount < 1 ||
+        challengeCount >= packageCount
+      )
+        failures.push({
+          interaction: "package-stages",
+          width,
+          packageCount,
+          challengeCount,
+        });
+      await page.screenshot({
+        path: resolve(root, `algogym-package-wise-${width}.png`),
+      });
       await page.goto(`${origin}/interview-preparations/sql`, {
         waitUntil: "domcontentloaded",
       });
@@ -151,6 +177,89 @@ try {
         path: resolve(root, `algogym-sql-${width}.png`),
         fullPage: false,
       });
+      for (const [category, minimum] of [
+        ["system-design", 10],
+        ["hr-questions", 10],
+        ["interview-questions", 8],
+      ]) {
+        await page.goto(`${origin}/interview-preparations/${category}`, {
+          waitUntil: "domcontentloaded",
+        });
+        await page
+          .locator(".ip-table tbody tr")
+          .first()
+          .waitFor({ timeout: 30000 });
+        const count = await page.locator(".ip-table tbody tr").count();
+        if (count < minimum)
+          failures.push({ interaction: category, width, count });
+        await page.screenshot({
+          path: resolve(root, `algogym-${category}-${width}.png`),
+        });
+      }
+      await page.goto(`${origin}/interview-preparations/cold-email-templates`, {
+        waitUntil: "domcontentloaded",
+      });
+      await page
+        .locator(".ip-template-card")
+        .first()
+        .waitFor({ timeout: 30000 });
+      const templates = await page.locator(".ip-template-card").count();
+      if (templates !== 8)
+        failures.push({ interaction: "template-directory", width, templates });
+      await page.screenshot({
+        path: resolve(root, `algogym-templates-${width}.png`),
+      });
+      if (width === 1440) {
+        await page
+          .getByRole("searchbox", { name: "Search email templates" })
+          .fill("alumni");
+        if ((await page.locator(".ip-template-card").count()) !== 1)
+          failures.push({ interaction: "template-search" });
+        await page.locator(".ip-template-card").click();
+        const editor = page.getByRole("textbox", { name: "Email body" });
+        await editor.fill(
+          "Hi [name],\n\nThis is a personalized test.\n\nBest,\n[me]",
+        );
+        if (!(await editor.inputValue()).includes("personalized test"))
+          failures.push({ interaction: "template-edit" });
+        await page
+          .context()
+          .grantPermissions(["clipboard-read", "clipboard-write"], { origin });
+        await page.getByRole("button", { name: "Copy email" }).click();
+        await page
+          .getByRole("button", { name: "Copied" })
+          .waitFor({ state: "visible", timeout: 3000 })
+          .catch(() => {
+            failures.push({ interaction: "template-copy" });
+          });
+        await page.screenshot({
+          path: resolve(root, "algogym-template-detail-1440.png"),
+        });
+      }
+      for (const resource of [
+        "role-wise",
+        "core-subjects",
+        "cool-notes",
+        "resume-templates",
+      ]) {
+        await page.goto(`${origin}/interview-preparations/${resource}`, {
+          waitUntil: "domcontentloaded",
+        });
+        await page
+          .locator(".ip-resource-card")
+          .first()
+          .waitFor({ timeout: 30000 });
+        const cards = await page.locator(".ip-resource-card").count();
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        if (cards < 3 || overflow > 2)
+          failures.push({ interaction: resource, width, cards, overflow });
+        if (width === 1440)
+          await page.screenshot({
+            path: resolve(root, `algogym-${resource}-1440.png`),
+          });
+      }
     }
     if (width === 1440) {
       await page.goto(`${origin}/interview-preparations/patterns`, {
@@ -174,35 +283,69 @@ try {
     }
     await page.close();
   }
-  const reference = await browser.newPage({
-    viewport: { width: 1440, height: 900 },
-    deviceScaleFactor: 1,
-  });
-  await reference.emulateMedia({ colorScheme: "dark" });
-  for (const [name, path] of [
-    ["directory", "/preparation/company-wise-dsa-sheet/"],
-    [
-      "google",
-      "/preparation/company-wise-dsa-sheet/google-dsa-interview-questions/",
-    ],
-  ]) {
-    try {
-      await reference.goto(`https://hynts.in${path}`, {
-        waitUntil: "domcontentloaded",
-        timeout: 30000,
-      });
-      await reference.screenshot({
-        path: resolve(root, `reference-${name}-1440.png`),
-        fullPage: false,
-      });
-      process.stdout.write(`Reference screenshot: ${name}\n`);
-    } catch (error) {
-      process.stdout.write(
-        `Reference capture failed: ${name}: ${error.message}\n`,
-      );
+  if (process.env.INTERVIEW_QA_REFERENCE === "1") {
+    const reference = await browser.newPage({
+      viewport: { width: 1440, height: 900 },
+      deviceScaleFactor: 1,
+    });
+    await reference.emulateMedia({ colorScheme: "dark" });
+    for (const [name, path] of [
+      ["directory", "/preparation/company-wise-dsa-sheet/"],
+      [
+        "google",
+        "/preparation/company-wise-dsa-sheet/google-dsa-interview-questions/",
+      ],
+    ]) {
+      try {
+        await reference.goto(`https://hynts.in${path}`, {
+          waitUntil: "domcontentloaded",
+          timeout: 30000,
+        });
+        await reference.screenshot({
+          path: resolve(root, `reference-${name}-1440.png`),
+          fullPage: false,
+        });
+        process.stdout.write(`Reference screenshot: ${name}\n`);
+      } catch (error) {
+        process.stdout.write(
+          `Reference capture failed: ${name}: ${error.message}\n`,
+        );
+      }
     }
+    await reference.close();
   }
-  await reference.close();
+  const directoryResponse = await fetch(
+    `${origin}/api/interview?mode=directory`,
+  );
+  const directory = await directoryResponse.json();
+  const googleResponse = await fetch(
+    `${origin}/api/interview?mode=sheet&company=google`,
+  );
+  const amazonResponse = await fetch(
+    `${origin}/api/interview?mode=sheet&company=amazon`,
+  );
+  const googleSheet = await googleResponse.json();
+  const amazonSheet = await amazonResponse.json();
+  if (
+    directoryResponse.status !== 200 ||
+    directory.companies?.length !== 45 ||
+    googleSheet.questions?.length !== 30 ||
+    amazonSheet.questions?.length !== 30 ||
+    JSON.stringify(googleSheet.questions.map((question) => question.id)) ===
+      JSON.stringify(amazonSheet.questions.map((question) => question.id))
+  )
+    failures.push({
+      interaction: "catalog-integrity",
+      companies: directory.companies?.length,
+      google: googleSheet.questions?.length,
+      amazon: amazonSheet.questions?.length,
+    });
+  const adminResponse = await fetch(`${origin}/api/interview?mode=admin`);
+  if (adminResponse.status !== 403)
+    failures.push({
+      interaction: "admin-access",
+      status: adminResponse.status,
+    });
 } finally {
   await browser.close();
 }

@@ -1,4 +1,8 @@
 "use client";
+import "@fontsource/lexend/400.css";
+import "@fontsource/lexend/500.css";
+import "@fontsource/lexend/600.css";
+import "@fontsource/lexend/700.css";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -7,15 +11,30 @@ import {
   ArrowUpRight,
   Bookmark,
   BookOpen,
+  BriefcaseBusiness,
+  Building2,
   Check,
   ChevronDown,
   ChevronRight,
+  Database,
+  FileText,
+  GraduationCap,
+  LayoutList,
+  Library,
+  Mail,
   Menu,
+  MessageSquare,
+  MonitorPlay,
+  Network,
+  NotebookTabs,
   Search,
+  Sparkles,
+  UserRound,
   X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
+import InterviewTemplates from "./InterviewTemplates";
 import "./interview-preparations.css";
 
 type Company = {
@@ -23,6 +42,7 @@ type Company = {
   name: string;
   description: string;
   count: number;
+  position: number;
 };
 type Question = {
   id: string;
@@ -74,6 +94,23 @@ const groups = [
 const titles: Record<string, string> = Object.fromEntries(
   groups.flatMap((group) => group.items.map(([slug, label]) => [slug, label])),
 );
+const navIcons = {
+  "dsa-sheets": Library,
+  "company-wise": Building2,
+  patterns: Network,
+  "package-wise": BriefcaseBusiness,
+  sql: Database,
+  "system-design": LayoutList,
+  "dsa-playlists": MonitorPlay,
+  "core-subjects": GraduationCap,
+  "system-design-playlists": Network,
+  "role-wise": UserRound,
+  "interview-questions": Sparkles,
+  "hr-questions": MessageSquare,
+  "cold-email-templates": Mail,
+  "cool-notes": NotebookTabs,
+  "resume-templates": FileText,
+} as const;
 const starterResources: Record<
   string,
   {
@@ -116,6 +153,17 @@ const starterResources: Record<
           "Topic-based practice with explanations and public problem links.",
         url: "https://usaco.guide/",
       },
+      {
+        title: "CP-Algorithms",
+        description:
+          "Topic explanations and reference implementations for classic algorithms.",
+        url: "https://cp-algorithms.com/",
+      },
+      {
+        title: "VisuAlgo",
+        description: "Interactive data-structure and algorithm visualizations.",
+        url: "https://visualgo.net/en",
+      },
     ],
   },
   "core-subjects": {
@@ -131,6 +179,17 @@ const starterResources: Record<
         description: "Processes, concurrency, virtual memory, and filesystems.",
         url: "https://pdos.csail.mit.edu/6.1810/",
       },
+      {
+        title: "MDN Web Docs",
+        description: "Web platform, HTTP, JavaScript, and browser APIs.",
+        url: "https://developer.mozilla.org/en-US/docs/Web",
+      },
+      {
+        title: "Operating Systems: Three Easy Pieces",
+        description:
+          "An openly available textbook on virtualization, concurrency, and persistence.",
+        url: "https://pages.cs.wisc.edu/~remzi/OSTEP/",
+      },
     ],
   },
   "system-design-playlists": {
@@ -145,6 +204,18 @@ const starterResources: Record<
         title: "System Design Primer",
         description: "Open-source design discussions and worked examples.",
         url: "https://github.com/donnemartin/system-design-primer",
+      },
+      {
+        title: "Google SRE Book",
+        description:
+          "Production reliability, monitoring, and incident response.",
+        url: "https://sre.google/sre-book/table-of-contents/",
+      },
+      {
+        title: "Cloudflare Learning Center",
+        description:
+          "Accessible explanations of networking, security, and web infrastructure.",
+        url: "https://www.cloudflare.com/learning/",
       },
     ],
   },
@@ -233,6 +304,28 @@ const starterResources: Record<
         description: "Official SQL syntax and examples.",
         url: "https://www.postgresql.org/docs/current/tutorial.html",
       },
+      {
+        title: "React Learn",
+        description:
+          "Official notes on components, state, effects, and data flow.",
+        url: "https://react.dev/learn",
+      },
+      {
+        title: "Docker Get Started",
+        description: "Containers, images, builds, and local workflows.",
+        url: "https://docs.docker.com/get-started/",
+      },
+      {
+        title: "OWASP Cheat Sheet Series",
+        description:
+          "Concise security reference for common web application risks.",
+        url: "https://cheatsheetseries.owasp.org/",
+      },
+      {
+        title: "USACO Guide",
+        description: "Algorithms and competitive-programming review by topic.",
+        url: "https://usaco.guide/",
+      },
     ],
   },
   "resume-templates": {
@@ -249,6 +342,11 @@ const starterResources: Record<
           "Content-first advice for clear, specific experience bullets.",
         url: "https://www.careeronestop.org/JobSearch/Resumes/resumes.aspx",
       },
+      {
+        title: "Purdue OWL resume workshop",
+        description: "Examples and writing guidance for clear resume sections.",
+        url: "https://owl.purdue.edu/owl/job_search_writing/resumes_and_vitas/index.html",
+      },
     ],
   },
   "role-wise": {
@@ -263,6 +361,27 @@ const starterResources: Record<
         title: "Data engineer",
         description: "SQL fundamentals and system design.",
         url: "/interview-preparations/sql",
+      },
+      {
+        title: "Frontend developer",
+        description:
+          "Web fundamentals, JavaScript, and product-facing trade-offs.",
+        url: "/interview-preparations/interview-questions",
+      },
+      {
+        title: "Backend developer",
+        description: "APIs, databases, reliability, and data structures.",
+        url: "/interview-preparations/system-design",
+      },
+      {
+        title: "Systems engineer",
+        description: "Architecture, storage, queues, and failure analysis.",
+        url: "/interview-preparations/system-design",
+      },
+      {
+        title: "Competitive programmer",
+        description: "Pattern recognition and deliberate algorithm practice.",
+        url: "/interview-preparations/patterns",
       },
     ],
   },
@@ -349,22 +468,26 @@ function Shell({ children }: { children: React.ReactNode }) {
           {groups.map((group) => (
             <div className="ip-nav-group" key={group.title}>
               <p>{group.title}</p>
-              {group.items.map(([slug, label]) => (
-                <Link
-                  prefetch={false}
-                  key={slug}
-                  href={`/interview-preparations/${slug}`}
-                  className={
-                    pathname === `/interview-preparations/${slug}` ||
-                    pathname.startsWith(`/interview-preparations/${slug}/`)
-                      ? "ip-active"
-                      : ""
-                  }
-                  onClick={() => setOpen(false)}
-                >
-                  {label}
-                </Link>
-              ))}
+              {group.items.map(([slug, label]) => {
+                const Icon = navIcons[slug];
+                return (
+                  <Link
+                    prefetch={false}
+                    key={slug}
+                    href={`/interview-preparations/${slug}`}
+                    className={
+                      pathname === `/interview-preparations/${slug}` ||
+                      pathname.startsWith(`/interview-preparations/${slug}/`)
+                        ? "ip-active"
+                        : ""
+                    }
+                    onClick={() => setOpen(false)}
+                  >
+                    <Icon size={16} strokeWidth={1.8} aria-hidden="true" />{" "}
+                    {label}
+                  </Link>
+                );
+              })}
             </div>
           ))}
           <div className="ip-nav-group">
@@ -444,10 +567,7 @@ function Directory() {
     [query.data, search],
   );
   return (
-    <>
-      <div className="ip-crumb">
-        Preparation <ChevronRight size={13} /> Company Wise DSA
-      </div>
+    <div className="ip-directory">
       <div className="ip-page-heading">
         <h1>Company Wise DSA Sheet</h1>
         <p>
@@ -485,11 +605,14 @@ function Directory() {
                 <strong>{company.name}</strong>
               </div>
               <p>
-                Public DSA practice for {company.name}. Build your fundamentals
-                and track every question.
+                A focused public-problem route for {company.name}. Work through
+                the essentials at your pace.
               </p>
               <div className="ip-company-foot">
-                <span>{company.count} Questions</span>
+                <span>
+                  <LayoutList size={14} aria-hidden="true" /> {company.count}{" "}
+                  Questions
+                </span>
                 <ChevronRight size={16} />
               </div>
             </Link>
@@ -500,7 +623,7 @@ function Directory() {
           No companies match “{search}”. Try another name.
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -579,116 +702,123 @@ function QuestionTable({
   onToggle,
   saving,
   showPopularity = true,
+  questionLabel = "Problem",
 }: {
   questions: Question[];
   states: Map<string, QuestionState>;
   onToggle: (id: string, field: "completed" | "bookmarked") => void;
   saving: string;
   showPopularity?: boolean;
+  questionLabel?: string;
 }) {
   if (!questions.length)
     return (
       <div className="ip-empty">No questions match the selected filters.</div>
     );
   return (
-    <div className="ip-table-scroll">
-      <table className="ip-table">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Problem</th>
-            <th>Tags</th>
-            <th>Link</th>
-            <th>Difficulty</th>
-            {showPopularity && <th>Popularity</th>}
-            <th>Save</th>
-          </tr>
-        </thead>
-        <tbody>
-          {questions.map((question, index) => (
-            <tr key={question.id}>
-              <td>
-                <button
-                  type="button"
-                  disabled={saving === question.id}
-                  className={`ip-check ${states.get(question.id)?.completed ? "ip-checked" : ""}`}
-                  aria-label={`${states.get(question.id)?.completed ? "Mark incomplete" : "Mark complete"}: ${question.title}`}
-                  aria-pressed={Boolean(states.get(question.id)?.completed)}
-                  onClick={() => onToggle(question.id, "completed")}
-                >
-                  {states.get(question.id)?.completed && (
-                    <Check size={14} strokeWidth={3} />
-                  )}
-                </button>
-              </td>
-              <td>
-                <span className="ip-number">{index + 1}.</span>
-                <a
-                  href={question.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {question.title}
-                </a>
-              </td>
-              <td>
-                <div className="ip-tags">
-                  {question.tags.slice(0, 2).map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-              </td>
-              <td>
-                <a
-                  className="ip-source"
-                  href={question.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Open ${question.title} on ${question.source}`}
-                >
-                  {question.source}
-                  <ArrowUpRight size={13} />
-                </a>
-              </td>
-              <td>
-                <span
-                  className={`ip-difficulty ip-${(question.difficulty ?? "").toLowerCase()}`}
-                >
-                  {question.difficulty ?? "—"}
-                </span>
-              </td>
-              {showPopularity && (
-                <td>
-                  {question.popularity ? (
-                    <span>{question.popularity}</span>
-                  ) : (
-                    <span className="ip-muted">—</span>
-                  )}
-                </td>
-              )}
-              <td>
-                <button
-                  type="button"
-                  disabled={saving === question.id}
-                  className={`ip-bookmark ${states.get(question.id)?.bookmarked ? "ip-bookmarked" : ""}`}
-                  aria-label={`${states.get(question.id)?.bookmarked ? "Remove bookmark" : "Bookmark"}: ${question.title}`}
-                  aria-pressed={Boolean(states.get(question.id)?.bookmarked)}
-                  onClick={() => onToggle(question.id, "bookmarked")}
-                >
-                  <Bookmark
-                    size={18}
-                    fill={
-                      states.get(question.id)?.bookmarked
-                        ? "currentColor"
-                        : "none"
-                    }
-                  />
-                </button>
-              </td>
+    <div className="ip-table-wrap">
+      <p className="ip-scroll-hint">
+        Swipe the table to see topics, source, difficulty, and saved status.
+      </p>
+      <div className="ip-table-scroll">
+        <table className="ip-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>{questionLabel}</th>
+              <th>Tags</th>
+              <th>Link</th>
+              <th>Difficulty</th>
+              {showPopularity && <th>Popularity</th>}
+              <th>Save</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {questions.map((question, index) => (
+              <tr key={question.id}>
+                <td>
+                  <button
+                    type="button"
+                    disabled={saving === question.id}
+                    className={`ip-check ${states.get(question.id)?.completed ? "ip-checked" : ""}`}
+                    aria-label={`${states.get(question.id)?.completed ? "Mark incomplete" : "Mark complete"}: ${question.title}`}
+                    aria-pressed={Boolean(states.get(question.id)?.completed)}
+                    onClick={() => onToggle(question.id, "completed")}
+                  >
+                    {states.get(question.id)?.completed && (
+                      <Check size={14} strokeWidth={3} />
+                    )}
+                  </button>
+                </td>
+                <td>
+                  <span className="ip-number">{index + 1}.</span>
+                  <a
+                    href={question.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {question.title}
+                  </a>
+                </td>
+                <td>
+                  <div className="ip-tags">
+                    {question.tags.slice(0, 2).map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                </td>
+                <td>
+                  <a
+                    className="ip-source"
+                    href={question.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open ${question.title} on ${question.source}`}
+                  >
+                    {question.source}
+                    <ArrowUpRight size={13} />
+                  </a>
+                </td>
+                <td>
+                  <span
+                    className={`ip-difficulty ip-${(question.difficulty ?? "").toLowerCase()}`}
+                  >
+                    {question.difficulty ?? "—"}
+                  </span>
+                </td>
+                {showPopularity && (
+                  <td>
+                    {question.popularity ? (
+                      <span>{question.popularity}</span>
+                    ) : (
+                      <span className="ip-muted">—</span>
+                    )}
+                  </td>
+                )}
+                <td>
+                  <button
+                    type="button"
+                    disabled={saving === question.id}
+                    className={`ip-bookmark ${states.get(question.id)?.bookmarked ? "ip-bookmarked" : ""}`}
+                    aria-label={`${states.get(question.id)?.bookmarked ? "Remove bookmark" : "Bookmark"}: ${question.title}`}
+                    aria-pressed={Boolean(states.get(question.id)?.bookmarked)}
+                    onClick={() => onToggle(question.id, "bookmarked")}
+                  >
+                    <Bookmark
+                      size={18}
+                      fill={
+                        states.get(question.id)?.bookmarked
+                          ? "currentColor"
+                          : "none"
+                      }
+                    />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -911,14 +1041,25 @@ function Progress() {
 }
 
 function Category({ slug }: { slug: string }) {
+  const [search, setSearch] = useState("");
   const source = starterResources[slug];
   if (slug === "patterns") return <Patterns />;
   if (slug === "package-wise") return <PracticeCategory slug={slug} />;
-  if (slug === "sql") return <QuestionCategory slug={slug} />;
+  if (
+    ["sql", "system-design", "hr-questions", "interview-questions"].includes(
+      slug,
+    )
+  )
+    return <QuestionCategory slug={slug} />;
   if (!source)
     return (
       <div className="ip-empty">This preparation section is unavailable.</div>
     );
+  const resources = source.links.filter((item) =>
+    `${item.title} ${item.description}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
   return (
     <>
       <div className="ip-crumb">
@@ -929,55 +1070,119 @@ function Category({ slug }: { slug: string }) {
         <h1>{titles[slug]}</h1>
         <p>{source.description}</p>
       </div>
-      <div className="ip-resource-list">
-        {source.links.map((item) => (
+      <div className="ip-search">
+        <Search size={18} />
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={`Search ${titles[slug].toLowerCase()}...`}
+          aria-label={`Search ${titles[slug]}`}
+        />
+      </div>
+      <div className="ip-resource-grid">
+        {resources.map((item) => (
           <a
             key={item.title}
+            className="ip-resource-card"
             href={item.url}
             target={item.url.startsWith("http") ? "_blank" : undefined}
             rel={
               item.url.startsWith("http") ? "noopener noreferrer" : undefined
             }
           >
-            <div>
-              <strong>{item.title}</strong>
-              <p>{item.description}</p>
-            </div>
-            <ArrowUpRight size={18} />
+            <span className="ip-resource-icon">
+              <BookOpen size={19} />
+            </span>
+            <strong>{item.title}</strong>
+            <p>{item.description}</p>
+            <span className="ip-resource-action">
+              Open resource <ArrowUpRight size={15} />
+            </span>
           </a>
         ))}
       </div>
+      {!resources.length && (
+        <div className="ip-empty">
+          No resources match “{search}”. Try a different word.
+        </div>
+      )}
     </>
   );
 }
 
 const patternGroups: Array<[string, string[]]> = [
-  ["Fast and Slow Pointer", ["lc-linked-list-cycle"]],
+  ["Fast and Slow Pointer", ["lc-linked-list-cycle", "lc-reorder-list"]],
   ["Overlapping Intervals", ["lc-merge-intervals"]],
-  ["Prefix Sum", ["lc-product-of-array-except-self"]],
-  ["Sliding Window", ["lc-longest-substring-without-repeating-characters"]],
-  ["Two Pointers", ["lc-3sum"]],
+  [
+    "Prefix Sum",
+    ["lc-product-of-array-except-self", "lc-longest-consecutive-sequence"],
+  ],
+  [
+    "Sliding Window",
+    [
+      "lc-longest-substring-without-repeating-characters",
+      "lc-minimum-window-substring",
+      "lc-longest-repeating-character-replacement",
+    ],
+  ],
+  [
+    "Two Pointers",
+    ["lc-3sum", "lc-container-with-most-water", "lc-trapping-rain-water"],
+  ],
   ["Cyclic Sort", ["lc-missing-number"]],
-  ["Reversal of Linked List", ["lc-reverse-linked-list"]],
+  ["Reversal of Linked List", ["lc-reverse-linked-list", "lc-add-two-numbers"]],
   ["Breadth-First Search", ["lc-binary-tree-level-order-traversal"]],
   [
     "Depth-First Search",
-    ["lc-number-of-islands", "lc-maximum-depth-of-binary-tree"],
+    [
+      "lc-number-of-islands",
+      "lc-maximum-depth-of-binary-tree",
+      "lc-clone-graph",
+      "lc-pacific-atlantic-water-flow",
+    ],
   ],
-  ["Backtracking", ["lc-subsets"]],
-  ["Modified Binary Search", ["lc-search-in-rotated-sorted-array"]],
+  ["Backtracking", ["lc-subsets", "lc-combination-sum", "lc-word-search"]],
+  [
+    "Modified Binary Search",
+    [
+      "lc-search-in-rotated-sorted-array",
+      "lc-find-minimum-in-rotated-sorted-array",
+    ],
+  ],
   ["Bitwise XOR", ["lc-single-number"]],
-  ["Top K Elements", ["lc-top-k-frequent-elements"]],
+  [
+    "Top K Elements",
+    ["lc-top-k-frequent-elements", "lc-kth-largest-element-in-an-array"],
+  ],
   ["K-way Merge", ["lc-merge-k-sorted-lists"]],
   ["Two Heaps", ["lc-find-median-from-data-stream"]],
-  ["Monotonic Stack", ["lc-daily-temperatures"]],
+  ["Monotonic Stack", ["lc-daily-temperatures", "lc-trapping-rain-water"]],
   [
     "Trees",
-    ["lc-maximum-depth-of-binary-tree", "lc-binary-tree-level-order-traversal"],
+    [
+      "lc-maximum-depth-of-binary-tree",
+      "lc-binary-tree-level-order-traversal",
+      "lc-invert-binary-tree",
+      "lc-validate-binary-search-tree",
+      "lc-lowest-common-ancestor-of-a-binary-search-tree",
+      "lc-serialize-and-deserialize-binary-tree",
+    ],
   ],
-  ["Dynamic Programming", ["lc-climbing-stairs", "lc-coin-change"]],
-  ["Graphs", ["lc-course-schedule", "lc-number-of-islands"]],
-  ["Greedy", ["lc-jump-game"]],
+  [
+    "Dynamic Programming",
+    [
+      "lc-climbing-stairs",
+      "lc-coin-change",
+      "lc-house-robber",
+      "lc-longest-increasing-subsequence",
+      "lc-decode-ways",
+      "lc-unique-paths",
+      "lc-partition-equal-subset-sum",
+    ],
+  ],
+  ["Graphs", ["lc-course-schedule", "lc-number-of-islands", "lc-word-ladder"]],
+  ["Greedy", ["lc-jump-game", "lc-task-scheduler"]],
 ];
 
 function Patterns() {
@@ -1089,6 +1294,16 @@ function QuestionCategory({ slug }: { slug: string }) {
   const completed = questions.filter(
     (question) => states.get(question.id)?.completed,
   ).length;
+  const descriptions: Record<string, string> = {
+    sql: "Work through public SQL exercises and keep your progress across sessions.",
+    "system-design":
+      "Use each prompt to explain requirements, trade-offs, and failure modes before reading the linked guide.",
+    "hr-questions":
+      "Prepare specific stories from your own experience. Completion records your rehearsal.",
+    "interview-questions":
+      "Review core engineering ideas and use the linked public references to check your explanation.",
+  };
+  const hasDifficulty = slug !== "hr-questions";
   return (
     <>
       <div className="ip-crumb">
@@ -1097,10 +1312,7 @@ function QuestionCategory({ slug }: { slug: string }) {
       </div>
       <div className="ip-page-heading">
         <h1>{titles[slug]}</h1>
-        <p>
-          Practice public SQL exercises and track each result in your AlgoGym
-          account.
-        </p>
+        <p>{descriptions[slug]}</p>
       </div>
       <div className="ip-sheet-tools ip-category-tools">
         <div className="ip-progress">
@@ -1134,16 +1346,18 @@ function QuestionCategory({ slug }: { slug: string }) {
           >
             All
           </button>
-          <select
-            aria-label="Difficulty"
-            value={difficulty}
-            onChange={(event) => setDifficulty(event.target.value)}
-          >
-            <option value="">Difficulty</option>
-            <option>Easy</option>
-            <option>Medium</option>
-            <option>Hard</option>
-          </select>
+          {hasDifficulty && (
+            <select
+              aria-label="Difficulty"
+              value={difficulty}
+              onChange={(event) => setDifficulty(event.target.value)}
+            >
+              <option value="">Difficulty</option>
+              <option>Easy</option>
+              <option>Medium</option>
+              <option>Hard</option>
+            </select>
+          )}
           <button
             className={bookmarked ? "ip-selected" : ""}
             onClick={() => setBookmarked(!bookmarked)}
@@ -1163,6 +1377,7 @@ function QuestionCategory({ slug }: { slug: string }) {
           onToggle={toggle}
           saving={saving}
           showPopularity={false}
+          questionLabel={slug === "sql" ? "Problem" : "Question"}
         />
       )}{" "}
       {error && (
@@ -1176,16 +1391,47 @@ function QuestionCategory({ slug }: { slug: string }) {
 
 function PracticeCategory({ slug }: { slug: string }) {
   const query = useQuery({
-    queryKey: ["interview-sheet", "google"],
+    queryKey: ["interview-category", "patterns"],
     queryFn: () =>
-      jsonRequest<Sheet>("/api/interview?mode=sheet&company=google"),
+      jsonRequest<{ questions: Question[] }>(
+        "/api/interview?mode=category&category=patterns",
+      ),
   });
   const { states, toggle, saving, error } = useQuestionState();
-  const [selected, setSelected] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [stage, setStage] = useState("");
+  const [bookmarked, setBookmarked] = useState(false);
   const questions = query.data?.questions ?? [];
-  const visible = questions.filter(
-    (question) => !selected || question.difficulty === selected,
-  );
+  const stageFor = (question: Question) => {
+    const tags = question.tags.map((tag) => tag.toLowerCase());
+    if (question.difficulty === "Hard") return "Challenge";
+    if (tags.some((tag) => ["graphs", "trees", "bfs", "dfs"].includes(tag)))
+      return "Trees & graphs";
+    if (tags.some((tag) => ["dynamic programming", "greedy"].includes(tag)))
+      return "Optimization";
+    if (
+      tags.some((tag) =>
+        ["binary search", "sliding window", "two pointers"].includes(tag),
+      )
+    )
+      return "Search & windows";
+    if (tags.some((tag) => ["linked list", "hash table", "heap"].includes(tag)))
+      return "Core structures";
+    return "Foundations";
+  };
+  const visible = filterQuestions(
+    questions,
+    states,
+    difficulty,
+    "",
+    bookmarked,
+  ).filter((question) => !stage || stageFor(question) === stage);
+  const completed = questions.filter(
+    (question) => states.get(question.id)?.completed,
+  ).length;
+  const percent = questions.length
+    ? Math.round((100 * completed) / questions.length)
+    : 0;
   return (
     <>
       <div className="ip-crumb">
@@ -1195,26 +1441,76 @@ function PracticeCategory({ slug }: { slug: string }) {
       <div className="ip-page-heading">
         <h1>{titles[slug]}</h1>
         <p>
-          Build foundations across difficulty levels. Compensation bands are not
-          a reliable proxy for question difficulty.
+          Six transparent practice stages, from foundations to challenge
+          problems. Compensation bands are not a reliable measure of problem
+          difficulty.
         </p>
       </div>
-      <div className="ip-category-filters">
-        <button
-          className={!selected ? "ip-selected" : ""}
-          onClick={() => setSelected("")}
+      <div className="ip-sheet-tools ip-category-tools">
+        <div
+          className="ip-progress"
+          aria-label={`${completed} of ${questions.length} completed`}
         >
-          All
-        </button>
-        {["Easy", "Medium", "Hard"].map((name) => (
-          <button
-            key={name}
-            className={selected === name ? "ip-selected" : ""}
-            onClick={() => setSelected(name)}
+          <span
+            className="ip-progress-ring"
+            style={{ "--progress": `${percent}%` } as React.CSSProperties}
           >
-            {name}
+            {percent}%
+          </span>
+          <div>
+            <strong>Overall Progress</strong>
+            <small>
+              {completed}/{questions.length}
+            </small>
+          </div>
+        </div>
+        <div className="ip-filters">
+          <button
+            className={
+              !difficulty && !stage && !bookmarked ? "ip-selected" : ""
+            }
+            onClick={() => {
+              setDifficulty("");
+              setStage("");
+              setBookmarked(false);
+            }}
+          >
+            All
           </button>
-        ))}
+          <select
+            aria-label="Difficulty"
+            value={difficulty}
+            onChange={(event) => setDifficulty(event.target.value)}
+          >
+            <option value="">Difficulty</option>
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
+          <select
+            aria-label="Preparation stage"
+            value={stage}
+            onChange={(event) => setStage(event.target.value)}
+          >
+            <option value="">Stage</option>
+            {[
+              "Foundations",
+              "Core structures",
+              "Search & windows",
+              "Trees & graphs",
+              "Optimization",
+              "Challenge",
+            ].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+          <button
+            className={bookmarked ? "ip-selected" : ""}
+            onClick={() => setBookmarked(!bookmarked)}
+          >
+            Bookmarked
+          </button>
+        </div>
       </div>
       {query.isLoading ? (
         <p className="ip-feedback">Loading questions…</p>
@@ -1388,6 +1684,7 @@ function Admin() {
                 "package-wise",
                 "system-design",
                 "hr-questions",
+                "interview-questions",
               ].map((name) => (
                 <option key={name} value={name}>
                   {titles[name]}
@@ -1606,6 +1903,8 @@ export default function InterviewPreparations() {
         <CompanySheet slug={path[1]} />
       ) : path[0] === "progress" ? (
         <Progress />
+      ) : path[0] === "cold-email-templates" ? (
+        <InterviewTemplates slug={path[1]} />
       ) : path[0] === "admin" ? (
         <Admin />
       ) : (
