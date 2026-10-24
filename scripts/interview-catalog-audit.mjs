@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { createClient } from "@supabase/supabase-js";
 
@@ -39,8 +39,9 @@ const [companies, questions, placements, categories] = await Promise.all([
   readAll("interview_category_questions", "category_slug,question_id"),
 ]);
 assert.equal(companies.length, 45);
-assert.ok(questions.length >= 90);
-assert.ok(placements.length >= 1350);
+assert.ok(companies.every((company) => company.slug === "d-e-shaw" || existsSync(`public/company-icons/${company.slug}.png`)), "A company image is missing");
+assert.ok(questions.length >= 200);
+assert.ok(placements.length >= 3000);
 const questionIds = new Set(questions.map((question) => question.id));
 assert.ok(questions.every((question) => question.url.startsWith("https://")));
 assert.ok(
@@ -56,11 +57,12 @@ const byCompany = new Map(
 );
 assert.ok(
   [...byCompany.values()].every(
-    (ids) => ids.length >= 30 && new Set(ids).size === ids.length,
+    (ids) => ids.length >= 65 && new Set(ids).size === ids.length,
   ),
 );
 assert.notDeepEqual(byCompany.get("google"), byCompany.get("amazon"));
 for (const [category, minimum] of [
+  ["package-wise", 200],
   ["patterns", 56],
   ["sql", 8],
   ["system-design", 10],

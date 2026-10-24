@@ -51,6 +51,7 @@
   margin-bottom: 13px;
   border-bottom: 1px solid var(--ip-border);
 }
+.ip-brand-logo { display: inline-flex; align-items: center; min-height: 36px; filter: brightness(0) invert(1); }
 .ip-brand-mark {
   display: grid;
   place-items: center;
@@ -140,13 +141,18 @@
   color: #d3c0f4;
   font-weight: 600;
 }
+.ip-topbar-location, .ip-topbar-actions { display: inline-flex; align-items: center; gap: 10px; }
+.ip-topbar-location a { color: #a6a6ae; }
+.ip-topbar-actions a { display: inline-flex; align-items: center; gap: 5px; color: #d7d7dc; font-weight: 500; }
+.ip-topbar-actions a:last-child { border: 1px solid #333337; padding: 8px 11px; border-radius: 7px; }
+.ip-topbar-actions a:hover { color: #fff; border-color: #606068; }
 .ip-main {
-  max-width: 1380px;
+  max-width: 1110px;
   margin: 0 auto;
-  padding: 38px clamp(24px, 4vw, 64px) 90px;
+  padding: 38px clamp(24px, 3.6vw, 48px) 90px;
 }
 .ip-directory {
-  padding-top: 42px;
+  padding-top: 0;
 }
 .ip-crumb {
   display: flex;
@@ -247,44 +253,18 @@
   white-space: nowrap;
 }
 .ip-company-mark {
-  width: 35px;
-  height: 35px;
+  width: 38px;
+  height: 38px;
   flex: none;
   display: grid;
   place-items: center;
-  border: 1px solid #625b6d;
-  background: #302739;
-  color: #f2ddff;
+  border: 1px solid #303036;
+  background: #171719;
   border-radius: 8px;
-  font-size: 11px;
-  letter-spacing: 0.01em;
-  font-weight: 800;
+  overflow: hidden;
 }
-.ip-company-card:nth-child(6n + 2) .ip-company-mark {
-  background: #152e4b;
-  border-color: #315780;
-  color: #a9d4ff;
-}
-.ip-company-card:nth-child(6n + 3) .ip-company-mark {
-  background: #3e281c;
-  border-color: #76503a;
-  color: #ffcb9e;
-}
-.ip-company-card:nth-child(6n + 4) .ip-company-mark {
-  background: #3d222b;
-  border-color: #784251;
-  color: #ffc1ce;
-}
-.ip-company-card:nth-child(6n + 5) .ip-company-mark {
-  background: #193c32;
-  border-color: #3c6d5d;
-  color: #adf0ce;
-}
-.ip-company-card:nth-child(6n + 6) .ip-company-mark {
-  background: #352f55;
-  border-color: #686098;
-  color: #dbd2ff;
-}
+.ip-company-mark img { width: 100%; height: 100%; object-fit: contain; }
+.ip-monogram { color: #e9e9ed; font-weight: 700; letter-spacing: -.06em; font-size: 13px; }
 .ip-company-card p {
   font-size: 12px;
   color: #9a9aa3;
@@ -295,6 +275,11 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.ip-company-card .ip-company-foot { padding-top: 11px; }
+.ip-package-badge { display: inline-flex; white-space: nowrap; border: 1px solid #4b3768; color: #bd9af9; background: #20182d; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
+.ip-source-mark { width: 29px !important; height: 29px !important; border-radius: 50% !important; background: #080809 !important; }
+.ip-source-mark svg { width: 18px !important; height: 18px !important; }
+.ip-source-name { font-size: 11px; white-space: nowrap; }
 .ip-company-foot {
   border-top: 1px solid #29292d;
   padding-top: 13px;
@@ -555,6 +540,7 @@
 .ip-error {
   color: #ffaaa9 !important;
 }
+.ip-provenance { margin: -3px 0 18px; color: #85858f; font-size: 11px; }
 .ip-sheet-heading {
   display: flex;
   align-items: center;
@@ -729,8 +715,8 @@
   padding: 0 10px;
 }
 .ip-table td {
-  height: 67px;
-  padding: 10px 16px;
+  height: 61px;
+  padding: 9px 14px;
   border-top: 1px solid #28282d;
   color: #b5b5bd;
   font-size: 12px;
@@ -789,10 +775,11 @@
   gap: 5px;
 }
 .ip-tags span {
-  border: 1px solid #37373b;
-  border-radius: 4px;
-  padding: 3px 6px;
-  color: #a8a8b0;
+  border: 1px solid #303c4c;
+  border-radius: 999px;
+  background: #1b2531;
+  padding: 3px 7px;
+  color: #adb9c9;
   font-size: 10px;
 }
 .ip-source {
@@ -808,15 +795,17 @@
 .ip-difficulty {
   font-size: 11px;
   font-weight: 650;
+  border-radius: 999px;
+  padding: 3px 8px;
 }
 .ip-easy {
-  color: #85d6a8;
+  color: #47d492; background: #0b291d;
 }
 .ip-medium {
-  color: #ebc275;
+  color: #efbd5d; background: #342814;
 }
 .ip-hard {
-  color: #ee929b;
+  color: #ee929b; background: #361a20;
 }
 .ip-muted {
   color: #696973;
@@ -979,6 +968,10 @@
     justify-content: flex-start;
     gap: 11px;
   }
+  .ip-topbar-location { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ip-topbar-actions { margin-left: auto; }
+  .ip-topbar-actions a:first-child { display: none; }
+  .ip-topbar-actions a:last-child { white-space: nowrap; }
   .ip-topbar > a {
     margin-left: auto;
   }

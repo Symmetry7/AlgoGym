@@ -7,6 +7,7 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
+  Flame,
   LoaderCircle,
 } from "lucide-react";
 import {
@@ -14,11 +15,14 @@ import {
   CodingPlatformMark,
 } from "@/components/brand/CodingPlatformMark";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
+import { CoinMark } from "@/components/brand/ChakraMark";
 import { HeroCubes } from "@/components/brand/HeroCubes";
 import { SymmLaunchPreview } from "@/components/brand/SymmLaunchPreview";
 import { LandingFeatures } from "@/components/brand/LandingFeatures";
 import { GoogleMark } from "@/components/auth/GoogleMark";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTracker } from "@/hooks/use-tracker";
+import { activityStreaks } from "@/lib/activity-streaks";
 import "./landing.css";
 import "./landing-launch.css";
 
@@ -30,6 +34,7 @@ const links = [
   ["Symm AI", "/#symm-ai"],
   ["Explore", "/problems"],
   ["Training", "/training"],
+  ["Interview Prep", "/interview-preparations/company-wise"],
   ["Leaderboards", "/leaderboards"],
   ["Communities", "/societies"],
   ["Pricing", "/pricing"],
@@ -84,6 +89,14 @@ function GoogleStart() {
   );
 }
 
+function LandingStreakMark() {
+  const { user } = useAuth();
+  const activity = useTracker(31, "all", false);
+  if (!user) return null;
+  const count = activity.data ? activityStreaks(activity.data.activity).current : null;
+  return <Link href="/statistics" className="landing-streak" title="Current verified practice streak" aria-label={count === null ? "Practice streak loading" : `${count} day practice streak`}><Flame size={16} fill="currentColor" />{count ?? "—"}</Link>;
+}
+
 export default function Landing() {
   return (
     <div className="landing-page">
@@ -105,6 +118,7 @@ export default function Landing() {
                 ))}
               </div>
               <div className="landing-nav-actions">
+                <LandingStreakMark />
                 <Link href="/sign-in" className="landing-sign-in">
                   Sign in <ArrowUpRight size={14} />
                 </Link>
@@ -164,6 +178,11 @@ export default function Landing() {
                 <p className="hero-auth-note">
                   <Link href="/sign-in">Or sign in with email</Link>
                 </p>
+                <nav className="hero-destinations" aria-label="Explore AlgoGym features">
+                  <Link href="/interview-preparations/company-wise">Company interview sheets <ArrowUpRight size={14} /></Link>
+                  <Link href="/training"><CoinMark className="hero-destination-coin" /> Earn Coins <ArrowUpRight size={14} /></Link>
+                  <Link href="/societies">Communities <ArrowUpRight size={14} /></Link>
+                </nav>
               </div>
               <Link
                 href="#how-it-works"

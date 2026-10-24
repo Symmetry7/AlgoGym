@@ -33,7 +33,7 @@ The AlgoGym adaptation keeps the brand lilac for focus and active states, while 
 | Grouped rail   | Sheets / Start Learning / Resources; active destination       | Same grouping plus user progress and admin entry              |
 | Company search | Filters as typed, no separate submit                          | Case-insensitive live filter, explicit empty state            |
 | Company card   | Opens named sheet                                             | Opens routed sheet; count comes from placements               |
-| Sheet heading  | Logo, title, summary, Read More/Less                          | Text mark, original description, same disclosure              |
+| Sheet heading  | Logo, title, summary, Read More/Less                          | Company mark, original description, same disclosure           |
 | Progress       | Completion count and circular indicator                       | Canonical user state in Supabase; updates optimistically      |
 | Filters        | All, Difficulty, Popularity, Bookmarked                       | Composable filters; absent popularity remains unassigned      |
 | Question row   | Completion, title, tags, source, difficulty, popularity, save | Accessible buttons, safe source link, persistent shared state |
@@ -42,4 +42,10 @@ The AlgoGym adaptation keeps the brand lilac for focus and active states, while 
 
 ## Content boundary
 
-The reference's company-specific problem selection, popularity editorial ratings, long descriptions, and logos are not copied. AlgoGym's company pages are labeled editorial practice tracks; they must not claim that a company asked a problem without independent evidence. Counts and progress derive from actual stored assignments. The source's layout and interaction language guide the frontend, while AlgoGym retains its own brand, account system, and content.
+The reference's company-specific problem selection, popularity editorial ratings, and long descriptions are not copied. AlgoGym's company pages are labeled editorial practice tracks; they must not claim that a company asked a problem without independent evidence. Counts and progress derive from actual stored assignments. The source's layout and interaction language guide the frontend, while AlgoGym retains its own brand, account system, and content.
+
+## 2026-10-23 correction pass
+
+The comparison exposed four gaps: text monograms rather than company marks, no salary-band filter, a shallow 30-question company track, and a wider/looser table than the reference. The updated implementation uses the official AlgoGym wordmark, 44 locally stored public company favicons plus a text mark for D. E. Shaw, a roughly 61px question row, and a narrower content area. Each of the 45 company sheets has 70 public linked exercises. The package sheet contains 200 non-premium LeetCode problems and filters by six editorial study bands from 3–5 LPA through 60+ LPA. Those bands are practice groupings by difficulty, not verified compensation outcomes.
+
+Reference company selections, popularity ratings, descriptions, and proprietary assets remain outside the imported dataset. The current images are fetched from the companies' own public domains, not Hynts.

@@ -87,6 +87,8 @@ try {
           errors,
         });
       if (name === "directory" && width === 1280) {
+        const logos = await page.locator(".ip-company-card img").evaluateAll((images) => ({ count: images.length, brokenVisible: images.slice(0, 8).filter((image) => !image.complete || image.naturalWidth === 0).length }));
+        if (logos.count !== 44 || logos.brokenVisible || await page.locator(".ip-company-card .ip-monogram").count() !== 1) failures.push({ interaction: "company-logos", logos });
         await page
           .getByRole("searchbox", { name: "Search companies" })
           .fill("pAy");
@@ -146,20 +148,24 @@ try {
         .first()
         .waitFor({ timeout: 30000 });
       const packageCount = await page.locator(".ip-table tbody tr").count();
-      await page
-        .getByRole("combobox", { name: "Preparation stage" })
-        .selectOption("Challenge");
-      const challengeCount = await page.locator(".ip-table tbody tr").count();
+      const firstDifficulty = await page.locator(".ip-table tbody tr .ip-difficulty").first().innerText();
+      const bandCounts = [];
+      for (const band of ["3–5 LPA", "5–10 LPA", "10–20 LPA", "20–40 LPA", "40–60 LPA", "60+ LPA"]) {
+        await page.getByRole("combobox", { name: "Package" }).selectOption(band);
+        bandCounts.push(await page.locator(".ip-table tbody tr").count());
+      }
       if (
-        packageCount < 50 ||
-        challengeCount < 1 ||
-        challengeCount >= packageCount
+        packageCount < 200 ||
+        firstDifficulty !== "Easy" ||
+        bandCounts.some((count) => count < 1 || count >= packageCount) ||
+        bandCounts.reduce((sum, count) => sum + count, 0) !== packageCount
       )
         failures.push({
-          interaction: "package-stages",
+          interaction: "package-filter",
           width,
           packageCount,
-          challengeCount,
+          firstDifficulty,
+          bandCounts,
         });
       await page.screenshot({
         path: resolve(root, `algogym-package-wise-${width}.png`),
@@ -329,8 +335,8 @@ try {
   if (
     directoryResponse.status !== 200 ||
     directory.companies?.length !== 45 ||
-    googleSheet.questions?.length !== 30 ||
-    amazonSheet.questions?.length !== 30 ||
+    googleSheet.questions?.length !== 70 ||
+    amazonSheet.questions?.length !== 70 ||
     JSON.stringify(googleSheet.questions.map((question) => question.id)) ===
       JSON.stringify(amazonSheet.questions.map((question) => question.id))
   )

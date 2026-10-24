@@ -11,6 +11,7 @@ import {
   Compass,
   Crown,
   FileText,
+  Flame,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -28,6 +29,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccount } from "@/hooks/use-account";
 import { useBilling } from "@/hooks/use-billing";
+import { useTracker } from "@/hooks/use-tracker";
+import { activityStreaks } from "@/lib/activity-streaks";
 import {
   Sheet,
   SheetContent,
@@ -79,6 +82,8 @@ export function Layout({
   const { user, signOut } = useAuth();
   const account = useAccount();
   const billing = useBilling();
+  const streakActivity = useTracker(31, "all", false);
+  const currentStreak = activityStreaks(streakActivity.data?.activity ?? []).current;
   const [compact, setCompact] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -264,6 +269,7 @@ export function Layout({
           </div>
           <div className="flex items-center gap-3">
             {user&&<div className="flex items-center gap-1.5 sm:gap-2" aria-label="Account balances">
+              <Link href="/statistics" className="inline-flex items-center gap-1 rounded-full border border-orange-500/25 bg-orange-500/10 px-2.5 py-1.5 text-xs font-semibold text-orange-700 dark:text-orange-200" title="Current verified practice streak"><Flame size={15} fill="currentColor" />{streakActivity.data ? currentStreak : "—"}<span className="hidden md:inline">day streak</span></Link>
               {billing.data?.tier!=="free"&&billing.data?.tier&&<Link href="/pricing" className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide",billing.data.tier==="premium"?"border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-200":"border-violet-500/40 bg-violet-500/15 text-violet-700 dark:text-violet-200")}>{billing.data.tier==="premium"?<Crown size={13}/>:<Sparkles size={13}/>}<span className="hidden sm:inline">{billing.data.tier}</span></Link>}
               <Link href="/statistics" className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-200" title="Gold coins earned from verified solves"><CoinMark className="size-[18px] object-contain" />{billing.data?.coins??"—"}</Link>
               <Link href="/training/symm" className="inline-flex items-center gap-1 rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-200" title="AI learning path credits"><Sparkles size={14}/>{billing.data?.credits?.available??"—"}</Link>

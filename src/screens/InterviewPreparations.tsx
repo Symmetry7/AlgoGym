@@ -5,6 +5,7 @@ import "@fontsource/lexend/600.css";
 import "@fontsource/lexend/700.css";
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -35,6 +36,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
 import InterviewTemplates from "./InterviewTemplates";
+import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
+import { CodingPlatformMark, type ProviderId } from "@/components/brand/CodingPlatformMark";
 import "./interview-preparations.css";
 
 type Company = {
@@ -59,6 +62,17 @@ type QuestionState = {
   bookmarked: boolean;
 };
 type Sheet = { company: Company; questions: Question[] };
+const packageBands = ["3–5 LPA", "5–10 LPA", "10–20 LPA", "20–40 LPA", "40–60 LPA", "60+ LPA"] as const;
+export function packageBand(question: Question): string {
+  const variant = [...question.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 2;
+  return packageBands[(question.difficulty === "Hard" ? 4 : question.difficulty === "Medium" ? 2 : 0) + variant];
+}
+function CompanyMark({ company, large = false }: { company: Company; large?: boolean }) {
+  return <span className={`ip-company-mark ${large ? "ip-large-mark" : ""}`}>
+    {company.slug === "d-e-shaw" ? <span className="ip-monogram" aria-label={company.name}>D.E.</span>
+      : <Image src={`/company-icons/${company.slug}.png`} alt={`${company.name} logo`} width={large ? 48 : 36} height={large ? 48 : 36} unoptimized />}
+  </span>;
+}
 const groups = [
   {
     title: "Sheets",
@@ -435,17 +449,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         aria-label="Interview preparation navigation"
       >
         <div className="ip-brand">
-          <Link
-            href="/dashboard"
-            aria-label="AlgoGym dashboard"
-            className="ip-brand-mark"
-          >
-            A<span>G</span>
-          </Link>
-          <div>
-            <strong>AlgoGym</strong>
-            <small>Interview Preparations</small>
-          </div>
+          <Link href="/dashboard" aria-label="AlgoGym dashboard" className="ip-brand-logo"><AlgoGymLogo className="w-[116px]" /></Link>
           <button
             className="ip-mobile-close"
             onClick={() => setOpen(false)}
@@ -540,10 +544,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           >
             <Menu size={20} />
           </button>
-          <span>Interview Preparations</span>
-          <Link href="/interview-preparations/progress">
-            My progress <ChevronRight size={15} />
-          </Link>
+          <span className="ip-topbar-location"><Link href="/interview-preparations">Preparation</Link><ChevronRight size={14} />{pathname.includes("company-wise") ? "Company Wise DSA" : "Interview Preparations"}</span>
+          <div className="ip-topbar-actions"><Link href="/interview-preparations/progress">My progress</Link><Link href="/dashboard">Back to dashboard <ArrowUpRight size={14} /></Link></div>
         </header>
         <main className="ip-main">{children}</main>
       </div>
@@ -599,15 +601,10 @@ function Directory() {
               key={company.slug}
             >
               <div className="ip-company-head">
-                <span className="ip-company-mark">
-                  {company.name.slice(0, 2).toUpperCase()}
-                </span>
+                <CompanyMark company={company} />
                 <strong>{company.name}</strong>
               </div>
-              <p>
-                A focused public-problem route for {company.name}. Work through
-                the essentials at your pace.
-              </p>
+              <p>{company.description}</p>
               <div className="ip-company-foot">
                 <span>
                   <LayoutList size={14} aria-hidden="true" /> {company.count}{" "}
@@ -703,6 +700,7 @@ function QuestionTable({
   saving,
   showPopularity = true,
   questionLabel = "Problem",
+  packageFor,
 }: {
   questions: Question[];
   states: Map<string, QuestionState>;
@@ -710,6 +708,7 @@ function QuestionTable({
   saving: string;
   showPopularity?: boolean;
   questionLabel?: string;
+  packageFor?: (question: Question) => string;
 }) {
   if (!questions.length)
     return (
@@ -728,6 +727,7 @@ function QuestionTable({
               <th>{questionLabel}</th>
               <th>Tags</th>
               <th>Link</th>
+              {packageFor && <th>Package</th>}
               <th>Difficulty</th>
               {showPopularity && <th>Popularity</th>}
               <th>Save</th>
@@ -775,10 +775,12 @@ function QuestionTable({
                     rel="noopener noreferrer"
                     aria-label={`Open ${question.title} on ${question.source}`}
                   >
-                    {question.source}
-                    <ArrowUpRight size={13} />
+                    {(["leetcode", "geeksforgeeks", "codeforces"] as ProviderId[]).includes(question.source.toLowerCase() as ProviderId)
+                      ? <CodingPlatformMark platform={question.source.toLowerCase() as ProviderId} className="ip-source-mark" />
+                      : <span className="ip-source-name">{question.source}</span>}
                   </a>
                 </td>
+                {packageFor && <td><span className="ip-package-badge">{packageFor(question)}</span></td>}
                 <td>
                   <span
                     className={`ip-difficulty ip-${(question.difficulty ?? "").toLowerCase()}`}
@@ -870,9 +872,7 @@ function CompanySheet({ slug }: { slug: string }) {
         {company.name}
       </div>
       <div className="ip-sheet-heading">
-        <span className="ip-company-mark ip-large-mark">
-          {company.name.slice(0, 2).toUpperCase()}
-        </span>
+        <CompanyMark company={company} large />
         <div>
           <h1>{company.name} DSA Interview Questions</h1>
           <p>
@@ -893,6 +893,7 @@ function CompanySheet({ slug }: { slug: string }) {
         )}
       </div>
       <p className="ip-count">{questions.length} Problems</p>
+      <p className="ip-provenance">AlgoGym editorial practice track · Company-specific interview frequency has not been verified.</p>
       <div className="ip-sheet-tools">
         <div
           className="ip-progress"
@@ -1391,41 +1392,24 @@ function QuestionCategory({ slug }: { slug: string }) {
 
 function PracticeCategory({ slug }: { slug: string }) {
   const query = useQuery({
-    queryKey: ["interview-category", "patterns"],
+    queryKey: ["interview-category", "package-wise"],
     queryFn: () =>
       jsonRequest<{ questions: Question[] }>(
-        "/api/interview?mode=category&category=patterns",
+        "/api/interview?mode=category&category=package-wise",
       ),
   });
   const { states, toggle, saving, error } = useQuestionState();
   const [difficulty, setDifficulty] = useState("");
-  const [stage, setStage] = useState("");
+  const [band, setBand] = useState("");
   const [bookmarked, setBookmarked] = useState(false);
   const questions = query.data?.questions ?? [];
-  const stageFor = (question: Question) => {
-    const tags = question.tags.map((tag) => tag.toLowerCase());
-    if (question.difficulty === "Hard") return "Challenge";
-    if (tags.some((tag) => ["graphs", "trees", "bfs", "dfs"].includes(tag)))
-      return "Trees & graphs";
-    if (tags.some((tag) => ["dynamic programming", "greedy"].includes(tag)))
-      return "Optimization";
-    if (
-      tags.some((tag) =>
-        ["binary search", "sliding window", "two pointers"].includes(tag),
-      )
-    )
-      return "Search & windows";
-    if (tags.some((tag) => ["linked list", "hash table", "heap"].includes(tag)))
-      return "Core structures";
-    return "Foundations";
-  };
   const visible = filterQuestions(
     questions,
     states,
     difficulty,
     "",
     bookmarked,
-  ).filter((question) => !stage || stageFor(question) === stage);
+  ).filter((question) => !band || packageBand(question) === band);
   const completed = questions.filter(
     (question) => states.get(question.id)?.completed,
   ).length;
@@ -1441,11 +1425,11 @@ function PracticeCategory({ slug }: { slug: string }) {
       <div className="ip-page-heading">
         <h1>{titles[slug]}</h1>
         <p>
-          Six transparent practice stages, from foundations to challenge
-          problems. Compensation bands are not a reliable measure of problem
-          difficulty.
+          Choose a target package band to pace your practice. Bands are AlgoGym
+          study tiers based on difficulty, not verified salary or hiring data.
         </p>
       </div>
+      <p className="ip-count">{questions.length} Problems <span>· 6 Package Tiers (3–5 LPA to 60+ LPA)</span></p>
       <div className="ip-sheet-tools ip-category-tools">
         <div
           className="ip-progress"
@@ -1467,11 +1451,11 @@ function PracticeCategory({ slug }: { slug: string }) {
         <div className="ip-filters">
           <button
             className={
-              !difficulty && !stage && !bookmarked ? "ip-selected" : ""
+              !difficulty && !band && !bookmarked ? "ip-selected" : ""
             }
             onClick={() => {
               setDifficulty("");
-              setStage("");
+              setBand("");
               setBookmarked(false);
             }}
           >
@@ -1488,19 +1472,12 @@ function PracticeCategory({ slug }: { slug: string }) {
             <option>Hard</option>
           </select>
           <select
-            aria-label="Preparation stage"
-            value={stage}
-            onChange={(event) => setStage(event.target.value)}
+            aria-label="Package"
+            value={band}
+            onChange={(event) => setBand(event.target.value)}
           >
-            <option value="">Stage</option>
-            {[
-              "Foundations",
-              "Core structures",
-              "Search & windows",
-              "Trees & graphs",
-              "Optimization",
-              "Challenge",
-            ].map((item) => (
+            <option value="">Package</option>
+            {packageBands.map((item) => (
               <option key={item}>{item}</option>
             ))}
           </select>
@@ -1523,6 +1500,7 @@ function PracticeCategory({ slug }: { slug: string }) {
           onToggle={toggle}
           saving={saving}
           showPopularity={false}
+          packageFor={packageBand}
         />
       )}{" "}
       {error && (
