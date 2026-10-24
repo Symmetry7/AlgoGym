@@ -1,283 +1,386 @@
-{
-  "Fast and Slow Pointer": [
-    "lc-linked-list-cycle",
-    "lc-linked-list-cycle-ii"
-  ],
-  "Overlapping Intervals": [
-    "lc-merge-intervals",
-    "lc-insert-interval"
-  ],
-  "Prefix Sum": [
-    "lc-product-of-array-except-self"
-  ],
-  "Sliding Window": [
-    "lc-longest-substring-without-repeating-characters",
-    "lc-minimum-window-substring",
-    "lc-longest-repeating-character-replacement",
-    "lc-substring-with-concatenation-of-all-words"
-  ],
-  "Two Pointers": [
-    "lc-3sum",
-    "lc-container-with-most-water",
-    "lc-trapping-rain-water",
-    "lc-reorder-list",
-    "lc-longest-palindromic-substring",
-    "lc-3sum-closest",
-    "lc-4sum",
-    "lc-remove-nth-node-from-end-of-list",
-    "lc-remove-duplicates-from-sorted-array",
-    "lc-remove-element",
-    "lc-find-the-index-of-the-first-occurrence-in-a-string",
-    "lc-next-permutation",
-    "lc-rotate-list",
-    "lc-sort-colors",
-    "lc-remove-duplicates-from-sorted-array-ii",
-    "lc-remove-duplicates-from-sorted-list-ii",
-    "lc-partition-list",
-    "lc-merge-sorted-array",
-    "lc-valid-palindrome",
-    "lc-linked-list-cycle-ii",
-    "lc-sort-list",
-    "lc-reverse-words-in-a-string",
-    "lc-intersection-of-two-linked-lists",
-    "lc-compare-version-numbers",
-    "lc-two-sum-ii-input-array-is-sorted",
-    "lc-rotate-array",
-    "lc-happy-number"
-  ],
-  "Cyclic Sort": [
-    "lc-missing-number"
-  ],
-  "Reversal of Linked List": [
-    "lc-reverse-linked-list",
-    "lc-merge-two-sorted-lists",
-    "lc-linked-list-cycle",
-    "lc-reorder-list",
-    "lc-add-two-numbers",
-    "lc-remove-nth-node-from-end-of-list",
-    "lc-swap-nodes-in-pairs",
-    "lc-reverse-nodes-in-k-group",
-    "lc-rotate-list",
-    "lc-remove-duplicates-from-sorted-list-ii",
-    "lc-remove-duplicates-from-sorted-list",
-    "lc-partition-list",
-    "lc-reverse-linked-list-ii",
-    "lc-convert-sorted-list-to-binary-search-tree",
-    "lc-flatten-binary-tree-to-linked-list",
-    "lc-populating-next-right-pointers-in-each-node",
-    "lc-populating-next-right-pointers-in-each-node-ii",
-    "lc-copy-list-with-random-pointer",
-    "lc-linked-list-cycle-ii",
-    "lc-insertion-sort-list",
-    "lc-sort-list",
-    "lc-intersection-of-two-linked-lists",
-    "lc-remove-linked-list-elements"
-  ],
-  "Matrix Manipulation": [
-    "lc-word-search",
-    "lc-unique-paths",
-    "lc-valid-sudoku",
-    "lc-rotate-image",
-    "lc-spiral-matrix",
-    "lc-spiral-matrix-ii",
-    "lc-unique-paths-ii",
-    "lc-minimum-path-sum",
-    "lc-set-matrix-zeroes",
-    "lc-search-a-2d-matrix",
-    "lc-dungeon-game"
-  ],
-  "Breadth-First Search": [
-    "lc-binary-tree-level-order-traversal",
-    "lc-word-ladder",
-    "lc-same-tree",
-    "lc-symmetric-tree",
-    "lc-binary-tree-zigzag-level-order-traversal",
-    "lc-binary-tree-level-order-traversal-ii",
-    "lc-minimum-depth-of-binary-tree",
-    "lc-path-sum",
-    "lc-surrounded-regions",
-    "lc-binary-tree-right-side-view"
-  ],
-  "Depth-First Search": [
-    "lc-number-of-islands",
-    "lc-maximum-depth-of-binary-tree",
-    "lc-invert-binary-tree",
-    "lc-validate-binary-search-tree",
-    "lc-lowest-common-ancestor-of-a-binary-search-tree",
-    "lc-clone-graph",
-    "lc-pacific-atlantic-water-flow",
-    "lc-binary-tree-inorder-traversal",
-    "lc-recover-binary-search-tree",
-    "lc-same-tree",
-    "lc-symmetric-tree",
-    "lc-balanced-binary-tree",
-    "lc-minimum-depth-of-binary-tree",
-    "lc-path-sum",
-    "lc-path-sum-ii",
-    "lc-populating-next-right-pointers-in-each-node",
-    "lc-populating-next-right-pointers-in-each-node-ii",
-    "lc-binary-tree-maximum-path-sum",
-    "lc-sum-root-to-leaf-numbers",
-    "lc-surrounded-regions",
-    "lc-binary-tree-preorder-traversal",
-    "lc-binary-tree-postorder-traversal",
-    "lc-binary-tree-right-side-view"
-  ],
-  "Backtracking": [
-    "lc-subsets",
-    "lc-combination-sum",
-    "lc-word-search",
-    "lc-letter-combinations-of-a-phone-number",
-    "lc-generate-parentheses",
-    "lc-sudoku-solver",
-    "lc-combination-sum-ii",
-    "lc-permutations",
-    "lc-permutations-ii",
-    "lc-n-queens",
-    "lc-n-queens-ii",
-    "lc-combinations",
-    "lc-gray-code",
-    "lc-subsets-ii",
-    "lc-restore-ip-addresses",
-    "lc-unique-binary-search-trees-ii",
-    "lc-path-sum-ii",
-    "lc-word-ladder-ii",
-    "lc-palindrome-partitioning"
-  ],
-  "Modified Binary Search": [
-    "lc-binary-search",
-    "lc-search-in-rotated-sorted-array",
-    "lc-median-of-two-sorted-arrays",
-    "lc-find-minimum-in-rotated-sorted-array",
-    "lc-longest-increasing-subsequence",
-    "lc-find-first-and-last-position-of-element-in-sorted-array",
-    "lc-search-insert-position",
-    "lc-sqrtx",
-    "lc-search-a-2d-matrix",
-    "lc-search-in-rotated-sorted-array-ii",
-    "lc-find-minimum-in-rotated-sorted-array-ii",
-    "lc-find-peak-element",
-    "lc-two-sum-ii-input-array-is-sorted"
-  ],
-  "Bitwise XOR": [
-    "lc-single-number",
-    "lc-divide-two-integers",
-    "lc-add-binary",
-    "lc-gray-code",
-    "lc-subsets-ii",
-    "lc-single-number-ii",
-    "lc-repeated-dna-sequences",
-    "lc-reverse-bits",
-    "lc-number-of-1-bits",
-    "lc-bitwise-and-of-numbers-range"
-  ],
-  "Top K Elements": [
-    "lc-top-k-frequent-elements",
-    "lc-merge-k-sorted-lists",
-    "lc-task-scheduler",
-    "lc-kth-largest-element-in-an-array"
-  ],
-  "K-way Merge": [
-    "lc-merge-k-sorted-lists"
-  ],
-  "Two Heaps": [
-    "lc-find-median-from-data-stream"
-  ],
-  "Monotonic Stack": [
-    "lc-daily-temperatures",
-    "lc-largest-rectangle-in-histogram"
-  ],
-  "Trees": [
-    "lc-binary-tree-level-order-traversal",
-    "lc-maximum-depth-of-binary-tree",
-    "lc-invert-binary-tree",
-    "lc-validate-binary-search-tree",
-    "lc-lowest-common-ancestor-of-a-binary-search-tree",
-    "lc-serialize-and-deserialize-binary-tree",
-    "lc-binary-tree-inorder-traversal",
-    "lc-unique-binary-search-trees-ii",
-    "lc-unique-binary-search-trees",
-    "lc-recover-binary-search-tree",
-    "lc-same-tree",
-    "lc-symmetric-tree",
-    "lc-binary-tree-zigzag-level-order-traversal",
-    "lc-binary-tree-level-order-traversal-ii",
-    "lc-convert-sorted-array-to-binary-search-tree",
-    "lc-convert-sorted-list-to-binary-search-tree",
-    "lc-balanced-binary-tree",
-    "lc-minimum-depth-of-binary-tree",
-    "lc-path-sum",
-    "lc-path-sum-ii",
-    "lc-flatten-binary-tree-to-linked-list",
-    "lc-populating-next-right-pointers-in-each-node",
-    "lc-populating-next-right-pointers-in-each-node-ii",
-    "lc-binary-tree-maximum-path-sum",
-    "lc-sum-root-to-leaf-numbers",
-    "lc-binary-tree-preorder-traversal",
-    "lc-binary-tree-postorder-traversal",
-    "lc-binary-search-tree-iterator",
-    "lc-binary-tree-right-side-view"
-  ],
-  "Dynamic Programming": [
-    "lc-best-time-to-buy-and-sell-stock",
-    "lc-maximum-subarray",
-    "lc-coin-change",
-    "lc-climbing-stairs",
-    "lc-house-robber",
-    "lc-longest-increasing-subsequence",
-    "lc-decode-ways",
-    "lc-unique-paths",
-    "lc-partition-equal-subset-sum",
-    "lc-longest-palindromic-substring",
-    "lc-regular-expression-matching",
-    "lc-generate-parentheses",
-    "lc-longest-valid-parentheses",
-    "lc-wildcard-matching",
-    "lc-jump-game-ii",
-    "lc-unique-paths-ii",
-    "lc-minimum-path-sum",
-    "lc-edit-distance",
-    "lc-maximal-rectangle",
-    "lc-scramble-string",
-    "lc-unique-binary-search-trees-ii",
-    "lc-unique-binary-search-trees",
-    "lc-interleaving-string",
-    "lc-distinct-subsequences",
-    "lc-pascals-triangle",
-    "lc-pascals-triangle-ii",
-    "lc-triangle",
-    "lc-best-time-to-buy-and-sell-stock-ii",
-    "lc-best-time-to-buy-and-sell-stock-iii",
-    "lc-binary-tree-maximum-path-sum",
-    "lc-palindrome-partitioning",
-    "lc-palindrome-partitioning-ii",
-    "lc-maximum-product-subarray",
-    "lc-dungeon-game",
-    "lc-best-time-to-buy-and-sell-stock-iv"
-  ],
-  "Graphs": [
-    "lc-number-of-islands",
-    "lc-course-schedule",
-    "lc-clone-graph",
-    "lc-pacific-atlantic-water-flow",
-    "lc-word-ladder"
-  ],
-  "Greedy": [
-    "lc-jump-game",
-    "lc-task-scheduler",
-    "lc-wildcard-matching",
-    "lc-jump-game-ii",
-    "lc-best-time-to-buy-and-sell-stock-ii",
-    "lc-gas-station",
-    "lc-candy",
-    "lc-largest-number"
-  ],
-  "Design Data Structure": [
-    "lc-lru-cache",
-    "lc-find-median-from-data-stream",
-    "lc-serialize-and-deserialize-binary-tree",
-    "lc-min-stack",
-    "lc-binary-search-tree-iterator",
-    "lc-implement-trie-prefix-tree"
-  ]
-}
+[
+  {
+    "topic": "Fast and Slow Pointer",
+    "subTopic": "General",
+    "ids": [
+      "lc-linked-list-cycle-ii",
+      "lc-remove-nth-node-from-end-of-list",
+      "lc-find-the-duplicate-number",
+      "lc-palindrome-linked-list"
+    ]
+  },
+  {
+    "topic": "Overlapping Intervals",
+    "subTopic": "General",
+    "ids": [
+      "lc-merge-intervals-delivery-routing-windows",
+      "lc-insert-interval",
+      "lc-my-calendar-ii",
+      "lc-minimum-number-of-arrows-to-burst-balloons",
+      "lc-non-overlapping-intervals"
+    ]
+  },
+  {
+    "topic": "Prefix Sum",
+    "subTopic": "General",
+    "ids": [
+      "lc-find-the-middle-index-in-array",
+      "lc-product-of-array-except-self",
+      "lc-maximum-product-subarray",
+      "lc-number-of-ways-to-split-array",
+      "lc-range-sum-query-2d-immutable"
+    ]
+  },
+  {
+    "topic": "Sliding Window",
+    "subTopic": "Fixed Size",
+    "ids": [
+      "lc-maximum-sum-of-distinct-subarrays-with-length-k",
+      "lc-number-of-sub-arrays-of-size-k-and-average-greater-than-or-equal-to-threshold",
+      "lc-repeated-dna-sequences",
+      "lc-permutation-in-string",
+      "lc-sliding-subarray-beauty",
+      "lc-sliding-window-maximum"
+    ]
+  },
+  {
+    "topic": "Sliding Window",
+    "subTopic": "Variable Size",
+    "ids": [
+      "lc-longest-substring-without-repeating-characters",
+      "lc-minimum-size-subarray-sum",
+      "lc-subarray-product-less-than-k",
+      "lc-max-consecutive-ones",
+      "lc-fruit-into-baskets",
+      "lc-count-number-of-nice-subarrays",
+      "lc-smallest-substring-with-all-distinct-characters"
+    ]
+  },
+  {
+    "topic": "Two Pointers",
+    "subTopic": "General",
+    "ids": [
+      "lc-two-sum-ii-input-array-is-sorted",
+      "lc-sort-colors",
+      "lc-next-permutation",
+      "lc-bag-of-tokens",
+      "lc-container-with-most-water",
+      "lc-trapping-rain-water-massive-scale-metrics"
+    ]
+  },
+  {
+    "topic": "Cyclic Sort (Index-Based)",
+    "subTopic": "General",
+    "ids": [
+      "lc-missing-number",
+      "lc-find-all-numbers-disappeared-in-an-array",
+      "lc-set-mismatch",
+      "lc-first-missing-positive"
+    ]
+  },
+  {
+    "topic": "Reversal of Linked List (In-place)",
+    "subTopic": "General",
+    "ids": [
+      "lc-reverse-linked-list",
+      "lc-reverse-nodes-in-k-group",
+      "lc-swap-nodes-in-pairs"
+    ]
+  },
+  {
+    "topic": "Matrix Manipulation",
+    "subTopic": "General",
+    "ids": [
+      "lc-rotate-image",
+      "lc-spiral-matrix",
+      "lc-set-matrix-zeroes",
+      "lc-game-of-life"
+    ]
+  },
+  {
+    "topic": "Breadth First Search (BFS)",
+    "subTopic": "General",
+    "ids": [
+      "lc-shortest-path-in-binary-matrix",
+      "lc-rotting-oranges-spoilage-blast-radius-grid",
+      "lc-as-far-from-land-as-possible",
+      "lc-word-ladder"
+    ]
+  },
+  {
+    "topic": "Depth First Search (DFS)",
+    "subTopic": "General",
+    "ids": [
+      "lc-number-of-closed-islands",
+      "lc-coloring-a-border",
+      "lc-number-of-enclaves",
+      "lc-time-needed-to-inform-all-employees",
+      "lc-find-eventual-safe-states"
+    ]
+  },
+  {
+    "topic": "Backtracking",
+    "subTopic": "General",
+    "ids": [
+      "lc-permutations-ii",
+      "lc-combination-sum",
+      "lc-generate-parentheses",
+      "lc-n-queens",
+      "lc-sudoku-solver",
+      "lc-palindrome-partitioning",
+      "lc-word-search-grid-route-mappings"
+    ]
+  },
+  {
+    "topic": "Modified Binary Search",
+    "subTopic": "General",
+    "ids": [
+      "lc-search-in-rotated-sorted-array",
+      "lc-find-minimum-in-rotated-sorted-array",
+      "lc-find-peak-element",
+      "lc-single-element-in-a-sorted-array",
+      "lc-minimum-speed-to-arrive-on-time",
+      "lc-capacity-to-ship-packages-within-d-days",
+      "lc-koko-eating-bananas",
+      "lc-find-in-mountain-array",
+      "lc-median-of-two-sorted-arrays"
+    ]
+  },
+  {
+    "topic": "Bitwise XOR",
+    "subTopic": "General",
+    "ids": [
+      "lc-missing-number",
+      "lc-single-number-ii",
+      "lc-single-number-iii",
+      "lc-find-the-original-array-of-prefix-xor",
+      "lc-xor-queries-of-a-subarray"
+    ]
+  },
+  {
+    "topic": "Top 'K' Elements",
+    "subTopic": "General",
+    "ids": [
+      "lc-top-k-frequent-elements",
+      "lc-kth-largest-element-in-an-array",
+      "lc-ugly-number-ii",
+      "lc-k-closest-points-to-origin"
+    ]
+  },
+  {
+    "topic": "K-way Merge",
+    "subTopic": "General",
+    "ids": [
+      "lc-find-k-pairs-with-smallest-sums",
+      "lc-kth-smallest-element-in-a-sorted-matrix",
+      "lc-merge-k-sorted-lists-high-volume-sub-ledger-consolidator",
+      "lc-smallest-range-covering-elements-from-k-lists"
+    ]
+  },
+  {
+    "topic": "Two Heaps",
+    "subTopic": "General",
+    "ids": [
+      "lc-find-median-from-data-stream-real-time-bid-ask-telemetry",
+      "lc-sliding-window-median",
+      "lc-ipo"
+    ]
+  },
+  {
+    "topic": "Monotonic Stack",
+    "subTopic": "General",
+    "ids": [
+      "lc-next-greater-element-ii",
+      "lc-next-greater-node-in-linked-list",
+      "lc-daily-temperatures",
+      "lc-online-stock-span",
+      "lc-maximum-width-ramp",
+      "lc-largest-rectangle-in-histogram"
+    ]
+  },
+  {
+    "topic": "Trees",
+    "subTopic": "Level Order Traversal",
+    "ids": [
+      "lc-binary-tree-level-order-traversal",
+      "lc-binary-tree-zigzag-level-order-traversal",
+      "lc-even-odd-tree",
+      "lc-reverse-odd-levels-of-binary-tree",
+      "lc-deepest-leaves-sum",
+      "lc-add-one-row-to-tree",
+      "lc-maximum-width-of-binary-tree",
+      "lc-all-nodes-distance-k-in-binary-tree"
+    ]
+  },
+  {
+    "topic": "Trees",
+    "subTopic": "Tree Construction",
+    "ids": [
+      "lc-construct-binary-tree-from-preorder-and-inorder-traversal",
+      "lc-maximum-binary-tree",
+      "lc-construct-binary-search-tree-from-preorder-traversal",
+      "lc-construct-binary-tree-from-inorder-and-postorder-traversal"
+    ]
+  },
+  {
+    "topic": "Trees",
+    "subTopic": "Height related",
+    "ids": [
+      "lc-maximum-depth-of-binary-tree",
+      "lc-balanced-binary-tree",
+      "lc-diameter-of-binary-tree",
+      "lc-minimum-depth-of-binary-tree"
+    ]
+  },
+  {
+    "topic": "Trees",
+    "subTopic": "Root to leaf path",
+    "ids": [
+      "lc-binary-tree-paths",
+      "lc-path-sum-ii",
+      "lc-smallest-string-starting-from-leaf",
+      "lc-insufficient-nodes-in-root-to-leaf-paths",
+      "lc-pseudo-palindromic-paths-in-a-binary-tree",
+      "lc-binary-tree-maximum-path-sum",
+      "lc-sum-root-to-leaf-numbers"
+    ]
+  },
+  {
+    "topic": "Trees",
+    "subTopic": "Ancestor problem",
+    "ids": [
+      "lc-lowest-common-ancestor-of-a-binary-tree",
+      "lc-maximum-difference-between-node-and-ancestor",
+      "lc-lowest-common-ancestor-of-deepest-leaves",
+      "lc-kth-ancestor-of-a-tree-node"
+    ]
+  },
+  {
+    "topic": "Trees",
+    "subTopic": "Binary Search Tree",
+    "ids": [
+      "lc-check-if-a-binary-tree-is-bst",
+      "lc-range-sum-of-bst",
+      "lc-minimum-absolute-difference-in-bst",
+      "lc-insert-into-a-binary-search-tree",
+      "lc-lowest-common-ancestor-of-a-binary-search-tree"
+    ]
+  },
+  {
+    "topic": "Dynamic Programming",
+    "subTopic": "Take / Not take (0/1 Knapsack)",
+    "ids": [
+      "lc-house-robber-ii",
+      "lc-target-sum",
+      "lc-partition-equal-subset-sum",
+      "lc-ones-and-zeroes",
+      "lc-last-stone-weight-ii"
+    ]
+  },
+  {
+    "topic": "Dynamic Programming",
+    "subTopic": "Infinite Supply",
+    "ids": [
+      "lc-coin-change",
+      "lc-coin-change-ii",
+      "lc-perfect-squares",
+      "lc-minimum-cost-for-tickets"
+    ]
+  },
+  {
+    "topic": "Dynamic Programming",
+    "subTopic": "Longest Increasing Subsequence",
+    "ids": [
+      "lc-longest-increasing-subsequence-user-order-growth-paths",
+      "lc-largest-divisible-subset",
+      "lc-maximum-length-of-pair-chain",
+      "lc-number-of-longest-increasing-subsequence",
+      "lc-longest-string-chain"
+    ]
+  },
+  {
+    "topic": "Dynamic Programming",
+    "subTopic": "DP on Grids",
+    "ids": [
+      "lc-unique-paths-ii",
+      "lc-minimum-path-sum",
+      "lc-triangle",
+      "lc-minimum-falling-path-sum",
+      "lc-maximal-square",
+      "lc-cherry-pickup",
+      "lc-dungeon-game"
+    ]
+  },
+  {
+    "topic": "Dynamic Programming",
+    "subTopic": "DP on Strings",
+    "ids": [
+      "lc-longest-common-subsequence",
+      "lc-longest-palindromic-subsequence",
+      "lc-palindromic-substrings",
+      "lc-longest-palindromic-substring",
+      "lc-edit-distance-string-payload-repair",
+      "lc-minimum-ascii-delete-sum-for-two-strings",
+      "lc-distinct-subsequences",
+      "lc-shortest-common-supersequence",
+      "lc-wildcard-matching"
+    ]
+  },
+  {
+    "topic": "Dynamic Programming",
+    "subTopic": "DP on Stocks",
+    "ids": [
+      "lc-best-time-to-buy-and-sell-stock-ii",
+      "lc-best-time-to-buy-and-sell-stock-iii",
+      "lc-best-time-to-buy-and-sell-stock-iv",
+      "lc-best-time-to-buy-and-sell-stock-with-cooldown",
+      "lc-best-time-to-buy-and-sell-stock-with-transaction-fee"
+    ]
+  },
+  {
+    "topic": "Graphs",
+    "subTopic": "Topological Sort",
+    "ids": [
+      "lc-course-schedule",
+      "lc-course-schedule-ii",
+      "lc-strange-printer-ii",
+      "lc-sequence-reconstruction",
+      "lc-alien-dictionary"
+    ]
+  },
+  {
+    "topic": "Graphs",
+    "subTopic": "Union-Find",
+    "ids": [
+      "lc-number-of-operations-to-make-network-connected",
+      "lc-redundant-connection",
+      "lc-accounts-merge",
+      "lc-satisfiability-of-equality-equations"
+    ]
+  },
+  {
+    "topic": "Greedy",
+    "subTopic": "General",
+    "ids": [
+      "lc-jump-game-ii",
+      "lc-gas-station-fuel-distribution-chain-limits",
+      "lc-bag-of-tokens",
+      "lc-boats-to-save-people",
+      "lc-wiggle-subsequence",
+      "lc-car-pooling",
+      "lc-candy-optimal-incentive-discount-distribution-metrics"
+    ]
+  },
+  {
+    "topic": "Design Data Structure",
+    "subTopic": "General",
+    "ids": [
+      "pattern-design-twitter",
+      "lc-design-browser-history",
+      "lc-design-circular-deque",
+      "lc-snapshot-array",
+      "lc-lru-cache-thread-safe-variant",
+      "lc-lfu-cache-implementation"
+    ]
+  }
+]

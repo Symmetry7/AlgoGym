@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Database,
   Cloud,
+  Copy,
   Code2,
   Container,
   Cpu,
@@ -40,6 +41,7 @@ import {
   MonitorPlay,
   Network,
   NotebookTabs,
+  Play,
   Search,
   Server,
   Smartphone,
@@ -75,6 +77,10 @@ type Question = {
   difficulty: "Easy" | "Medium" | "Hard" | null;
   tags: string[];
   popularity: string | null;
+  answerText?: string | null;
+  answerCode?: string | null;
+  articleUrl?: string | null;
+  videoUrl?: string | null;
 };
 type QuestionState = {
   question_id: string;
@@ -471,7 +477,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         aria-label="Interview preparation navigation"
       >
         <div className="ip-brand">
-          <Link href="/dashboard" aria-label="AlgoGym dashboard" className="ip-brand-logo"><AlgoGymLogo className="w-[116px]" /></Link>
+          <Link href="/dashboard" aria-label="AlgoGym dashboard" className="ip-brand-logo"><AlgoGymLogo className="w-[124px]" /></Link>
           <button
             className="ip-mobile-close"
             onClick={() => setOpen(false)}
@@ -566,6 +572,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           >
             <Menu size={20} />
           </button>
+          <Link href="/dashboard" aria-label="AlgoGym dashboard" className="ip-mobile-brand"><AlgoGymLogo className="w-[92px]" /></Link>
           <span className="ip-topbar-location"><Link href="/interview-preparations">Preparation</Link><ChevronRight size={14} />{pathname.includes("company-wise") ? "Company Wise DSA" : "Interview Preparations"}</span>
           <div className="ip-topbar-actions"><Link href="/interview-preparations/progress">My progress</Link><Link href="/dashboard">Back to dashboard <ArrowUpRight size={14} /></Link></div>
         </header>
@@ -1257,7 +1264,8 @@ function Category({ slug }: { slug: string }) {
   );
 }
 
-const patternGroups = Object.entries(patternManifest) as Array<[string, string[]]>;
+const patternGroups = patternManifest as Array<{topic: string; subTopic: string; ids: string[]}>;
+const patternTopics = [...new Set(patternGroups.map((group) => group.topic))];
 
 function Patterns() {
   const query = useQuery({
@@ -1271,9 +1279,8 @@ function Patterns() {
   const [open, setOpen] = useState<string | null>(null);
   const questions = query.data?.questions ?? [];
   const byId = new Map(questions.map((question) => [question.id, question]));
-  const completed = questions.filter(
-    (question) => states.get(question.id)?.completed,
-  ).length;
+  const placements = patternGroups.flatMap((group) => group.ids);
+  const completed = placements.filter((id) => states.get(id)?.completed).length;
   return (
     <>
       <div className="ip-crumb">
@@ -1287,7 +1294,7 @@ function Patterns() {
         </p>
       </div>
       <p className="ip-count">
-        {completed}/{questions.length} unique problems completed
+        {completed}/{placements.length} problems completed
       </p>
       {query.isLoading ? (
         <p className="ip-feedback">Loading patterns…</p>
@@ -1295,13 +1302,10 @@ function Patterns() {
         <p className="ip-error">{query.error.message}</p>
       ) : (
         <div className="ip-pattern-list">
-          {patternGroups.map(([name, ids]) => {
-            const items = ids
-              .map((id) => byId.get(id))
-              .filter((question): question is Question => Boolean(question));
-            const solved = items.filter(
-              (question) => states.get(question.id)?.completed,
-            ).length;
+          {patternTopics.map((name) => {
+            const sections = patternGroups.filter((group) => group.topic === name);
+            const ids = sections.flatMap((section) => section.ids);
+            const solved = ids.filter((id) => states.get(id)?.completed).length;
             return (
               <section key={name}>
                 <button
@@ -1310,20 +1314,23 @@ function Patterns() {
                 >
                   <span>{name}</span>
                   <small>
-                    {solved}/{items.length} completed
+                    {solved}/{ids.length} completed
                   </small>
                   <ChevronDown size={17} />
                 </button>
-                {open === name && (
-                  <div className="ip-pattern-body">
-                    <QuestionTable
-                      questions={items}
-                      states={states}
-                      onToggle={toggle}
-                      saving={saving}
-                      showPopularity={false}
-                    />
-                  </div>
+                  {open === name && (
+                    <div className="ip-pattern-body">
+                      {sections.map((section, index) => <div className="ip-pattern-subsection" key={`${name}-${index}`}>
+                        {sections.length > 1 && <h3>{section.subTopic}</h3>}
+                        <QuestionTable
+                          questions={section.ids.map((id) => byId.get(id)).filter((question): question is Question => Boolean(question))}
+                          states={states}
+                          onToggle={toggle}
+                          saving={saving}
+                          showPopularity={false}
+                        />
+                      </div>)}
+                    </div>
                 )}
               </section>
             );
@@ -1337,6 +1344,40 @@ function Patterns() {
       )}
     </>
   );
+}
+
+function AnswerQuestionList({
+  slug, questions, states, onToggle, saving,
+}: {
+  slug: string;
+  questions: Question[];
+  states: Map<string, QuestionState>;
+  onToggle: (id: string, field: "completed" | "bookmarked") => void;
+  saving: string;
+}) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState("");
+  const Icon = slug === "sql" ? Database : slug === "system-design" ? Network : MessageSquare;
+  if (!questions.length) return <div className="ip-empty">No questions match the selected filters.</div>;
+  return <div className="ip-answer-list">{questions.map((question, index) => {
+    const expanded = openId === question.id;
+    const type = question.tags.find((tag) => tag === "HLD" || tag === "LLD");
+    return <article className={`ip-answer-item ${expanded ? "ip-answer-open" : ""}`} key={`${question.id}-${index}`}>
+      <div className="ip-answer-head">
+        <button type="button" className={`ip-check ${states.get(question.id)?.completed ? "ip-checked" : ""}`} disabled={saving === question.id} aria-label={`${states.get(question.id)?.completed ? "Mark incomplete" : "Mark complete"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.completed)} onClick={() => onToggle(question.id, "completed")}>{states.get(question.id)?.completed && <Check size={14} strokeWidth={3} />}</button>
+        <button type="button" className="ip-answer-toggle" aria-expanded={expanded} aria-controls={`ip-answer-${question.id}`} onClick={() => setOpenId(expanded ? null : question.id)}><span className="ip-answer-icon"><Icon size={17} strokeWidth={1.8} /></span><span className="ip-answer-label"><small>{String(index + 1).padStart(2, "0")}{type ? ` · ${type}` : ""}</small><strong>{question.title}</strong></span><ChevronDown size={18} className="ip-answer-chevron" /></button>
+        {question.difficulty && <span className={`ip-difficulty ip-${question.difficulty.toLowerCase()}`}>{question.difficulty}</span>}
+        <button type="button" className={`ip-save-button ${states.get(question.id)?.bookmarked ? "ip-saved" : ""}`} disabled={saving === question.id} aria-label={`${states.get(question.id)?.bookmarked ? "Remove bookmark" : "Bookmark"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.bookmarked)} onClick={() => onToggle(question.id, "bookmarked")}><Bookmark size={17} fill={states.get(question.id)?.bookmarked ? "currentColor" : "none"} /></button>
+      </div>
+      {expanded && <div id={`ip-answer-${question.id}`} className="ip-answer-detail">
+        {slug === "sql" && <><div className="ip-answer-detail-title"><strong>One PostgreSQL answer</strong>{question.answerCode && <button type="button" onClick={async () => {try {await navigator.clipboard.writeText(question.answerCode ?? "");setCopiedId(question.id);setCopyError("");} catch {setCopyError("Could not copy the query.");}}}><Copy size={14} />{copiedId === question.id ? "Copied" : "Copy query"}</button>}</div><p>Illustrative tables and columns are described above. Adapt them to your schema.</p>{question.answerCode ? <pre><code>{question.answerCode}</code></pre> : <p role="alert">Answer unavailable.</p>}</>}
+        {slug === "hr-questions" && <><strong>Example response</strong><p>{question.answerText ?? "Answer unavailable."}</p><small>Replace bracketed details with your own truthful experience.</small></>}
+        {slug === "system-design" && <><strong>Explore this design</strong><p>Start with requirements and scale, then explain data flow, failure cases, and trade-offs.</p><div className="ip-answer-resources">{question.articleUrl && <a href={question.articleUrl} target="_blank" rel="noopener noreferrer"><FileText size={16} /> Read article <ArrowUpRight size={14} /></a>}{question.videoUrl && <a href={question.videoUrl} target="_blank" rel="noopener noreferrer"><Play size={16} /> Watch video <ArrowUpRight size={14} /></a>}</div></>}
+        {copyError && <p role="alert" className="ip-error">{copyError}</p>}
+      </div>}
+    </article>;
+  })}</div>;
 }
 
 function QuestionCategory({ slug }: { slug: string }) {
@@ -1367,11 +1408,11 @@ function QuestionCategory({ slug }: { slug: string }) {
     (question) => states.get(question.id)?.completed,
   ).length;
   const descriptions: Record<string, string> = {
-    sql: "Work through public SQL exercises and keep your progress across sessions.",
+    sql: "Practice 110 SQL prompts with PostgreSQL examples. The sample queries use employees, departments, orders, customers, and related tables; adapt names and values to your own schema.",
     "system-design":
-      "Use each prompt to explain requirements, trade-offs, and failure modes before reading the linked guide.",
+      "Explore 22 HLD and 10 LLD prompts with separate article and video references. Difficulty is AlgoGym guidance, not a reference-site rating.",
     "hr-questions":
-      "Prepare specific stories from your own experience. Completion records your rehearsal.",
+      "Practice 100 behavioral questions with original sample responses. Personalize each answer with your own evidence.",
     "interview-questions":
       "Review core engineering ideas and use the linked public references to check your explanation.",
   };
@@ -1418,7 +1459,7 @@ function QuestionCategory({ slug }: { slug: string }) {
           >
             All
           </button>}
-          {slug === "system-design" ? <div className="ip-type-filter" role="group" aria-label="System design type">{["", "HLD", "LLD"].map((type) => <button type="button" key={type} className={systemType === type && !bookmarked ? "ip-selected" : ""} onClick={() => {setSystemType(type); setBookmarked(false);}}>{type || "All"}</button>)}</div> : <select
+          {slug === "system-design" ? <><div className="ip-type-filter" role="group" aria-label="System design type">{["", "HLD", "LLD"].map((type) => <button type="button" key={type} className={systemType === type && !bookmarked ? "ip-selected" : ""} onClick={() => {setSystemType(type); setDifficulty(""); setBookmarked(false);}}>{type || "All"}</button>)}</div><select aria-label="AlgoGym difficulty" value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option value="">Any difficulty</option><option>Easy</option><option>Medium</option><option>Hard</option></select></> : <select
             aria-label="Difficulty"
             value={difficulty}
             onChange={(event) => setDifficulty(event.target.value)}
@@ -1443,7 +1484,7 @@ function QuestionCategory({ slug }: { slug: string }) {
       ) : (
         <>
         <p className="ip-count">{visible.length} {slug === "system-design" ? "design prompts" : "questions"}</p>
-        <QuestionTable
+        {["sql", "system-design", "hr-questions"].includes(slug) ? <AnswerQuestionList slug={slug} questions={visible} states={states} onToggle={toggle} saving={saving} /> : <QuestionTable
           questions={visible}
           states={states}
           onToggle={toggle}
@@ -1451,7 +1492,7 @@ function QuestionCategory({ slug }: { slug: string }) {
           showPopularity={false}
           showDifficulty={slug !== "system-design"}
           questionLabel={slug === "sql" ? "Problem" : "Question"}
-        />
+        />}
         </>
       )}{" "}
       {error && (

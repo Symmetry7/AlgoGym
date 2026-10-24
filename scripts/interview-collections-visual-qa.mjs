@@ -13,8 +13,10 @@ const root = resolve('artifacts/interview-collections-qa');
 mkdirSync(root, { recursive: true });
 const sizes = [[375,812],[430,932],[768,1024],[1280,800],[1440,900],[1920,1080]];
 const routes = [
-  ['sql','sql','.ip-table tbody tr',110],
-  ['system','system-design','.ip-table tbody tr',32],
+  ['sql','sql','.ip-answer-item',110],
+  ['system','system-design','.ip-answer-item',32],
+  ['hr','hr-questions','.ip-answer-item',100],
+  ['patterns','patterns','.ip-pattern-list section',22],
   ['roles','role-wise','.ip-role-card',20],
   ['frontend','role-wise/frontend-developer','.ip-table tbody tr',50],
   ['dsa','dsa-playlists','.ip-playlist-card',1],
@@ -55,14 +57,30 @@ try {
     }
     if (width === 1440) {
       await page.goto(`${origin}/interview-preparations/system-design`);
-      await page.locator('.ip-table tbody tr').first().waitFor();
+      await page.locator('.ip-answer-item').first().waitFor();
       await page.getByRole('button',{name:'HLD',exact:true}).click();
-      await page.waitForFunction(() => document.querySelectorAll('.ip-table tbody tr').length === 22);
-      const hld = await page.locator('.ip-table tbody tr').count();
+      await page.waitForFunction(() => document.querySelectorAll('.ip-answer-item').length === 22);
+      const hld = await page.locator('.ip-answer-item').count();
       await page.getByRole('button',{name:'LLD',exact:true}).click();
-      await page.waitForFunction(() => document.querySelectorAll('.ip-table tbody tr').length === 10);
-      const lld = await page.locator('.ip-table tbody tr').count();
+      await page.waitForFunction(() => document.querySelectorAll('.ip-answer-item').length === 10);
+      const lld = await page.locator('.ip-answer-item').count();
       if (hld !== 22 || lld !== 10) failures.push({ interaction:'system filters',hld,lld });
+      await page.goto(`${origin}/interview-preparations/sql`);
+      await page.locator('.ip-answer-item').first().waitFor();
+      await page.locator('.ip-answer-toggle').first().click();
+      if (!await page.locator('.ip-answer-detail code').first().isVisible()) failures.push({interaction:'sql answer'});
+      await page.goto(`${origin}/interview-preparations/hr-questions`);
+      await page.locator('.ip-answer-item').first().waitFor();
+      await page.locator('.ip-answer-toggle').first().click();
+      if (!await page.locator('.ip-answer-detail p').first().isVisible()) failures.push({interaction:'hr answer'});
+      await page.goto(`${origin}/interview-preparations/system-design`);
+      await page.locator('.ip-answer-item').first().waitFor();
+      await page.locator('.ip-answer-toggle').first().click();
+      if (await page.locator('.ip-answer-resources a').count() !== 2) failures.push({interaction:'system resources'});
+      await page.goto(`${origin}/interview-preparations/patterns`);
+      await page.locator('.ip-pattern-list section').first().waitFor();
+      await page.locator('.ip-pattern-list section > button').first().click();
+      if (await page.locator('.ip-pattern-list section').first().locator('.ip-table tbody tr').count() !== 4) failures.push({interaction:'pattern expansion'});
       await page.goto(`${origin}/interview-preparations/role-wise`);
       await page.locator('.ip-role-card').first().waitFor();
       await page.getByRole('searchbox',{name:'Search roles'}).fill('data engineer');

@@ -51,7 +51,12 @@
   margin-bottom: 13px;
   border-bottom: 1px solid var(--ip-border);
 }
-.ip-brand-logo { display: inline-flex; align-items: center; min-height: 36px; filter: brightness(0) invert(1); }
+.ip-brand-logo { display: inline-flex; align-items: center; min-height: 36px; }
+.ip-mobile-brand { display: none; align-items: center; }
+.ip-shell .ip-brand-logo .algogym-wordmark,
+.ip-shell .ip-mobile-brand .algogym-wordmark { mix-blend-mode: screen; }
+.ip-shell .ip-brand-logo .algogym-wordmark img,
+.ip-shell .ip-mobile-brand .algogym-wordmark img { filter: none !important; }
 .ip-brand-mark {
   display: grid;
   place-items: center;
@@ -502,6 +507,34 @@
 }
 .ip-playlist-section { margin: 24px 0 32px; }
 .ip-playlist-section h2 { margin: 0 0 15px; font-size: 17px; }
+.ip-pattern-subsection + .ip-pattern-subsection { margin-top: 24px; }
+.ip-pattern-subsection h3 { margin: 0 0 10px; color: #cbb2e5; font-size: 13px; font-weight: 600; }
+.ip-answer-list { border: 1px solid var(--ip-border); border-radius: 11px; overflow: hidden; background: #101012; }
+.ip-answer-item + .ip-answer-item { border-top: 1px solid var(--ip-border); }
+.ip-answer-head { display: flex; align-items: center; gap: 14px; min-height: 75px; padding: 10px 18px; }
+.ip-answer-head > .ip-check, .ip-answer-head > .ip-save-button { flex: none; }
+.ip-answer-toggle { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; padding: 3px 0; border: 0; background: none; text-align: left; color: var(--ip-text); cursor: pointer; }
+.ip-answer-icon { display: grid; place-items: center; flex: none; width: 33px; height: 33px; border-radius: 8px; color: #c8aff0; background: #28222d; }
+.ip-answer-label { display: grid; min-width: 0; gap: 3px; }
+.ip-answer-label small { color: #aa92bf; font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.ip-answer-label strong { font-size: 13px; font-weight: 600; line-height: 1.4; }
+.ip-answer-chevron { flex: none; margin-left: auto; color: var(--ip-muted); transition: transform .18s var(--ip-ease); }
+.ip-answer-open .ip-answer-chevron { transform: rotate(180deg); }
+.ip-save-button { display: grid; place-items: center; width: 33px; height: 33px; border: 0; background: none; color: #a9a6af; cursor: pointer; }
+.ip-save-button:hover, .ip-save-button.ip-saved { color: #caa9f0; }
+.ip-answer-detail { padding: 18px 24px 22px 78px; border-top: 1px solid var(--ip-border); background: #161518; color: #d5d2d9; }
+.ip-answer-detail > strong, .ip-answer-detail-title strong { display: block; color: #f4f1f5; font-size: 13px; }
+.ip-answer-detail p { max-width: 78ch; margin: 10px 0; color: #c2bec8; font-size: 13px; line-height: 1.7; }
+.ip-answer-detail small { color: #a39aaa; font-size: 11px; }
+.ip-answer-detail-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ip-answer-detail-title button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #45404b; border-radius: 7px; padding: 7px 9px; color: #dfc5f8; font-size: 11px; }
+.ip-answer-detail pre { max-width: 100%; margin: 14px 0 0; padding: 16px; overflow-x: auto; border: 1px solid #35313a; border-radius: 8px; background: #0b0b0e; color: #e8d9fa; font-size: 12px; line-height: 1.65; }
+.ip-answer-resources { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+.ip-answer-resources a { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 8px 12px; border: 1px solid #4b405a; border-radius: 8px; color: #e2ccf7; font-size: 12px; }
+.ip-answer-resources a:hover { background: #29212f; }
+@media(max-width: 600px) { .ip-answer-head { gap: 9px; padding: 10px 12px; } .ip-answer-icon { display: none; } .ip-answer-detail { padding: 15px 16px; } .ip-answer-head .ip-difficulty { font-size: 10px; } }
+@media(max-width: 520px) { .ip-mobile-brand { display: inline-flex; } .ip-topbar-location { display: none; } }
+@media(prefers-reduced-motion: reduce) { .ip-answer-chevron { transition: none; } }
 .ip-playlist-card {
   display: flex;
   flex-direction: column;

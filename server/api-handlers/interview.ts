@@ -268,12 +268,23 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
               .in("id", ids)
           : { data: [], error: null };
         if (questions.error) throw questions.error;
+        const content = ids.length && ["sql", "system-design", "hr-questions"].includes(category)
+          ? await client.from("interview_question_content")
+              .select("question_id,answer_text,answer_code,article_url,video_url")
+              .in("question_id", ids)
+          : { data: [], error: null };
+        if (content.error) throw content.error;
+        const contentById = new Map((content.data ?? []).map((entry) => [entry.question_id, entry]));
         const byId = new Map(
           (questions.data ?? []).map((question) => [question.id, question]),
         );
         return res
           .status(200)
-          .json({ questions: ids.map((id) => byId.get(id)).filter(Boolean) });
+          .json({ questions: ids.map((id) => {
+            const question = byId.get(id);
+            const detail = contentById.get(id);
+            return question && { ...question, answerText: detail?.answer_text ?? null, answerCode: detail?.answer_code ?? null, articleUrl: detail?.article_url ?? null, videoUrl: detail?.video_url ?? null };
+          }).filter(Boolean) });
       }
       const companies = await client
         .from("interview_companies")
