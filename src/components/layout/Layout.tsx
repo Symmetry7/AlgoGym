@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type ReactNode, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -79,14 +79,10 @@ export function Layout({
   const account = useAccount();
   const billing = useBilling();
   const [compact, setCompact] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [width, setWidth] = useState(232);
   const [mobile, setMobile] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   useEffect(() => {
     setCompact(window.localStorage.getItem("algogym-sidebar-compact") === "true");
-    const saved = Number(window.localStorage.getItem("algogym-sidebar-width"));
-if (saved >= 200 && saved <= 480) setWidth(saved);
   }, []);
   const name =
     account.data?.profile.display_name ||
@@ -107,27 +103,6 @@ if (saved >= 200 && saved <= 480) setWidth(saved);
       setSigningOut(false);
     }
   };
-
-  const startResize = (e: ReactPointerEvent) => {
-  e.preventDefault();
-  document.body.style.userSelect = "none";
-  document.body.style.cursor = "col-resize";
-  let latest = width;
-  const move = (ev: PointerEvent) => {
-    latest = Math.min(480, Math.max(200, ev.clientX));
-    setWidth(latest);
-  };
-  const up = () => {
-    window.removeEventListener("pointermove", move);
-    window.removeEventListener("pointerup", up);
-    document.body.style.userSelect = "";
-    document.body.style.cursor = "";
-    window.localStorage.setItem("algogym-sidebar-width", String(latest));
-  };
-  window.addEventListener("pointermove", move);
-  window.addEventListener("pointerup", up);
-};
-
   const group = (
     title: string,
     items: ReadonlyArray<readonly [string, string, typeof Code2]>,
@@ -227,10 +202,7 @@ if (saved >= 200 && saved <= 480) setWidth(saved);
     </>
   );
   return (
-   <div
-  className="ag-application min-h-screen bg-background text-foreground"
-  style={{ "--sidebar-w": `${compact ? 72 : width}px` } as React.CSSProperties}
->
+    <div className="ag-application min-h-screen bg-background text-foreground">
       <a
         href="#application-main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded focus:bg-primary focus:p-3 focus:text-primary-foreground"
@@ -238,26 +210,14 @@ if (saved >= 200 && saved <= 480) setWidth(saved);
         Skip to content
       </a>
       <aside
-  onMouseEnter={() => setHovered(true)}
-  onMouseLeave={() => setHovered(false)}
-  style={{ width: compact && !hovered ? 72 : width }}
-  className={cn(
-    "ag-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r bg-card transition-[width] duration-200 lg:flex",
-    compact && hovered && "shadow-xl",
-  )}
->
-  {sidebar(compact && !hovered)}
-  {!compact && (
-    <div
-      role="separator"
-      aria-orientation="vertical"
-      aria-label="Resize sidebar"
-      onPointerDown={startResize}
-      className="absolute inset-y-0 -right-1 z-40 w-2 cursor-col-resize transition-colors hover:bg-primary/30"
-    />
-  )}
-</aside>
-      <div className="lg:pl-[var(--sidebar-w)]">
+        className={cn(
+          "ag-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r bg-card lg:flex",
+          compact ? "w-[72px]" : "w-[232px]",
+        )}
+      >
+        {sidebar(compact)}
+      </aside>
+      <div className={compact ? "lg:pl-[72px]" : "lg:pl-[232px]"}>
         <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between gap-3 border-b bg-background/95 px-4 backdrop-blur sm:px-7 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={mobile} onOpenChange={setMobile}>
