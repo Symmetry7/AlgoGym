@@ -62,17 +62,25 @@ Hynts displays “Find Median from Data Stream” twice in Amazon (both rows ret
 | --- | ---: | ---: | ---: | --- |
 | 20 DSA Patterns | 180 | 56 unique | 165 unique public problems | Partial: editorial grouping differs from reference |
 | Package Wise DSA | 200 | 200 | 200 | Partial: tier membership not validated against reference |
-| SQL | 110 | 8 | 105 free public problems | Partial: different from Hynts compilation |
-| System Design | 32 | 10 | 10 | Incomplete; generic source links |
+| SQL | 110 | 8 | 110 public question titles | Matched observed title, order, and difficulty; original answer text excluded |
+| System Design | 32 | 10 | 32 public prompts (22 HLD, 10 LLD) | Matched observed titles and type; individual reference links imported |
 | HR Questions | 100 | 10 | 100 original rehearsal prompts | Partial: different prompts and classification from reference |
 | DSA educator sheets | 7 | 3 shortcuts | 3 shortcuts | Incomplete |
-| Role Wise | 20 routes | 6 shortcuts | 6 shortcuts | Incomplete |
+| Role Wise | 20 routes | 6 shortcuts | 20 dedicated role sheets, 8,098 visible source rows | Matched the publicly visible question titles and order; answer text excluded |
+| Playlists | 19 advertised collections | 12 generic resource links | 18 working collections, 893 lesson placements | Source has one 404 collection and one malformed video link |
 | Technical interview banks | 28 routes | 8 general questions | 8 general questions | Incomplete |
 | Notes | 26 PDF cards | 6 links | 6 links | Incomplete; no licensed PDF library |
 | Resume templates | 6 | 3 links | 3 links | Incomplete; no licensed downloadable files |
 | Cold email templates | 36 | 8 | 8 | Incomplete |
 
 ## Data integrity and tests
+
+- Applied `20261024230000_interview_sql_system_playlists.sql` and `20261024231500_interview_role_sheets.sql` to the linked project. The former backs up old SQL/system placements before replacement; neither migration deletes canonical questions or user progress. Two system-design prompts reused existing canonical IDs. Playlists and roles have read-only public policies; saved lesson and question state uses the existing authenticated user table.
+- `scripts/interview-collection-qa.mjs` compared all 40 imported collections with their stored placement and canonical title sequences: 110 SQL, 32 system-design, 20 roles (8,098 rows), and 18 playlists (893 placements). Anonymous writes to the role catalog were denied. Case-only title differences from shared canonical questions are normalized in this audit.
+- Playlist cards use 18 local images downloaded from the first publicly linked YouTube lesson in each collection. This avoids relying on a third-party thumbnail request at page load. Logos on role cards are original interface icons, not Hynts assets.
+- The public Kunal Kushwaha OOP playlist page returned 404, so it has no AlgoGym lesson page. One source video URL has an invalid YouTube ID and was excluded. Several Hynts role directory counts differ from the questions actually displayed; AlgoGym shows actual visible row counts.
+- SQL and role sheets contain prompt titles and topic labels, but not Hynts answer text or a built-in SQL runner. SQL rows link to relevant PostgreSQL topic guides; role sheets link to the original source sheet. Lesson links open the corresponding YouTube videos.
+- The production build and type check passed after implementation, with 122 unit tests passing and six live-provider tests skipped. `scripts/interview-db-qa.mjs` verified authenticated progress survives sign-out/sign-in, can be reversed, stays private, and ordinary accounts cannot edit content. Playwright covered 48 rendered SQL, system, role, and playlist views at 375, 430, 768, 1280, 1440, and 1920 pixels, plus HLD/LLD filtering and role search. Screenshots are in `artifacts/interview-collections-qa/`.
 
 - Applied migration `20261024135500_interview_editorial_track_repair.sql` to the linked Supabase project. It backed up previous sheet relationships to a private table and replaced the 45 uniform lists with 3,184 distinct, ordered company placements. It did not delete canonical problems or `interview_user_questions` progress/bookmarks.
 - Imported 105 free LeetCode Database problem titles, URLs, and difficulty labels from its public catalog: 55 Easy, 39 Medium, and 11 Hard. No statements, solutions, paid questions, or Hynts compilation were copied. Matching existing SQL IDs retain progress. Hynts' observed 30/40/40 difficulty split is not reproduced.

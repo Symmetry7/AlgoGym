@@ -10,17 +10,29 @@ import { useParams, usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowUpRight,
+  Activity,
   Bookmark,
   BookOpen,
   BriefcaseBusiness,
+  BrainCircuit,
+  Bot,
   Building2,
+  ChartNoAxesCombined,
   Check,
   ChevronDown,
   ChevronRight,
   Database,
+  Cloud,
+  Code2,
+  Container,
+  Cpu,
   FileText,
+  FlaskConical,
+  Gamepad2,
   GraduationCap,
   LayoutList,
+  Laptop,
+  Layers3,
   Library,
   Mail,
   Menu,
@@ -29,7 +41,14 @@ import {
   Network,
   NotebookTabs,
   Search,
+  Server,
+  Smartphone,
   Sparkles,
+  ShieldCheck,
+  ScanEye,
+  Bug,
+  Boxes,
+  Workflow,
   UserRound,
   X,
 } from "lucide-react";
@@ -63,6 +82,8 @@ type QuestionState = {
   bookmarked: boolean;
 };
 type Sheet = { company: Company; questions: Question[] };
+type Playlist = { slug: string; group_slug: string; title: string; creator: string; source_url: string; thumbnail_url: string; count: number };
+type Role = { slug: string; title: string; group_name: string; source_url: string; question_count: number };
 const packageBands = ["3–5 LPA", "5–10 LPA", "10–20 LPA", "20–40 LPA", "40–60 LPA", "60+ LPA"] as const;
 export function packageBand(question: Question): string {
   const variant = [...question.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 2;
@@ -700,6 +721,7 @@ function QuestionTable({
   onToggle,
   saving,
   showPopularity = true,
+  showDifficulty = true,
   questionLabel = "Problem",
   packageFor,
 }: {
@@ -708,6 +730,7 @@ function QuestionTable({
   onToggle: (id: string, field: "completed" | "bookmarked") => void;
   saving: string;
   showPopularity?: boolean;
+  showDifficulty?: boolean;
   questionLabel?: string;
   packageFor?: (question: Question) => string;
 }) {
@@ -729,14 +752,14 @@ function QuestionTable({
               <th>Tags</th>
               <th>Link</th>
               {packageFor && <th>Package</th>}
-              <th>Difficulty</th>
+              {showDifficulty && <th>Difficulty</th>}
               {showPopularity && <th>Popularity</th>}
               <th>Save</th>
             </tr>
           </thead>
           <tbody>
             {questions.map((question, index) => (
-              <tr key={question.id}>
+              <tr key={`${question.id}-${index}`}>
                 <td>
                   <button
                     type="button"
@@ -753,7 +776,7 @@ function QuestionTable({
                 </td>
                 <td>
                   <span className="ip-number">{index + 1}.</span>
-                  {question.source === "General interview guide" ? (
+                  {["General interview guide", "Role prompt", "SQL practice"].includes(question.source) ? (
                     <span>{question.title}</span>
                   ) : (
                     <a href={question.url} target="_blank" rel="noopener noreferrer">
@@ -774,21 +797,21 @@ function QuestionTable({
                     href={question.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={question.source === "General interview guide" ? "Read general interview guidance" : `Open ${question.title} on ${question.source}`}
+                    aria-label={["General interview guide", "Role prompt", "SQL practice"].includes(question.source) ? `Open ${question.source} reference` : `Open ${question.title} on ${question.source}`}
                   >
                     {(["leetcode", "geeksforgeeks", "codeforces"] as ProviderId[]).includes(question.source.toLowerCase() as ProviderId)
                       ? <CodingPlatformMark platform={question.source.toLowerCase() as ProviderId} className="ip-source-mark" />
-                      : <span className="ip-source-name">{question.source === "General interview guide" ? "Guide ↗" : question.source}</span>}
+                      : <span className="ip-source-name">{question.source === "General interview guide" ? "Guide ↗" : question.source === "Role prompt" ? "Source sheet ↗" : question.source === "SQL practice" ? "Topic guide ↗" : question.source}</span>}
                   </a>
                 </td>
                 {packageFor && <td><span className="ip-package-badge">{packageFor(question)}</span></td>}
-                <td>
+                {showDifficulty && <td>
                   <span
                     className={`ip-difficulty ip-${(question.difficulty ?? "").toLowerCase()}`}
                   >
                     {question.difficulty ?? "—"}
                   </span>
-                </td>
+                </td>}
                 {showPopularity && (
                   <td>
                     {question.popularity ? (
@@ -1045,11 +1068,129 @@ function Progress() {
   );
 }
 
+const playlistGroups = ["dsa-playlists", "core-subjects", "system-design-playlists"];
+const roleIcons = {
+  "frontend-developer": Code2, "backend-developer": Server,
+  "fullstack-developer": Layers3, "mobile-developer": Smartphone,
+  "game-developer": Gamepad2, "web3-developer": Boxes,
+  "embedded-systems-engineer": Cpu, "data-analyst": ChartNoAxesCombined,
+  "data-engineer": Database, "data-scientist": FlaskConical,
+  "ai-engineer": Bot, "ai-research-engineer": BrainCircuit,
+  "llm-genai-engineer": Sparkles, "mlops-engineer": Workflow,
+  "devops-engineer": Container, "cloud-engineer": Cloud,
+  "site-reliability-engineer": Activity, "cloud-security-engineer": ShieldCheck,
+  "cybersecurity-analyst": ScanEye, "qa-sdet-engineer": Bug,
+} as const;
+
+function PlaylistDirectory({ group }: { group: string }) {
+  const [search, setSearch] = useState("");
+  const query = useQuery({
+    queryKey: ["interview-playlists", group],
+    queryFn: () => jsonRequest<{ playlists: Playlist[] }>(`/api/interview?mode=playlists&group=${group}`),
+  });
+  const playlists = (query.data?.playlists ?? []).filter((item) =>
+    `${item.title} ${item.creator}`.toLowerCase().includes(search.toLowerCase()),
+  );
+  const sections = group === "core-subjects"
+    ? [["dbms-playlists", "Database Systems"], ["os-playlists", "Operating Systems"], ["oops-playlists", "Object-Oriented Programming"]]
+    : [[group, ""]];
+  return <>
+    <div className="ip-crumb">Preparation <ChevronRight size={13} /> {titles[group]}</div>
+    <div className="ip-page-heading"><h1>{titles[group]}</h1><p>Follow real lessons in order, then save your progress as you learn.</p></div>
+    <div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search playlists or educators..." aria-label="Search playlists" /></div>
+    {query.isLoading ? <p className="ip-feedback">Loading playlists…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> :
+      sections.map(([sectionSlug, sectionTitle]) => {
+        const items = playlists.filter((item) => item.group_slug === sectionSlug);
+        return items.length ? <section className="ip-playlist-section" key={sectionSlug}>{sectionTitle && <h2>{sectionTitle}</h2>}<div className="ip-playlist-grid">{items.map((item) => <Link className="ip-playlist-card" key={item.slug} href={`/interview-preparations/${group}/${item.slug}`}>
+        <span className="ip-playlist-image"><img src={`/interview-playlist-thumbnails/${item.slug}.jpg`} alt="" loading="lazy" /><span className="ip-playlist-play"><MonitorPlay size={22} /></span></span>
+        <span className="ip-playlist-meta">{item.creator} <span>· {item.count} lessons</span></span>
+        <strong>{item.title}</strong><span className="ip-playlist-action">View playlist <ArrowUpRight size={15} /></span>
+      </Link>)}</div></section> : null;
+      })}
+    {!query.isLoading && !query.error && !playlists.length && <p className="ip-empty">No playlists match your search.</p>}
+  </>;
+}
+
+function PlaylistDetail({ group, slug }: { group: string; slug: string }) {
+  const [search, setSearch] = useState("");
+  const query = useQuery({
+    queryKey: ["interview-playlist", slug],
+    queryFn: () => jsonRequest<{ playlist: Playlist; videos: Array<Pick<Question, "id" | "title" | "url"> > }>(`/api/interview?mode=playlist&playlist=${encodeURIComponent(slug)}`),
+  });
+  const { states, toggle, saving, error } = useQuestionState();
+  const playlist = query.data?.playlist;
+  const videos = query.data?.videos ?? [];
+  const visible = videos.filter((video) => video.title.toLowerCase().includes(search.toLowerCase()));
+  const completed = videos.filter((video) => states.get(video.id)?.completed).length;
+  return <>
+    <div className="ip-crumb"><Link href={`/interview-preparations/${group}`}>{titles[group]}</Link><ChevronRight size={13} /> {playlist?.title ?? "Playlist"}</div>
+    {query.isLoading ? <p className="ip-feedback">Loading lessons…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> : playlist && <>
+      <div className="ip-playlist-head"><img src={`/interview-playlist-thumbnails/${playlist.slug}.jpg`} alt="" /><div><span className="ip-eyebrow">{playlist.creator} · video series</span><h1>{playlist.title}</h1><p>{completed} of {videos.length} lessons completed</p><a href={playlist.source_url} target="_blank" rel="noopener noreferrer">Original collection <ArrowUpRight size={15} /></a></div></div>
+      <div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Find a lesson..." aria-label="Search lessons" /></div>
+      <div className="ip-lesson-list">{visible.map((video, index) => <div className="ip-lesson" key={`${video.id}-${index}`}>
+        <button type="button" className={`ip-check ${states.get(video.id)?.completed ? "ip-checked" : ""}`} aria-label={`${states.get(video.id)?.completed ? "Mark incomplete" : "Mark complete"}: ${video.title}`} aria-pressed={Boolean(states.get(video.id)?.completed)} disabled={saving === video.id} onClick={() => toggle(video.id, "completed")}>{states.get(video.id)?.completed && <Check size={14} strokeWidth={3} />}</button>
+        <span className="ip-lesson-number">{videos.indexOf(video) + 1}</span><a href={video.url} target="_blank" rel="noopener noreferrer">{video.title}<ArrowUpRight size={14} /></a>
+      </div>)}</div>
+      {!visible.length && <p className="ip-empty">No lessons match your search.</p>}
+      {error && <p role="alert" className="ip-error">{error}</p>}
+    </>}
+  </>;
+}
+
+function RoleDirectory() {
+  const [search, setSearch] = useState("");
+  const query = useQuery({queryKey: ["interview-roles"], queryFn: () => jsonRequest<{ roles: Role[] }>("/api/interview?mode=roles")});
+  const roles = (query.data?.roles ?? []).filter((role) => `${role.title} ${role.group_name}`.toLowerCase().includes(search.toLowerCase()));
+  const groupNames = [...new Set(roles.map((role) => role.group_name))];
+  return <>
+    <div className="ip-crumb">Preparation <ChevronRight size={13} /> Role Wise</div>
+    <div className="ip-page-heading"><h1>Role Wise Preparation</h1><p>Focused interview questions for the role you are working toward.</p></div>
+    <div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search roles..." aria-label="Search roles" /></div>
+    {query.isLoading ? <p className="ip-feedback">Loading roles…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> : groupNames.map((group) => {
+      return <section className="ip-role-group" key={group}><h2>{group}</h2><div className="ip-role-grid">{roles.filter((role) => role.group_name === group).map((role) => <Link href={`/interview-preparations/role-wise/${role.slug}`} className="ip-role-card" key={role.slug}>
+        <span className="ip-role-mark">{(() => { const Icon = roleIcons[role.slug as keyof typeof roleIcons] ?? Laptop; return <Icon size={21} strokeWidth={1.7} />; })()}</span><span><strong>{role.title}</strong><small>{role.question_count} questions</small></span><ChevronRight size={17} />
+      </Link>)}</div></section>;
+    })}
+    {!query.isLoading && !query.error && !roles.length && <p className="ip-empty">No roles match your search.</p>}
+  </>;
+}
+
+function RoleSheet({ slug }: { slug: string }) {
+  const query = useQuery({queryKey: ["interview-role", slug], queryFn: () => jsonRequest<{ role: Role; questions: Question[] }>(`/api/interview?mode=roleSheet&role=${encodeURIComponent(slug)}`)});
+  const { states, toggle, saving, error } = useQuestionState();
+  const [search, setSearch] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [bookmarked, setBookmarked] = useState(false);
+  const [page, setPage] = useState(0);
+  const questions = query.data?.questions ?? [];
+  const visible = questions.filter((question) =>
+    (!search || question.title.toLowerCase().includes(search.toLowerCase())) &&
+    (!difficulty || question.difficulty === difficulty) &&
+    (!bookmarked || states.get(question.id)?.bookmarked),
+  );
+  const pages = Math.ceil(visible.length / 50);
+  const currentPage = Math.min(page, Math.max(0, pages - 1));
+  const completed = questions.filter((question) => states.get(question.id)?.completed).length;
+  return <>
+    <div className="ip-crumb"><Link href="/interview-preparations/role-wise">Role Wise</Link><ChevronRight size={13} /> {query.data?.role.title ?? "Role"}</div>
+    {query.isLoading ? <p className="ip-feedback">Loading role questions…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> : <>
+      <div className="ip-page-heading"><span className="ip-eyebrow">{query.data?.role.group_name}</span><h1>{query.data?.role.title}</h1><p>{completed} of {questions.length} questions completed · <a href={query.data?.role.source_url} target="_blank" rel="noopener noreferrer">Reference sheet ↗</a></p></div>
+      <div className="ip-role-controls"><div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => {setSearch(event.target.value); setPage(0);}} placeholder="Search questions..." aria-label="Search role questions" /></div><select aria-label="Difficulty" value={difficulty} onChange={(event) => {setDifficulty(event.target.value); setPage(0);}}><option value="">All difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option></select><button type="button" className={bookmarked ? "ip-selected" : ""} onClick={() => {setBookmarked(!bookmarked); setPage(0);}}>Bookmarked</button></div>
+      <p className="ip-count">{visible.length} questions</p>
+      <QuestionTable questions={visible.slice(currentPage * 50, (currentPage + 1) * 50)} states={states} onToggle={toggle} saving={saving} showPopularity={false} questionLabel="Interview question" />
+      {pages > 1 && <div className="ip-pagination"><button disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Previous</button><span>Page {currentPage + 1} of {pages}</span><button disabled={currentPage + 1 >= pages} onClick={() => setPage(currentPage + 1)}>Next</button></div>}
+      {error && <p role="alert" className="ip-error">{error}</p>}
+    </>}
+  </>;
+}
+
 function Category({ slug }: { slug: string }) {
   const [search, setSearch] = useState("");
   const source = starterResources[slug];
   if (slug === "patterns") return <Patterns />;
   if (slug === "package-wise") return <PracticeCategory slug={slug} />;
+  if (slug === "role-wise") return <RoleDirectory />;
+  if (playlistGroups.includes(slug)) return <PlaylistDirectory group={slug} />;
   if (
     ["sql", "system-design", "hr-questions", "interview-questions"].includes(
       slug,
@@ -1209,6 +1350,8 @@ function QuestionCategory({ slug }: { slug: string }) {
   const { states, toggle, saving, error } = useQuestionState();
   const [difficulty, setDifficulty] = useState("");
   const [bookmarked, setBookmarked] = useState(false);
+  const [search, setSearch] = useState("");
+  const [systemType, setSystemType] = useState("");
   const questions = query.data?.questions ?? [];
   const visible = filterQuestions(
     questions,
@@ -1216,6 +1359,9 @@ function QuestionCategory({ slug }: { slug: string }) {
     difficulty,
     "",
     bookmarked,
+  ).filter((question) =>
+    (!search || question.title.toLowerCase().includes(search.toLowerCase())) &&
+    (!systemType || question.tags.includes(systemType)),
   );
   const completed = questions.filter(
     (question) => states.get(question.id)?.completed,
@@ -1239,6 +1385,7 @@ function QuestionCategory({ slug }: { slug: string }) {
         <h1>{titles[slug]}</h1>
         <p>{descriptions[slug]}</p>
       </div>
+      <div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${titles[slug].toLowerCase()}...`} aria-label={`Search ${titles[slug]}`} /></div>
       <div className="ip-sheet-tools ip-category-tools">
         <div className="ip-progress">
           <span
@@ -1262,7 +1409,7 @@ function QuestionCategory({ slug }: { slug: string }) {
           </div>
         </div>
         <div className="ip-filters">
-          <button
+          {slug !== "system-design" && <button
             className={!difficulty && !bookmarked ? "ip-selected" : ""}
             onClick={() => {
               setDifficulty("");
@@ -1270,8 +1417,8 @@ function QuestionCategory({ slug }: { slug: string }) {
             }}
           >
             All
-          </button>
-          <select
+          </button>}
+          {slug === "system-design" ? <div className="ip-type-filter" role="group" aria-label="System design type">{["", "HLD", "LLD"].map((type) => <button type="button" key={type} className={systemType === type && !bookmarked ? "ip-selected" : ""} onClick={() => {setSystemType(type); setBookmarked(false);}}>{type || "All"}</button>)}</div> : <select
             aria-label="Difficulty"
             value={difficulty}
             onChange={(event) => setDifficulty(event.target.value)}
@@ -1280,7 +1427,7 @@ function QuestionCategory({ slug }: { slug: string }) {
             <option>Easy</option>
             <option>Medium</option>
             <option>Hard</option>
-          </select>
+          </select>}
           <button
             className={bookmarked ? "ip-selected" : ""}
             onClick={() => setBookmarked(!bookmarked)}
@@ -1294,14 +1441,18 @@ function QuestionCategory({ slug }: { slug: string }) {
       ) : query.error ? (
         <p className="ip-error">{query.error.message}</p>
       ) : (
+        <>
+        <p className="ip-count">{visible.length} {slug === "system-design" ? "design prompts" : "questions"}</p>
         <QuestionTable
           questions={visible}
           states={states}
           onToggle={toggle}
           saving={saving}
           showPopularity={false}
+          showDifficulty={slug !== "system-design"}
           questionLabel={slug === "sql" ? "Problem" : "Question"}
         />
+        </>
       )}{" "}
       {error && (
         <p role="alert" className="ip-error">
@@ -1801,6 +1952,10 @@ export default function InterviewPreparations() {
         <Directory />
       ) : path[0] === "company-wise" && path[1] ? (
         <CompanySheet slug={path[1]} />
+      ) : path[0] === "role-wise" && path[1] ? (
+        <RoleSheet slug={path[1]} />
+      ) : playlistGroups.includes(path[0]) && path[1] ? (
+        <PlaylistDetail group={path[0]} slug={path[1]} />
       ) : path[0] === "progress" ? (
         <Progress />
       ) : path[0] === "cold-email-templates" ? (

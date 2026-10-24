@@ -127,6 +127,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           "role",
           "category",
           "questions",
+          "playlists",
+          "playlist",
+          "roles",
+          "roleSheet",
         ]).has(mode)
       )
         return res.status(400).json({ error: "Invalid view." });
@@ -162,12 +166,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       }
       if (mode === "state") {
         if (!user) return res.status(200).json({ state: [] });
-        const result = await client
-          .from("interview_user_questions")
-          .select("question_id,completed,bookmarked")
-          .eq("user_id", user.id);
-        if (result.error) throw result.error;
-        return res.status(200).json({ state: result.data });
+        const state = [];
+        for (let offset = 0; ; offset += 1000) {
+          const result = await client.from("interview_user_questions")
+            .select("question_id,completed,bookmarked")
+            .eq("user_id", user.id).order("question_id")
+            .range(offset, offset + 999);
+          if (result.error) throw result.error;
+          state.push(...(result.data ?? []));
+          if ((result.data?.length ?? 0) < 1000) break;
+        }
+        return res.status(200).json({ state });
       }
       if (mode === "questions") {
         const result = await client
@@ -176,6 +185,70 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .order("title");
         if (result.error) throw result.error;
         return res.status(200).json({ questions: result.data });
+      }
+      if (mode === "playlists") {
+        const group = params.get("group");
+        if (!group || !/^[a-z0-9-]{2,80}$/.test(group))
+          return res.status(400).json({ error: "Choose a playlist group." });
+        const groups = group === "core-subjects" ? ["dbms-playlists", "os-playlists", "oops-playlists"] : [group];
+        const [playlists, videos] = await Promise.all([
+          client.from("interview_playlists").select("slug,group_slug,title,creator,source_url,thumbnail_url,position").in("group_slug", groups).order("position"),
+          client.from("interview_playlist_videos").select("playlist_slug").range(0, 1999),
+        ]);
+        if (playlists.error || videos.error) throw playlists.error ?? videos.error;
+        const counts = new Map<string, number>();
+        for (const video of videos.data ?? []) counts.set(video.playlist_slug, (counts.get(video.playlist_slug) ?? 0) + 1);
+        return res.status(200).json({ playlists: (playlists.data ?? []).map((playlist) => ({ ...playlist, count: counts.get(playlist.slug) ?? 0 })) });
+      }
+      if (mode === "playlist") {
+        const playlistSlug = params.get("playlist");
+        if (!playlistSlug || !/^[a-zA-Z0-9-]{2,100}$/.test(playlistSlug))
+          return res.status(400).json({ error: "Choose a playlist." });
+        const [playlist, placements] = await Promise.all([
+          client.from("interview_playlists").select("slug,group_slug,title,creator,source_url,thumbnail_url").eq("slug", playlistSlug).maybeSingle(),
+          client.from("interview_playlist_videos").select("question_id,position").eq("playlist_slug", playlistSlug).order("position"),
+        ]);
+        if (playlist.error || placements.error) throw playlist.error ?? placements.error;
+        if (!playlist.data) return res.status(404).json({ error: "Playlist not found." });
+        const ids = (placements.data ?? []).map((item) => item.question_id);
+        const questions = ids.length ? await client.from("interview_questions").select("id,title,url").in("id", ids) : { data: [], error: null };
+        if (questions.error) throw questions.error;
+        const byId = new Map((questions.data ?? []).map((item) => [item.id, item]));
+        return res.status(200).json({ playlist: playlist.data, videos: ids.map((id) => byId.get(id)).filter(Boolean) });
+      }
+      if (mode === "roles") {
+        const result = await client.from("interview_roles")
+          .select("slug,title,group_name,source_url,position,question_count")
+          .order("position");
+        if (result.error) throw result.error;
+        return res.status(200).json({ roles: result.data ?? [] });
+      }
+      if (mode === "roleSheet") {
+        const roleSlug = params.get("role");
+        if (!roleSlug || !/^[a-z0-9-]{2,80}$/.test(roleSlug))
+          return res.status(400).json({ error: "Choose a valid role." });
+        const [role, placements] = await Promise.all([
+          client.from("interview_roles").select("slug,title,group_name,source_url,question_count").eq("slug", roleSlug).maybeSingle(),
+          client.from("interview_role_questions").select("question_id,position").eq("role_slug", roleSlug).order("position").range(0, 999),
+        ]);
+        if (role.error || placements.error) throw role.error ?? placements.error;
+        if (!role.data) return res.status(404).json({ error: "Role sheet not found." });
+        const entries = placements.data ?? [];
+        const byId = new Map<string, { id: string; title: string; source: string; url: string; difficulty: string | null; tags: string[]; popularity: string | null }>();
+        for (let offset = 0; offset < entries.length; offset += 100) {
+          const ids = [...new Set(entries.slice(offset, offset + 100).map((entry) => entry.question_id))];
+          const result = await client.from("interview_questions")
+            .select("id,title,source,url,difficulty,tags,popularity").in("id", ids);
+          if (result.error) throw result.error;
+          for (const question of result.data ?? []) byId.set(question.id, question);
+        }
+        return res.status(200).json({
+          role: role.data,
+          questions: entries.map((entry) => {
+            const question = byId.get(entry.question_id);
+            return question;
+          }).filter(Boolean),
+        });
       }
       if (mode === "category") {
         const category = params.get("category");
