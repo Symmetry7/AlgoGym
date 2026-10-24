@@ -68,7 +68,7 @@ for (const [category, minimum] of [
   ["patterns", 165],
   ["sql", 105],
   ["system-design", 10],
-  ["hr-questions", 10],
+  ["hr-questions", 100],
   ["interview-questions", 8],
 ]) {
   assert.ok(

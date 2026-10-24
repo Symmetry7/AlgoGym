@@ -187,7 +187,7 @@ try {
       });
       for (const [category, minimum] of [
         ["system-design", 10],
-        ["hr-questions", 10],
+        ["hr-questions", 100],
         ["interview-questions", 8],
       ]) {
         await page.goto(`${origin}/interview-preparations/${category}`, {
@@ -200,6 +200,15 @@ try {
         const count = await page.locator(".ip-table tbody tr").count();
         if (count < minimum)
           failures.push({ interaction: category, width, count });
+        if (category === "hr-questions" && width === 1440) {
+          const promptLink = await page.locator(".ip-table tbody tr:first-child td:nth-child(2) a").count();
+          const guide = await page.getByRole("link", { name: "Read general interview guidance" }).count();
+          await page.getByRole("combobox", { name: "Difficulty" }).selectOption("Hard");
+          const hard = await page.locator(".ip-table tbody tr").count();
+          if (promptLink || !guide || hard < 10 || hard >= count)
+            failures.push({ interaction: "hr-guide-and-difficulty", promptLink, guide, hard, count });
+          await page.getByRole("combobox", { name: "Difficulty" }).selectOption("");
+        }
         await page.screenshot({
           path: resolve(root, `algogym-${category}-${width}.png`),
         });

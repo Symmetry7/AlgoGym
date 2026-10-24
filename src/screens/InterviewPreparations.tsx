@@ -753,13 +753,13 @@ function QuestionTable({
                 </td>
                 <td>
                   <span className="ip-number">{index + 1}.</span>
-                  <a
-                    href={question.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {question.title}
-                  </a>
+                  {question.source === "General interview guide" ? (
+                    <span>{question.title}</span>
+                  ) : (
+                    <a href={question.url} target="_blank" rel="noopener noreferrer">
+                      {question.title}
+                    </a>
+                  )}
                 </td>
                 <td>
                   <div className="ip-tags">
@@ -774,11 +774,11 @@ function QuestionTable({
                     href={question.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`Open ${question.title} on ${question.source}`}
+                    aria-label={question.source === "General interview guide" ? "Read general interview guidance" : `Open ${question.title} on ${question.source}`}
                   >
                     {(["leetcode", "geeksforgeeks", "codeforces"] as ProviderId[]).includes(question.source.toLowerCase() as ProviderId)
                       ? <CodingPlatformMark platform={question.source.toLowerCase() as ProviderId} className="ip-source-mark" />
-                      : <span className="ip-source-name">{question.source}</span>}
+                      : <span className="ip-source-name">{question.source === "General interview guide" ? "Guide ↗" : question.source}</span>}
                   </a>
                 </td>
                 {packageFor && <td><span className="ip-package-badge">{packageFor(question)}</span></td>}
@@ -1229,7 +1229,6 @@ function QuestionCategory({ slug }: { slug: string }) {
     "interview-questions":
       "Review core engineering ideas and use the linked public references to check your explanation.",
   };
-  const hasDifficulty = slug !== "hr-questions";
   return (
     <>
       <div className="ip-crumb">
@@ -1272,18 +1271,16 @@ function QuestionCategory({ slug }: { slug: string }) {
           >
             All
           </button>
-          {hasDifficulty && (
-            <select
-              aria-label="Difficulty"
-              value={difficulty}
-              onChange={(event) => setDifficulty(event.target.value)}
-            >
-              <option value="">Difficulty</option>
-              <option>Easy</option>
-              <option>Medium</option>
-              <option>Hard</option>
-            </select>
-          )}
+          <select
+            aria-label="Difficulty"
+            value={difficulty}
+            onChange={(event) => setDifficulty(event.target.value)}
+          >
+            <option value="">Difficulty</option>
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
           <button
             className={bookmarked ? "ip-selected" : ""}
             onClick={() => setBookmarked(!bookmarked)}
