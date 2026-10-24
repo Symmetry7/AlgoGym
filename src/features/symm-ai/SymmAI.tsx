@@ -218,6 +218,11 @@ export default function SymmAI({ pathId, libraryMode = false }: { pathId?: strin
   const [home, setHome] = useState<Home | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
   const [topic, setTopic] = useState("");
+  useEffect(() => {
+    if (pathId || libraryMode) return;
+    const fromPreparation = new URLSearchParams(window.location.search).get("topic")?.trim();
+    if (fromPreparation) setTopic((current) => current || fromPreparation.slice(0, 180));
+  }, [pathId, libraryMode]);
   const [level, setLevel] = useState("beginner");
   const [goal, setGoal] = useState("fundamentals");
   const [hours, setHours] = useState(5);

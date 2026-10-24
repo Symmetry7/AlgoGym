@@ -57,6 +57,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
 import InterviewTemplates from "./InterviewTemplates";
+import { NotesLibrary, ResumeLibrary } from "./InterviewLibraries";
 import patternManifest from "./interview-pattern-groups.json";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
 import { CodingPlatformMark, type ProviderId } from "@/components/brand/CodingPlatformMark";
@@ -86,10 +87,12 @@ type QuestionState = {
   question_id: string;
   completed: boolean;
   bookmarked: boolean;
+  updated_at?: string;
 };
 type Sheet = { company: Company; questions: Question[] };
 type Playlist = { slug: string; group_slug: string; title: string; creator: string; source_url: string; thumbnail_url: string; count: number };
 type Role = { slug: string; title: string; group_name: string; source_url: string; question_count: number };
+type TechnicalSheetMeta = { slug: string; title: string; group_name: string; source_url: string; question_count: number };
 const packageBands = ["3–5 LPA", "5–10 LPA", "10–20 LPA", "20–40 LPA", "40–60 LPA", "60+ LPA"] as const;
 export function packageBand(question: Question): string {
   const variant = [...question.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 2;
@@ -684,7 +687,7 @@ function useQuestionState() {
       completed: false,
       bookmarked: false,
     };
-    const next = { ...current, [field]: !current[field] };
+    const next = { ...current, [field]: !current[field], updated_at: new Date().toISOString() };
     setSaving(questionId);
     setError("");
     client.setQueryData(
@@ -1015,24 +1018,22 @@ function CompanySheet({ slug }: { slug: string }) {
 }
 
 function Progress() {
-  const { states, toggle, saving, error } = useQuestionState();
-  const directory = useQuery({
-    queryKey: ["interview-directory"],
-    queryFn: () =>
-      jsonRequest<{ companies: Company[] }>("/api/interview?mode=directory"),
-  });
-  const catalog = useQuery({
-    queryKey: ["interview-questions"],
-    queryFn: () =>
-      jsonRequest<{ questions: Question[] }>("/api/interview?mode=questions"),
-  });
+  const { states, toggle, saving, error, user } = useQuestionState();
+  const { signInWithGoogle } = useAuth();
+  const catalog = useQuery({queryKey:["interview-progress",user?.id],queryFn:()=>jsonRequest<{questions:Question[]}>("/api/interview?mode=progress"),enabled:!!user});
   const questions = catalog.data?.questions ?? [];
-  const completed = questions.filter(
-    (question) => states.get(question.id)?.completed,
-  ).length;
-  const saved = questions.filter(
-    (question) => states.get(question.id)?.bookmarked,
-  );
+  const byId = new Map(questions.map(question=>[question.id,question]));
+  const tracked = [...states.values()].filter(item=>item.completed||item.bookmarked);
+  const completed = tracked.filter(item=>item.completed).length;
+  const saved = questions.filter(question=>states.get(question.id)?.bookmarked);
+  const unfinished = saved.filter(question=>!states.get(question.id)?.completed);
+  const difficultyCounts = ["Easy","Medium","Hard","Unrated"].map(label=>({label,count:tracked.filter(item=>item.completed&&(byId.get(item.question_id)?.difficulty??"Unrated")===label).length}));
+  const highest = Math.max(1,...difficultyCounts.map(item=>item.count));
+  const today = new Date();
+  const dayKey=(date:Date)=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+  const week = Array.from({length:7},(_,index)=>{const date=new Date(today.getFullYear(),today.getMonth(),today.getDate()-(6-index));const key=dayKey(date);return {label:date.toLocaleDateString("en",{weekday:"short"}),count:tracked.filter(item=>item.updated_at&&dayKey(new Date(item.updated_at))===key).length}});
+  const weekMax=Math.max(1,...week.map(day=>day.count));
+  const recent=tracked.filter(item=>item.updated_at&&byId.has(item.question_id)).sort((a,b)=>(b.updated_at??"").localeCompare(a.updated_at??"")).slice(0,5);
   return (
     <>
       <div className="ip-crumb">
@@ -1040,37 +1041,28 @@ function Progress() {
       </div>
       <div className="ip-page-heading">
         <h1>My Progress</h1>
-        <p>
-          Your saved work follows each canonical question across company sheets.
-        </p>
+        <p>Your saved work follows each question across sheets. Use the evidence below to choose what to revisit next.</p>
       </div>
-      <div className="ip-progress-summary">
-        <div>
-          <strong>{completed}</strong>
-          <span>Questions completed</span>
-        </div>
-        <div>
-          <strong>{saved.length}</strong>
-          <span>Bookmarks</span>
-        </div>
-        <div>
-          <strong>{directory.data?.companies.length ?? 0}</strong>
-          <span>Company sheets</span>
-        </div>
-      </div>
-      <h2>Bookmarked questions</h2>
+      {!user&&<div className="ip-progress-signin"><div><h2>Your preparation, in one place</h2><p>Sign in to see your completed questions, bookmarks, and recent study activity across every sheet.</p></div><button type="button" onClick={()=>void signInWithGoogle("/interview-preparations/progress")}>Sign in to view progress <ChevronRight size={16}/></button></div>}
+      {catalog.isLoading&&user?<p className="ip-feedback">Loading your preparation…</p>:catalog.error?<p role="alert" className="ip-error">{catalog.error.message}</p>:user&&<>
+        <div className="ip-progress-summary ip-progress-ledger"><div><strong>{completed}</strong><span>Questions completed</span></div><div><strong>{saved.length}</strong><span>Bookmarked</span></div><div><strong>{unfinished.length}</strong><span>To revisit</span></div><div><strong>{week.reduce((sum,day)=>sum+day.count,0)}</strong><span>Updated this week</span></div></div>
+        <div className="ip-progress-panels"><section className="ip-progress-panel"><div className="ip-progress-panel-heading"><h2>Difficulty breakdown</h2><span>Completed questions</span></div><div className="ip-track-bars">{difficultyCounts.map(item=><div key={item.label}><span>{item.label}</span><div><i style={{width:`${item.count/highest*100}%`}}/></div><strong>{item.count}</strong></div>)}</div></section><section className="ip-progress-panel"><div className="ip-progress-panel-heading"><h2>Recent study</h2><span>Last saved change to each question</span></div><div className="ip-week-bars">{week.map((day,index)=><div key={index}><span className="ip-week-bar" style={{height:`${Math.max(4,day.count/weekMax*100)}%`}} title={`${day.count} updated questions`}/><small>{day.label}</small></div>)}</div><p className="ip-progress-explain">Changes shown here are saved-state updates, not verified solve dates.</p></section></div>
+        <div className="ip-progress-next"><div><h2>Keep your momentum</h2><p>{unfinished.length?`You have ${unfinished.length} bookmarked question${unfinished.length===1?"":"s"} waiting for another pass.`:"Pick a topic, save useful questions, and return to them here."}</p></div><SymmPrepLink topic="Create a focused interview preparation learning path" label="Plan with SYMM AI"/></div>
+        {recent.length>0&&<section className="ip-recent-work"><h2>Recently touched</h2>{recent.map(item=><div key={item.question_id}><span>{item.completed?"Completed":"Bookmarked"}</span><strong>{byId.get(item.question_id)?.title}</strong><time dateTime={item.updated_at}>{new Date(item.updated_at!).toLocaleDateString()}</time></div>)}</section>}
+        <h2>Bookmarked questions</h2>
+      </>}
       {error && (
         <p role="alert" className="ip-error">
           {error}
         </p>
       )}
-      <QuestionTable
+      {user&&!catalog.isLoading&&!catalog.error&&<QuestionTable
         questions={saved}
         states={states}
         onToggle={toggle}
         saving={saving}
         showPopularity={false}
-      />
+      />}
     </>
   );
 }
@@ -1191,15 +1183,80 @@ function RoleSheet({ slug }: { slug: string }) {
   </>;
 }
 
+const technicalIcons: Record<string, typeof BookOpen> = {
+  "dbms-questions": Database, "os-questions": Cpu, "oops-questions": Boxes,
+  "cn-questions": Network, "javascript-questions": Code2,
+  "typescript-questions": Code2, "reactjs-questions": Layers3,
+  "nodejs-questions": Server, "nextjs-questions": Laptop,
+  "git-github-questions": Workflow, "spring-boot-questions": Server,
+  "angular-questions": Code2, "cpp-questions": Code2,
+  "java-questions": Code2, "python-questions": Code2,
+  "rust-questions": Cpu, "go-questions": Code2,
+  "react-native-questions": Smartphone, "swift-questions": Smartphone,
+  "flutter-questions": Smartphone, "android-questions": Smartphone,
+  "aws-questions": Cloud, "docker-questions": Container,
+  "kuberneties-questions": Boxes, "terraform-questions": Workflow,
+  "postgresql-questions": Database, "mongodb-questions": Database,
+  "redis-questions": Database,
+};
+
+function SymmPrepLink({ topic, label = "Build a learning path with SYMM AI" }: { topic: string; label?: string }) {
+  return <Link className="ip-symm-link" href={`/training/symm?topic=${encodeURIComponent(topic.slice(0, 180))}`}><Sparkles size={17} /> <span>{label}</span><ArrowUpRight size={15} /></Link>;
+}
+
+function TechnicalDirectory() {
+  const [search, setSearch] = useState("");
+  const query = useQuery({ queryKey: ["interview-technical-directory"], queryFn: () => jsonRequest<{sheets:TechnicalSheetMeta[]}>("/api/interview?mode=technicalDirectory") });
+  const sheets = (query.data?.sheets ?? []).filter(sheet => `${sheet.title} ${sheet.group_name}`.toLowerCase().includes(search.toLowerCase()));
+  const groups = [...new Set(sheets.map(sheet => sheet.group_name))];
+  return <>
+    <div className="ip-crumb">Preparation <ChevronRight size={13} /> Interview Questions</div>
+    <div className="ip-page-heading ip-page-heading-with-action"><div><h1>Interview Questions</h1><p>Choose a technical subject, work through its public question inventory, and save your progress.</p></div><SymmPrepLink topic="Technical interview preparation" /></div>
+    <div className="ip-search"><Search size={18}/><input type="search" value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search technologies..." aria-label="Search technical topics" /></div>
+    {query.isLoading ? <p className="ip-feedback">Loading topics…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> : groups.map(group => <section className="ip-technical-group" key={group}><h2>{group}</h2><div className="ip-technical-grid">{sheets.filter(sheet=>sheet.group_name===group).map(sheet=>{const Icon=technicalIcons[sheet.slug]??BookOpen;return <Link href={`/interview-preparations/interview-questions/${sheet.slug}`} className="ip-technical-card" key={sheet.slug}><span className="ip-technical-icon"><Icon size={20} strokeWidth={1.7}/></span><span><strong>{sheet.title}</strong><small>{sheet.question_count} questions</small></span><ChevronRight size={17}/></Link>})}</div></section>)}
+    {!query.isLoading&&!query.error&&!sheets.length&&<p className="ip-empty">No technical topics match your search.</p>}
+  </>;
+}
+
+function TechnicalSheet({ slug }: { slug: string }) {
+  const [search,setSearch]=useState("");
+  const [difficulty,setDifficulty]=useState("");
+  const [bookmarked,setBookmarked]=useState(false);
+  const [page,setPage]=useState(0);
+  const [openId,setOpenId]=useState<string|null>(null);
+  const query=useQuery({queryKey:["interview-technical-sheet",slug],queryFn:()=>jsonRequest<{sheet:TechnicalSheetMeta;questions:Question[]}>(`/api/interview?mode=technicalSheet&sheet=${encodeURIComponent(slug)}`)});
+  const {states,toggle,saving,error}=useQuestionState();
+  const sheet=query.data?.sheet;
+  const questions=query.data?.questions??[];
+  const visible=questions.filter(question=>(!search||question.title.toLowerCase().includes(search.toLowerCase()))&&(!difficulty||question.difficulty===difficulty)&&(!bookmarked||states.get(question.id)?.bookmarked));
+  const pages=Math.ceil(visible.length/40);
+  const currentPage=Math.min(page,Math.max(0,pages-1));
+  const completed=questions.filter(question=>states.get(question.id)?.completed).length;
+  return <>
+    <div className="ip-crumb"><Link href="/interview-preparations/interview-questions">Interview Questions</Link><ChevronRight size={13}/>{sheet?.title??"Topic"}</div>
+    {query.isLoading?<p className="ip-feedback">Loading questions…</p>:query.error?<p role="alert" className="ip-error">{query.error.message}</p>:<>
+      <div className="ip-page-heading ip-page-heading-with-action"><div><h1>{sheet?.title} Questions</h1><p>{completed}/{questions.length} completed · Questions and difficulty metadata from the public reference. Explain each answer in your own words.</p></div><SymmPrepLink topic={`Learn ${sheet?.title} for technical interviews`} /></div>
+      <div className="ip-role-controls"><div className="ip-search"><Search size={18}/><input type="search" value={search} onChange={event=>{setSearch(event.target.value);setPage(0)}} placeholder="Search questions..." aria-label="Search technical questions"/></div><select aria-label="Difficulty" value={difficulty} onChange={event=>{setDifficulty(event.target.value);setPage(0)}}><option value="">All difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option></select><button type="button" className={bookmarked?"ip-selected":""} onClick={()=>{setBookmarked(!bookmarked);setPage(0)}}>Bookmarked</button></div>
+      <p className="ip-count">{visible.length} questions</p>
+      <div className="ip-answer-list">{visible.slice(currentPage*40,(currentPage+1)*40).map((question,index)=>{const expanded=openId===`${currentPage}-${index}`;return <article className="ip-answer-item" key={`${question.id}-${index}`}><div className="ip-answer-head"><button type="button" className={`ip-check ${states.get(question.id)?.completed?"ip-checked":""}`} disabled={saving===question.id} aria-label={`${states.get(question.id)?.completed?"Mark incomplete":"Mark complete"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.completed)} onClick={()=>toggle(question.id,"completed")}>{states.get(question.id)?.completed&&<Check size={14}/>}</button><button type="button" className="ip-answer-toggle" aria-expanded={expanded} onClick={()=>setOpenId(expanded?null:`${currentPage}-${index}`)}><span className="ip-answer-label"><small>{String(currentPage*40+index+1).padStart(2,"0")}</small><strong>{question.title}</strong></span><ChevronDown size={18} className="ip-answer-chevron"/></button>{question.difficulty&&<span className={`ip-difficulty ip-${question.difficulty.toLowerCase()}`}>{question.difficulty}</span>}<button type="button" className={`ip-save-button ${states.get(question.id)?.bookmarked?"ip-saved":""}`} disabled={saving===question.id} aria-label={`${states.get(question.id)?.bookmarked?"Remove bookmark":"Bookmark"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.bookmarked)} onClick={()=>toggle(question.id,"bookmarked")}><Bookmark size={17} fill={states.get(question.id)?.bookmarked?"currentColor":"none"}/></button></div>{expanded&&<div className="ip-answer-detail"><p>Write your own explanation, then compare it with the reference or use SYMM AI to build a study path for this concept.</p><div className="ip-answer-resources"><a href={sheet?.source_url} target="_blank" rel="noopener noreferrer"><BookOpen size={16}/> Reference sheet <ArrowUpRight size={14}/></a><SymmPrepLink topic={`Explain ${question.title} in ${sheet?.title}`} label="Study with SYMM AI"/></div></div>}</article>})}</div>
+      {pages>1&&<div className="ip-pagination"><button disabled={currentPage===0} onClick={()=>setPage(currentPage-1)}>Previous</button><span>Page {currentPage+1} of {pages}</span><button disabled={currentPage+1>=pages} onClick={()=>setPage(currentPage+1)}>Next</button></div>}
+      {error&&<p role="alert" className="ip-error">{error}</p>}
+    </>}
+  </>;
+}
+
 function Category({ slug }: { slug: string }) {
   const [search, setSearch] = useState("");
   const source = starterResources[slug];
   if (slug === "patterns") return <Patterns />;
   if (slug === "package-wise") return <PracticeCategory slug={slug} />;
   if (slug === "role-wise") return <RoleDirectory />;
+  if (slug === "interview-questions") return <TechnicalDirectory />;
+  if (slug === "cool-notes") return <NotesLibrary />;
+  if (slug === "resume-templates") return <ResumeLibrary />;
   if (playlistGroups.includes(slug)) return <PlaylistDirectory group={slug} />;
   if (
-    ["sql", "system-design", "hr-questions", "interview-questions"].includes(
+    ["sql", "system-design", "hr-questions"].includes(
       slug,
     )
   )
@@ -1286,13 +1343,10 @@ function Patterns() {
       <div className="ip-crumb">
         Preparation <ChevronRight size={13} /> 20 DSA Patterns
       </div>
-      <div className="ip-page-heading">
+      <div className="ip-page-heading ip-page-heading-with-action"><div>
         <h1>20 DSA Patterns</h1>
-        <p>
-          Recognize the pattern, then practice the underlying problem. Progress
-          follows each question wherever it appears.
-        </p>
-      </div>
+        <p>Recognize the pattern, then practice the underlying problem. Progress follows each question wherever it appears.</p>
+      </div><SymmPrepLink topic="Master DSA problem-solving patterns" /></div>
       <p className="ip-count">
         {completed}/{placements.length} problems completed
       </p>
@@ -1422,10 +1476,7 @@ function QuestionCategory({ slug }: { slug: string }) {
         Preparation <ChevronRight size={13} />
         {titles[slug]}
       </div>
-      <div className="ip-page-heading">
-        <h1>{titles[slug]}</h1>
-        <p>{descriptions[slug]}</p>
-      </div>
+      <div className="ip-page-heading ip-page-heading-with-action"><div><h1>{titles[slug]}</h1><p>{descriptions[slug]}</p></div><SymmPrepLink topic={`Learn ${titles[slug]} for interviews`} /></div>
       <div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${titles[slug].toLowerCase()}...`} aria-label={`Search ${titles[slug]}`} /></div>
       <div className="ip-sheet-tools ip-category-tools">
         <div className="ip-progress">
@@ -1995,12 +2046,18 @@ export default function InterviewPreparations() {
         <CompanySheet slug={path[1]} />
       ) : path[0] === "role-wise" && path[1] ? (
         <RoleSheet slug={path[1]} />
+      ) : path[0] === "interview-questions" && path[1] ? (
+        <TechnicalSheet slug={path[1]} />
       ) : playlistGroups.includes(path[0]) && path[1] ? (
         <PlaylistDetail group={path[0]} slug={path[1]} />
       ) : path[0] === "progress" ? (
         <Progress />
       ) : path[0] === "cold-email-templates" ? (
         <InterviewTemplates slug={path[1]} />
+      ) : path[0] === "cool-notes" ? (
+        <NotesLibrary slug={path[1]} />
+      ) : path[0] === "resume-templates" ? (
+        <ResumeLibrary slug={path[1]} />
       ) : path[0] === "admin" ? (
         <Admin />
       ) : (

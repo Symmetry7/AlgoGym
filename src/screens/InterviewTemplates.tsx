@@ -130,12 +130,54 @@ const templates: Template[] = [
   },
 ];
 
-const groups = ["Finding a role", "Building connections", "Working together"];
+const roleOutreach: Array<[string,string,string,string]> = [
+  ["mern-referral","MERN Stack Developer","Tech Stack Specific","A deployed MongoDB, Express, React, and Node project"],
+  ["react-referral","React Developer","Tech Stack Specific","An accessible React interface with measured improvements"],
+  ["node-referral","Node.js Backend Developer","Tech Stack Specific","A Node.js API with tests, observability, and reliable data handling"],
+  ["fullstack-referral","Full Stack Developer","Tech Stack Specific","An end-to-end feature from schema to user interface"],
+  ["vue-referral","Vue.js Developer","Tech Stack Specific","A Vue component system or production feature"],
+  ["angular-referral","Angular Developer","Tech Stack Specific","An Angular workflow with typed state and robust forms"],
+  ["django-referral","Python/Django Developer","Tech Stack Specific","A Django service with clear models and secured endpoints"],
+  ["devops-referral","DevOps Engineer","Cloud & DevOps","A delivery pipeline or deployment reliability improvement"],
+  ["aws-referral","AWS Cloud Engineer","Cloud & DevOps","An AWS architecture with documented cost and recovery choices"],
+  ["data-referral","Data Engineer","Data & AI/ML","A validated data pipeline with quality checks"],
+  ["ml-referral","ML/AI Engineer","Data & AI/ML","An evaluated model with an honest baseline and deployment plan"],
+  ["react-native-referral","React Native Developer","Mobile Development","A tested cross-platform mobile feature"],
+  ["flutter-referral","Flutter Developer","Mobile Development","A Flutter application with responsive state and accessibility"],
+  ["android-referral","Android Developer","Mobile Development","An Android feature built with lifecycle-aware components"],
+];
+const technicalTemplates: Template[] = roleOutreach.map(([slug,role,group,evidence]) => ({
+  slug,title:`${role} — referral request`,group,
+  summary:`A focused note about your ${role.toLowerCase()} work and a specific opening.`,
+  subject:`${role} opening at [company] — [your name]`,
+  body:`Hi [name],\n\nI saw the ${role} opening on [team] and was interested in [specific product or technical challenge]. I recently worked on [project]: ${evidence.toLowerCase()}, resulting in [measurable outcome].\n\nWould you be open to reviewing my fit for this role or pointing me toward the right person? The posting is [job link], and my work is at [portfolio link]. I understand if a referral is not possible.\n\nThank you,\n[your name]`,
+  tips:["Replace the project claim with work you actually completed.","Name the exact team and posting.","Keep the request optional and easy to answer."],
+}));
+const contactTemplates: Template[] = [
+  ["startup-founder","Startup founder","Mention a product decision that caught your attention","one concrete way your engineering work could help the current team"],
+  ["company-ceo","Company CEO","Refer to a public product milestone","a short question about the company’s hiring priorities"],
+  ["engineering-manager","Engineering manager","Identify a challenge from the team's published work","a relevant delivery or mentoring example"],
+  ["vp-engineering","VP of Engineering","Reference an engineering strategy or scale challenge","a concise staff-level impact story"],
+  ["founding-engineer","Founding engineer","Acknowledge the product's early trade-offs","a small scoped contribution you can make"],
+  ["tech-lead","Tech lead","Mention a technical talk, repository, or article","one thoughtful technical question"],
+].map(([slug,person,opening,ask])=>({slug,title:`Reaching out to a ${person}`,group:"By Seniority Level",summary:`A respectful introduction to a ${person.toLowerCase()}.`,subject:`Question about [team] at [company]`,body:`Hi [name],\n\n${opening} at [company] prompted me to reach out. I work on [relevant domain], where I recently [specific outcome].\n\nI would appreciate ${ask}. If your schedule is full, a short reply or a pointer to the right resource would still be helpful.\n\nBest,\n[your name]`,tips:["Research the person before writing.","Ask for a specific, bounded response.","Do not make claims you cannot substantiate."]}));
+const scenarioTemplates: Template[] = [
+  {slug:"alumni-referral",title:"College alumni referral",group:"By Relationship",summary:"Connect through a real shared institution before asking about a role.",subject:"[college] alumnus — question about [team]",body:"Hi [name],\n\nI am a [year] student at [college] and found your work on [team/project] while researching [role]. My [project] relates to [specific requirement], and I would value your perspective on what the team looks for.\n\nIf you think my work is relevant, would you be comfortable sharing the best application path? I have included [role link] and [portfolio link].\n\nThank you,\n[your name]",tips:["Name the shared college truthfully.","Lead with a question before a referral request."]},
+  {slug:"linkedin-follow-up",title:"After a LinkedIn discussion",group:"By Relationship",summary:"Continue a public technical exchange without pretending familiarity.",subject:"Following up on your post about [topic]",body:"Hi [name],\n\nYour post on [topic] raised a useful point about [specific detail]. I tried applying that idea to [project] and found [brief result or question].\n\nWould you recommend a resource for understanding [narrow issue] better? No meeting is needed; a pointer would be appreciated.\n\nBest,\n[your name]",tips:["Refer to a real post.","Do not turn a first message into an immediate job request."]},
+  {slug:"rejection-feedback",title:"Feedback after rejection",group:"Unique Scenarios",summary:"Ask for one actionable observation after a completed process.",subject:"Thank you for the [role] interview",body:"Hi [name],\n\nThank you for the opportunity to interview for [role]. I appreciated learning about [specific team problem]. Although I was not selected, I would welcome one area I could strengthen for future roles, if sharing feedback is possible under your policy.\n\nThank you again for your time,\n[your name]",tips:["Send once and accept a no-feedback policy.","Keep the tone appreciative."]},
+  {slug:"career-transition",title:"Career transition introduction",group:"Unique Scenarios",summary:"Connect transferable evidence to a new engineering role.",subject:"Transitioning from [field] to [role]",body:"Hi [name],\n\nI am moving from [previous field] toward [role] after building [relevant project]. My earlier work taught me [transferable skill], which I applied to [specific technical result].\n\nI am interested in [team] because [concrete reason]. Would you suggest the most useful gap to close before applying?\n\nBest,\n[your name]",tips:["Show evidence of the new skill.","Do not apologize for your earlier career."]},
+  {slug:"funding-congratulations",title:"After a funding announcement",group:"Unique Scenarios",summary:"Make a relevant connection without treating news as an invitation.",subject:"Congratulations on [company]’s milestone",body:"Hi [name],\n\nCongratulations on [specific public milestone]. I was interested in how [product or technical challenge] may evolve as the team grows. I have worked on [related outcome] and would be glad to share a short example if it is useful.\n\nIf your team is hiring for [role], where is the best place to follow openings?\n\nBest,\n[your name]",tips:["Confirm the announcement is public.","Do not assume the company is hiring."]},
+  {slug:"open-opportunities",title:"Exploring opportunities",group:"Job Related",summary:"Start a conversation when no relevant role is posted.",subject:"Interest in [team] engineering work",body:"Hi [name],\n\nI have been following [company]'s work on [specific product]. My recent [project] involved [relevant contribution and result].\n\nI could not find an open role that fits [focus area]. Is there a public place to watch for future opportunities, or a skill you would suggest prioritizing?\n\nThank you,\n[your name]",tips:["Do not claim an opening exists.","Link to evidence, not a long attachment."]},
+  {slug:"freelance-inquiry",title:"Freelance project inquiry",group:"Job Related",summary:"Offer a small, defined project with a clear deliverable.",subject:"Proposal for [specific project]",body:"Hi [name],\n\nI noticed [specific public problem or opportunity] in [product]. I have delivered [related work] and could help by [scoped deliverable] over [realistic period].\n\nIf that would be useful, I can send a one-page scope with assumptions, timeline, and price. My comparable work is here: [portfolio link].\n\nBest,\n[your name]",tips:["Do not imply a security issue without evidence.","Define scope before pricing."]},
+  {slug:"portfolio-feedback",title:"Portfolio feedback request",group:"Job Related",summary:"Ask for feedback on one narrow aspect of your portfolio.",subject:"Could I ask one question about [project]?",body:"Hi [name],\n\nI admire your work on [specific project or article]. I am refining my [portfolio project], and I am uncertain whether [one precise design or engineering decision] is clear to a reviewer.\n\nIf you have a moment, could you glance at [link] and tell me what you would question first? I understand if you cannot.\n\nThank you,\n[your name]",tips:["Ask one narrow question.","Respect a no-response outcome."]},
+];
+const allTemplates=[...templates,...technicalTemplates,...contactTemplates,...scenarioTemplates];
+const groups=["Finding a role","Tech Stack Specific","Cloud & DevOps","Data & AI/ML","Mobile Development","By Seniority Level","By Relationship","Unique Scenarios","Job Related","Building connections","Working together"];
 
 export default function InterviewTemplates({ slug }: { slug?: string }) {
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(false);
-  const selected = templates.find((template) => template.slug === slug);
+  const selected = allTemplates.find((template) => template.slug === slug);
   const [editedSubject, setEditedSubject] = useState<string | null>(null);
   const [editedBody, setEditedBody] = useState<string | null>(null);
   const [copyError, setCopyError] = useState("");
@@ -251,7 +293,7 @@ export default function InterviewTemplates({ slug }: { slug?: string }) {
   }
 
   const term = search.trim().toLowerCase();
-  const filtered = templates.filter((template) =>
+  const filtered = allTemplates.filter((template) =>
     `${template.title} ${template.summary} ${template.group}`
       .toLowerCase()
       .includes(term),

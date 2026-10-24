@@ -68,10 +68,10 @@ Hynts displays “Find Median from Data Stream” twice in Amazon (both rows ret
 | DSA educator sheets | 7 | 3 shortcuts | 3 shortcuts | Incomplete |
 | Role Wise | 20 routes | 6 shortcuts | 20 dedicated role sheets, 8,098 visible source rows | Matched the publicly visible question titles and order; answer text excluded |
 | Playlists | 19 advertised collections | 12 generic resource links | 18 working collections, 893 lesson placements | Source has one 404 collection and one malformed video link |
-| Technical interview banks | 28 routes | 8 general questions | 8 general questions | Incomplete |
-| Notes | 26 PDF cards | 6 links | 6 links | Incomplete; no licensed PDF library |
-| Resume templates | 6 | 3 links | 3 links | Incomplete; no licensed downloadable files |
-| Cold email templates | 36 | 8 | 8 | Incomplete |
+| Technical interview banks | 28 routes | 8 general questions | 28 topic sheets, 4,531 public question placements | Matched visible question titles, order, and difficulty; original answers not copied |
+| Notes | 26 PDF cards | 6 links | 26 original readable notes with Markdown downloads | Functional library; reference PDFs were not copied |
+| Resume templates | 6 | 3 links | 6 original previewable, editable HTML templates | Functional preview/download/print; reference artwork was not copied |
+| Cold email templates | 36 | 8 | 36 editable original templates | Functional search, copy, and editing; text is not copied |
 
 ## Data integrity and tests
 
@@ -91,6 +91,14 @@ Hynts displays “Find Median from Data Stream” twice in Amazon (both rows ret
 - Playwright checked directory and Google sheet at 375, 430, 768, 1280, 1440, and 1920 pixels, along with search, difficulty filtering, read-more, package/SQL/system/HR pages, pattern expansion, templates, and resource routes. No overflow or page errors were reported on the isolated production build at port 8097.
 - Type check, unit tests (122 passed; 6 skipped), and production build passed. The Supabase migration and DB audit were verified after application.
 
+## 2026-10-25 technical and resource expansion
+
+- The public [technical question index](https://hynts.in/preparation/most-asked-questions/) was inspected topic by topic. `data/interview-technical-reference.json` records 28 sheets and 4,531 visible question placements. The additive migration `20261025110000_interview_technical_questions.sql` creates 4,242 canonical questions and connects them to the sheets. Existing canonical IDs are reused when titles match, preserving user state. The public OOP sheet has 149 visible questions although the directory advertises 150; PostgreSQL has 77 visible questions although the directory advertises 79. AlgoGym reports visible rows.
+- Technical sheets now have search, difficulty and bookmark filters, progress controls, pagination, and direct SYMM AI context handoff. The question detail links to its source sheet; the original answer bodies were not reproduced.
+- The notes library contains 26 original short study notes with search, topic filters, in-page reading, Markdown download, and print/PDF through the browser. These are not the reference PDFs. Resume templates offer six original layouts with previews, editable HTML downloads, and print/PDF. Cold emails offer 36 original editable templates with search and copy.
+- My Progress uses the authenticated user's saved question state. It reports completed, bookmarked, and revisit counts; a difficulty breakdown; a seven-day view of saved-state changes; and recently touched questions. The chart is explicitly labeled as saved-state activity, not verified solve history. Relevant preparation pages offer SYMM AI links that prefill a topic without changing the approved chat design.
+- `scripts/interview-technical-db-qa.mjs` passed for all 28 sheets and 4,531 placements, with anonymous writes denied. `scripts/interview-progress-browser-qa.mjs` passed with a temporary authenticated account, including saved-state statistics and SYMM topic handoff. `scripts/interview-expanded-qa.mjs` passed 54 page/viewport combinations at 375, 430, 768, 1280, 1440, and 1920 pixels; search, expansion, resource downloads, and signed-out access behavior were exercised. Screenshots are in `artifacts/interview-expanded-qa/`. Production build and 122 unit tests passed; six live-provider tests were skipped.
+
 ## Remaining gaps and limitations
 
-Hynts' long-form explanations, original answer text, PDFs, and resume assets have no established reuse license for AlgoGym. SQL and HR answers here are original examples, not copied text or a runnable judge. Other parity gaps remain in package-wise mapping, educator sheets, technical interview banks, notes, resume templates, and cold emails. The supplied Pngtree fire image remains excluded from the public build because its commercial-use license is unknown under the [Pngtree content license](https://pngtree.com/content-license-agreement); authenticated streak logic remains in place with the existing icon.
+Hynts' long-form explanations, original answer text, PDFs, and resume assets have no established reuse license for AlgoGym. SQL and HR answers here are original examples, not copied text or a runnable judge. Package-wise mapping and educator sheets still need source-by-source validation. The new notes, resumes, and email templates are original replacements rather than copied Hynts files or text. The supplied Pngtree fire image remains excluded from the public build because its commercial-use license is unknown under the [Pngtree content license](https://pngtree.com/content-license-agreement); authenticated streak logic remains in place with the existing icon.
