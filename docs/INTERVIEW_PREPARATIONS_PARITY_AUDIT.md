@@ -1,58 +1,60 @@
 # Interview Preparations parity audit
 
-Observed and tested 2026-10-24. See [reference evidence](RVE_REFERENCE_PARITY_AUDIT.md) and the [editorial manifest](interview-editorial-manifest.json). The requested RVE skill was unavailable; the installed REA skill's evidence-first method, Computer Use, and Playwright were used instead.
+Observed and tested 2026-10-24. The 45 company sheets now match the public Hynts title, order, and source URL inventory in [the recorded manifest](hynts-public-company-titles.json). The requested RVE skill was unavailable; the installed REA evidence-first method, Computer Use, and Playwright were used. We did not copy problem statements, descriptions, or popularity classifications.
 
 ## Company sheets
 
-Every AlgoGym after-count below is backed by the applied Supabase relationship rows and checked by `scripts/interview-catalog-audit.mjs`. **None of these rows establishes question-by-question Hynts or employer-frequency parity.** The Hynts counts are reference directory counts, not copied content.
+The live Supabase relationships and source links were compared row by row with the recorded public reference by `scripts/interview-catalog-audit.mjs`. Existing canonical question IDs were reused where titles matched, preserving saved progress and bookmarks. Source numbering inconsistencies were normalized to visual row order.
 
-| Company | Hynts directory | AlgoGym before | AlgoGym after | Verified status |
+| Company | Public rows | AlgoGym before | AlgoGym after | Verified status |
 | --- | ---: | ---: | ---: | --- |
-| Google | 55 | 70 | 67 | Partial: editorial track, not verified Hynts membership |
-| Meta | 60 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Microsoft | 55 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Netflix | 50 | 70 | 37 | Partial: editorial track, not verified Hynts membership |
-| Amazon | 66 | 70 | 73 | Partial: editorial track, not verified Hynts membership |
-| Apple | 55 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| LinkedIn | 56 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Atlassian | 55 | 70 | 65 | Partial: editorial track, not verified Hynts membership |
-| Uber | 65 | 70 | 55 | Partial: editorial track, not verified Hynts membership |
-| D.E. Shaw | 63 | 70 | 79 | Partial: editorial track, not verified Hynts membership |
-| Bloomberg | 62 | 70 | 71 | Partial: editorial track, not verified Hynts membership |
-| Tower Research Capital | 58 | 70 | 71 | Partial: editorial track, not verified Hynts membership |
-| Stripe | 59 | 70 | 70 | Partial: editorial track, not verified Hynts membership |
-| PayPal | 55 | 70 | 73 | Partial: editorial track, not verified Hynts membership |
-| Salesforce | 53 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Adobe | 53 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Flipkart | 54 | 70 | 50 | Partial: editorial track, not verified Hynts membership |
-| PhonePe | 50 | 70 | 74 | Partial: editorial track, not verified Hynts membership |
-| Meesho | 55 | 70 | 58 | Partial: editorial track, not verified Hynts membership |
-| CRED | 58 | 70 | 52 | Partial: editorial track, not verified Hynts membership |
-| Razorpay | 50 | 70 | 47 | Partial: editorial track, not verified Hynts membership |
-| Zomato | 50 | 70 | 54 | Partial: editorial track, not verified Hynts membership |
-| Swiggy | 50 | 70 | 44 | Partial: editorial track, not verified Hynts membership |
-| Zepto | 54 | 70 | 56 | Partial: editorial track, not verified Hynts membership |
-| Paytm | 50 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| ServiceNow | 54 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Intuit | 53 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Walmart | 55 | 70 | 52 | Partial: editorial track, not verified Hynts membership |
-| Goldman Sachs | 53 | 70 | 67 | Partial: editorial track, not verified Hynts membership |
-| J.P. Morgan Chase | 52 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Morgan Stanley | 60 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Oracle | 52 | 70 | 70 | Partial: editorial track, not verified Hynts membership |
-| Cisco | 54 | 70 | 59 | Partial: editorial track, not verified Hynts membership |
-| Visa | 51 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Mastercard | 61 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Barclays | 57 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| HSBC | 52 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Accenture | 54 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| TCS + TCS NQT | 75 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Infosys | 72 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Cognizant | 74 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Wipro | 73 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| HCLTech | 74 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Tech Mahindra | 75 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
-| Capgemini | 53 | 70 | 80 | Partial: editorial track, not verified Hynts membership |
+| Google | 55 | 70 | 55 | Matched public title, order, and source URL |
+| Meta | 60 | 70 | 60 | Matched public title, order, and source URL |
+| Microsoft | 55 | 70 | 55 | Matched public title, order, and source URL |
+| Netflix | 50 | 70 | 50 | Matched public title, order, and source URL |
+| Amazon | 66 | 70 | 66 | Matched; source repeats one title |
+| Apple | 55 | 70 | 55 | Matched public title, order, and source URL |
+| LinkedIn | 56 | 70 | 56 | Matched public title, order, and source URL |
+| Atlassian | 55 | 70 | 55 | Matched public title, order, and source URL |
+| Uber | 65 | 70 | 65 | Matched public title, order, and source URL |
+| D.E. Shaw | 63 | 70 | 63 | Matched public title, order, and source URL |
+| Bloomberg | 62 | 70 | 62 | Matched public title, order, and source URL |
+| Tower Research Capital | 58 | 70 | 58 | Matched public title, order, and source URL |
+| Stripe | 59 | 70 | 59 | Matched public title, order, and source URL |
+| PayPal | 55 | 70 | 55 | Matched public title, order, and source URL |
+| Salesforce | 53 | 70 | 53 | Matched public title, order, and source URL |
+| Adobe | 53 | 70 | 53 | Matched public title, order, and source URL |
+| Flipkart | 54 | 70 | 54 | Matched public title, order, and source URL |
+| PhonePe | 50 | 70 | 50 | Matched public title, order, and source URL |
+| Meesho | 55 | 70 | 55 | Matched public title, order, and source URL |
+| CRED | 58 | 70 | 58 | Matched public title, order, and source URL |
+| Razorpay | 50 | 70 | 50 | Matched public title, order, and source URL |
+| Zomato | 50 | 70 | 50 | Matched public title, order, and source URL |
+| Swiggy | 50 | 70 | 50 | Matched public title, order, and source URL |
+| Zepto | 54 | 70 | 54 | Matched public title, order, and source URL |
+| Paytm | 50 | 70 | 50 | Matched public title, order, and source URL |
+| ServiceNow | 54 | 70 | 54 | Matched public title, order, and source URL |
+| Intuit | 53 | 70 | 53 | Matched public title, order, and source URL |
+| Walmart | 55 | 70 | 55 | Matched public title, order, and source URL |
+| Goldman Sachs | 53 | 70 | 53 | Matched public title, order, and source URL |
+| J.P. Morgan Chase | 52 | 70 | 52 | Matched public title, order, and source URL |
+| Morgan Stanley | 60 | 70 | 60 | Matched public title, order, and source URL |
+| Oracle | 52 | 70 | 52 | Matched public title, order, and source URL |
+| Cisco | 54 | 70 | 54 | Matched public title, order, and source URL |
+| Visa | 50 | 70 | 50 | Matched visible rows; directory advertises one more |
+| Mastercard | 61 | 70 | 61 | Matched public title, order, and source URL |
+| Barclays | 57 | 70 | 57 | Matched public title, order, and source URL |
+| HSBC | 52 | 70 | 52 | Matched public title, order, and source URL |
+| Accenture | 54 | 70 | 54 | Matched public title, order, and source URL |
+| TCS + TCS NQT | 75 | 70 | 75 | Matched public title, order, and source URL |
+| Infosys | 72 | 70 | 72 | Matched public title, order, and source URL |
+| Cognizant | 74 | 70 | 74 | Matched public title, order, and source URL |
+| Wipro | 73 | 70 | 73 | Matched public title, order, and source URL |
+| HCLTech | 73 | 70 | 73 | Matched visible rows; directory advertises one more |
+| Tech Mahindra | 75 | 70 | 75 | Matched public title, order, and source URL |
+| Capgemini | 53 | 70 | 53 | Matched public title, order, and source URL |
+
+Hynts displays “Find Median from Data Stream” twice in Amazon (both rows retained). Its public Visa and HCLTech sheets expose 50 and 73 numbered rows respectively, while earlier directory counts advertised 51 and 74; AlgoGym uses the actual visible rows. ServiceNow and Visa have irregular source numbering. Seven titles have different third-party URLs across companies; AlgoGym now stores the URL per sheet row.
 
 ## Other collections
 

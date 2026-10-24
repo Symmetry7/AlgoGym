@@ -21,7 +21,7 @@ const sizes = [
   [1920, 1080],
 ];
 const failures = [];
-const editorialManifest = JSON.parse(readFileSync("docs/interview-editorial-manifest.json", "utf8"));
+const companyReference = JSON.parse(readFileSync("docs/interview-company-reference-map.json", "utf8"));
 try {
   for (const [width, height] of sizes) {
     const page = await browser.newPage({
@@ -346,8 +346,8 @@ try {
   if (
     directoryResponse.status !== 200 ||
     directory.companies?.length !== 45 ||
-    googleSheet.questions?.length !== editorialManifest.companyTracks.google.questionIds.length ||
-    amazonSheet.questions?.length !== editorialManifest.companyTracks.amazon.questionIds.length ||
+    googleSheet.questions?.length !== companyReference.companies.google.questionIds.length ||
+    amazonSheet.questions?.length !== companyReference.companies.amazon.questionIds.length ||
     JSON.stringify(googleSheet.questions.map((question) => question.id)) ===
       JSON.stringify(amazonSheet.questions.map((question) => question.id))
   )

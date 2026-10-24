@@ -69,6 +69,7 @@ type Placement = {
   company_slug: string;
   question_id: string;
   position: number;
+  source_url: string | null;
 };
 
 // PostgREST limits a single result page. Fetch every placement so directory
@@ -81,7 +82,7 @@ async function readPlacements(
   for (let offset = 0; ; offset += 1000) {
     let query = client
       .from("interview_sheet_questions")
-      .select("company_slug,question_id,position")
+      .select("company_slug,question_id,position,source_url")
       .order("company_slug")
       .order("position")
       .range(offset, offset + 999);
@@ -241,7 +242,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       const byId = new Map(
         (questions.data ?? []).map((question) => [question.id, question]),
       );
-      const ordered = ids.map((id) => byId.get(id)).filter(Boolean);
+      const ordered = placements
+        .filter((entry) => entry.company_slug === slug)
+        .map((entry) => {
+          const question = byId.get(entry.question_id);
+          return question && { ...question, url: entry.source_url ?? question.url };
+        })
+        .filter(Boolean);
       return res.status(200).json({ company, questions: ordered });
     }
     if (!user)

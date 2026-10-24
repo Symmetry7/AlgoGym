@@ -21,6 +21,7 @@ const key = env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) throw new Error("Supabase QA configuration is missing.");
 const client = createClient(url, key, { auth: { persistSession: false } });
 const manifest = JSON.parse(readFileSync("docs/interview-editorial-manifest.json", "utf8"));
+const reference = JSON.parse(readFileSync("docs/interview-company-reference-map.json", "utf8"));
 async function readAll(table, columns) {
   const rows = [];
   for (let offset = 0; ; offset += 1000) {
@@ -35,15 +36,17 @@ async function readAll(table, columns) {
 }
 const [companies, questions, placements, categories] = await Promise.all([
   readAll("interview_companies", "slug,name"),
-  readAll("interview_questions", "id,url,published"),
-  readAll("interview_sheet_questions", "company_slug,question_id,position"),
+  readAll("interview_questions", "id,title,url,published"),
+  readAll("interview_sheet_questions", "company_slug,question_id,position,source_url"),
   readAll("interview_category_questions", "category_slug,question_id"),
 ]);
 assert.equal(companies.length, 45);
 assert.ok(companies.every((company) => company.slug === "d-e-shaw" || existsSync(`public/company-icons/${company.slug}.png`)), "A company image is missing");
-assert.ok(questions.length >= 200);
-assert.ok(placements.length >= 3000);
+assert.ok(questions.length >= 389);
+assert.equal(placements.length, Object.values(reference.companies).reduce((sum, company) => sum + company.questionIds.length, 0));
 const questionIds = new Set(questions.map((question) => question.id));
+const questionById = new Map(questions.map((question) => [question.id, question]));
+const publicReference = JSON.parse(readFileSync("docs/hynts-public-company-titles.json", "utf8"));
 assert.ok(questions.every((question) => question.url.startsWith("https://")));
 assert.ok(
   placements.every((placement) => questionIds.has(placement.question_id)),
@@ -58,8 +61,11 @@ const byCompany = new Map(
   ]),
 );
 for (const [slug, ids] of byCompany) {
-  assert.ok(ids.length >= 35 && new Set(ids).size === ids.length, `Invalid ${slug} track`);
-  assert.deepEqual(ids, manifest.companyTracks[slug]?.questionIds, `Unexpected ${slug} membership or order`);
+  assert.ok(ids.length >= 50, `Invalid ${slug} track`);
+  assert.deepEqual(ids, reference.companies[slug]?.questionIds, `Unexpected ${slug} membership or order`);
+  const orderedRows = placements.filter((entry) => entry.company_slug === slug).sort((a, b) => a.position - b.position);
+  assert.deepEqual(orderedRows.map((entry) => questionById.get(entry.question_id)?.title), publicReference[slug].questions.map((question) => question.title), `Wrong public titles for ${slug}`);
+  assert.deepEqual(orderedRows.map((entry) => entry.source_url), publicReference[slug].questions.map((question) => question.url.replace(/^hhttps:/, "https:").replace(/^http:/, "https:")), `Wrong source URLs for ${slug}`);
 }
 assert.equal(new Set([...byCompany.values()].map((ids) => ids.join(","))).size, companies.length, "Duplicate full company sheet");
 assert.notDeepEqual(byCompany.get("google")?.slice(0, 5), byCompany.get("amazon")?.slice(0, 5));
@@ -79,5 +85,5 @@ for (const [category, minimum] of [
 }
 assert.equal(categories.filter((item) => item.category_slug === "patterns").length, new Set(Object.values(manifest.patterns).flat()).size);
 console.log(
-  `PASS: ${companies.length} companies, ${questions.length} canonical questions, ${placements.length} valid editorial placements, distinct company tracks, and audited category assignments.`,
+  `PASS: ${companies.length} companies, ${questions.length} canonical questions, ${placements.length} reference-matched ordered titles and links, and audited category assignments.`,
 );
