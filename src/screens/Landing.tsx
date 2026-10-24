@@ -7,7 +7,6 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
-  Flame,
   LoaderCircle,
 } from "lucide-react";
 import {
@@ -21,8 +20,6 @@ import { SymmLaunchPreview } from "@/components/brand/SymmLaunchPreview";
 import { LandingFeatures } from "@/components/brand/LandingFeatures";
 import { GoogleMark } from "@/components/auth/GoogleMark";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTracker } from "@/hooks/use-tracker";
-import { activityStreaks } from "@/lib/activity-streaks";
 import "./landing.css";
 import "./landing-launch.css";
 
@@ -89,14 +86,6 @@ function GoogleStart() {
   );
 }
 
-function LandingStreakMark() {
-  const { user } = useAuth();
-  const activity = useTracker(31, "all", false);
-  if (!user) return null;
-  const count = activity.data ? activityStreaks(activity.data.activity).current : null;
-  return <Link href="/statistics" className="landing-streak" title="Current verified practice streak" aria-label={count === null ? "Practice streak loading" : `${count} day practice streak`}><Flame size={16} fill="currentColor" />{count ?? "—"}</Link>;
-}
-
 export default function Landing() {
   return (
     <div className="landing-page">
@@ -118,7 +107,6 @@ export default function Landing() {
                 ))}
               </div>
               <div className="landing-nav-actions">
-                <LandingStreakMark />
                 <Link href="/sign-in" className="landing-sign-in">
                   Sign in <ArrowUpRight size={14} />
                 </Link>

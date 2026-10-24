@@ -1,5 +1,6 @@
 import { chromium } from "playwright-core";
 import { existsSync, mkdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const executablePath = [
@@ -20,6 +21,7 @@ const sizes = [
   [1920, 1080],
 ];
 const failures = [];
+const editorialManifest = JSON.parse(readFileSync("docs/interview-editorial-manifest.json", "utf8"));
 try {
   for (const [width, height] of sizes) {
     const page = await browser.newPage({
@@ -178,7 +180,7 @@ try {
         .first()
         .waitFor({ timeout: 30000 });
       const sql = await page.locator(".ip-table tbody tr").count();
-      if (sql !== 8) failures.push({ interaction: "sql-sheet", width, sql });
+      if (sql !== 105) failures.push({ interaction: "sql-sheet", width, sql });
       await page.screenshot({
         path: resolve(root, `algogym-sql-${width}.png`),
         fullPage: false,
@@ -335,8 +337,8 @@ try {
   if (
     directoryResponse.status !== 200 ||
     directory.companies?.length !== 45 ||
-    googleSheet.questions?.length !== 70 ||
-    amazonSheet.questions?.length !== 70 ||
+    googleSheet.questions?.length !== editorialManifest.companyTracks.google.questionIds.length ||
+    amazonSheet.questions?.length !== editorialManifest.companyTracks.amazon.questionIds.length ||
     JSON.stringify(googleSheet.questions.map((question) => question.id)) ===
       JSON.stringify(amazonSheet.questions.map((question) => question.id))
   )

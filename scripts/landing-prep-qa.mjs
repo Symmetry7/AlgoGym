@@ -15,6 +15,7 @@ try {
     await page.goto(origin, { waitUntil: "domcontentloaded" });
     const hrefs = await page.locator(".hero-destinations a").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
     if (JSON.stringify(hrefs) !== JSON.stringify(["/interview-preparations/company-wise", "/training", "/societies"])) throw new Error(`Landing quick links missing at ${width}: ${hrefs}`);
+    if (await page.locator(".landing-streak").count()) throw new Error(`Public landing streak remains at ${width}`);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     if (overflow > 2 || errors.length) throw new Error(`Landing ${width}: overflow=${overflow}, errors=${errors}`);
     await page.screenshot({ path: resolve(`artifacts/interview-qa/landing-${width}.png`) });
@@ -23,5 +24,5 @@ try {
     if ((await page.getByRole("link", { name: /Back to dashboard/ }).getAttribute("href")) !== "/dashboard") throw new Error("Dashboard return link missing");
     await page.close();
   }
-  console.log("PASS: landing feature links and interview dashboard return at 375, 768, 1440px.");
+  console.log("PASS: landing links, no public streak, and interview dashboard return at 375, 768, 1440px.");
 } finally { await browser.close(); }

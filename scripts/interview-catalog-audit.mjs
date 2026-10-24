@@ -20,6 +20,7 @@ const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
 const key = env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) throw new Error("Supabase QA configuration is missing.");
 const client = createClient(url, key, { auth: { persistSession: false } });
+const manifest = JSON.parse(readFileSync("docs/interview-editorial-manifest.json", "utf8"));
 async function readAll(table, columns) {
   const rows = [];
   for (let offset = 0; ; offset += 1000) {
@@ -35,7 +36,7 @@ async function readAll(table, columns) {
 const [companies, questions, placements, categories] = await Promise.all([
   readAll("interview_companies", "slug,name"),
   readAll("interview_questions", "id,url,published"),
-  readAll("interview_sheet_questions", "company_slug,question_id"),
+  readAll("interview_sheet_questions", "company_slug,question_id,position"),
   readAll("interview_category_questions", "category_slug,question_id"),
 ]);
 assert.equal(companies.length, 45);
@@ -52,19 +53,20 @@ const byCompany = new Map(
     company.slug,
     placements
       .filter((entry) => entry.company_slug === company.slug)
+      .sort((a, b) => a.position - b.position)
       .map((entry) => entry.question_id),
   ]),
 );
-assert.ok(
-  [...byCompany.values()].every(
-    (ids) => ids.length >= 65 && new Set(ids).size === ids.length,
-  ),
-);
-assert.notDeepEqual(byCompany.get("google"), byCompany.get("amazon"));
+for (const [slug, ids] of byCompany) {
+  assert.ok(ids.length >= 35 && new Set(ids).size === ids.length, `Invalid ${slug} track`);
+  assert.deepEqual(ids, manifest.companyTracks[slug]?.questionIds, `Unexpected ${slug} membership or order`);
+}
+assert.equal(new Set([...byCompany.values()].map((ids) => ids.join(","))).size, companies.length, "Duplicate full company sheet");
+assert.notDeepEqual(byCompany.get("google")?.slice(0, 5), byCompany.get("amazon")?.slice(0, 5));
 for (const [category, minimum] of [
   ["package-wise", 200],
-  ["patterns", 56],
-  ["sql", 8],
+  ["patterns", 165],
+  ["sql", 105],
   ["system-design", 10],
   ["hr-questions", 10],
   ["interview-questions", 8],
@@ -75,6 +77,7 @@ for (const [category, minimum] of [
     `Missing ${category} questions`,
   );
 }
+assert.equal(categories.filter((item) => item.category_slug === "patterns").length, new Set(Object.values(manifest.patterns).flat()).size);
 console.log(
-  `PASS: ${companies.length} companies, ${questions.length} canonical questions, ${placements.length} valid placements, distinct company tracks, and complete category assignments.`,
+  `PASS: ${companies.length} companies, ${questions.length} canonical questions, ${placements.length} valid editorial placements, distinct company tracks, and audited category assignments.`,
 );

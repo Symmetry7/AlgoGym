@@ -36,6 +36,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { jsonRequest } from "@/hooks/use-account";
 import InterviewTemplates from "./InterviewTemplates";
+import patternManifest from "./interview-pattern-groups.json";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
 import { CodingPlatformMark, type ProviderId } from "@/components/brand/CodingPlatformMark";
 import "./interview-preparations.css";
@@ -938,20 +939,22 @@ function CompanySheet({ slug }: { slug: string }) {
               <option>Hard</option>
             </select>
           </label>
-          <label>
-            <span className="sr-only">Popularity</span>
-            <select
-              aria-label="Popularity"
-              value={popularity}
-              onChange={(event) => setPopularity(event.target.value)}
-            >
-              <option value="">Popularity</option>
-              <option>Very Hot</option>
-              <option>Hot</option>
-              <option>Warm</option>
-              <option>Cold</option>
-            </select>
-          </label>
+          {questions.some((question) => question.popularity) && (
+            <label>
+              <span className="sr-only">Popularity</span>
+              <select
+                aria-label="Popularity"
+                value={popularity}
+                onChange={(event) => setPopularity(event.target.value)}
+              >
+                <option value="">Popularity</option>
+                <option>Very Hot</option>
+                <option>Hot</option>
+                <option>Warm</option>
+                <option>Cold</option>
+              </select>
+            </label>
+          )}
           <button
             className={bookmarked ? "ip-selected" : ""}
             onClick={() => setBookmarked(!bookmarked)}
@@ -970,6 +973,7 @@ function CompanySheet({ slug }: { slug: string }) {
         states={states}
         onToggle={toggle}
         saving={saving}
+        showPopularity={questions.some((question) => Boolean(question.popularity))}
       />
       <p className="ip-disclosure">
         AlgoGym starter questions are public practice exercises.
@@ -1112,79 +1116,7 @@ function Category({ slug }: { slug: string }) {
   );
 }
 
-const patternGroups: Array<[string, string[]]> = [
-  ["Fast and Slow Pointer", ["lc-linked-list-cycle", "lc-reorder-list"]],
-  ["Overlapping Intervals", ["lc-merge-intervals"]],
-  [
-    "Prefix Sum",
-    ["lc-product-of-array-except-self", "lc-longest-consecutive-sequence"],
-  ],
-  [
-    "Sliding Window",
-    [
-      "lc-longest-substring-without-repeating-characters",
-      "lc-minimum-window-substring",
-      "lc-longest-repeating-character-replacement",
-    ],
-  ],
-  [
-    "Two Pointers",
-    ["lc-3sum", "lc-container-with-most-water", "lc-trapping-rain-water"],
-  ],
-  ["Cyclic Sort", ["lc-missing-number"]],
-  ["Reversal of Linked List", ["lc-reverse-linked-list", "lc-add-two-numbers"]],
-  ["Breadth-First Search", ["lc-binary-tree-level-order-traversal"]],
-  [
-    "Depth-First Search",
-    [
-      "lc-number-of-islands",
-      "lc-maximum-depth-of-binary-tree",
-      "lc-clone-graph",
-      "lc-pacific-atlantic-water-flow",
-    ],
-  ],
-  ["Backtracking", ["lc-subsets", "lc-combination-sum", "lc-word-search"]],
-  [
-    "Modified Binary Search",
-    [
-      "lc-search-in-rotated-sorted-array",
-      "lc-find-minimum-in-rotated-sorted-array",
-    ],
-  ],
-  ["Bitwise XOR", ["lc-single-number"]],
-  [
-    "Top K Elements",
-    ["lc-top-k-frequent-elements", "lc-kth-largest-element-in-an-array"],
-  ],
-  ["K-way Merge", ["lc-merge-k-sorted-lists"]],
-  ["Two Heaps", ["lc-find-median-from-data-stream"]],
-  ["Monotonic Stack", ["lc-daily-temperatures", "lc-trapping-rain-water"]],
-  [
-    "Trees",
-    [
-      "lc-maximum-depth-of-binary-tree",
-      "lc-binary-tree-level-order-traversal",
-      "lc-invert-binary-tree",
-      "lc-validate-binary-search-tree",
-      "lc-lowest-common-ancestor-of-a-binary-search-tree",
-      "lc-serialize-and-deserialize-binary-tree",
-    ],
-  ],
-  [
-    "Dynamic Programming",
-    [
-      "lc-climbing-stairs",
-      "lc-coin-change",
-      "lc-house-robber",
-      "lc-longest-increasing-subsequence",
-      "lc-decode-ways",
-      "lc-unique-paths",
-      "lc-partition-equal-subset-sum",
-    ],
-  ],
-  ["Graphs", ["lc-course-schedule", "lc-number-of-islands", "lc-word-ladder"]],
-  ["Greedy", ["lc-jump-game", "lc-task-scheduler"]],
-];
+const patternGroups = Object.entries(patternManifest) as Array<[string, string[]]>;
 
 function Patterns() {
   const query = useQuery({
@@ -1198,13 +1130,6 @@ function Patterns() {
   const [open, setOpen] = useState<string | null>(null);
   const questions = query.data?.questions ?? [];
   const byId = new Map(questions.map((question) => [question.id, question]));
-  const groupedIds = new Set(patternGroups.flatMap(([, ids]) => ids));
-  const extraIds = questions
-    .filter((question) => !groupedIds.has(question.id))
-    .map((question) => question.id);
-  const visibleGroups: Array<[string, string[]]> = extraIds.length
-    ? [...patternGroups, ["Additional practice", extraIds]]
-    : patternGroups;
   const completed = questions.filter(
     (question) => states.get(question.id)?.completed,
   ).length;
@@ -1229,7 +1154,7 @@ function Patterns() {
         <p className="ip-error">{query.error.message}</p>
       ) : (
         <div className="ip-pattern-list">
-          {visibleGroups.map(([name, ids]) => {
+          {patternGroups.map(([name, ids]) => {
             const items = ids
               .map((id) => byId.get(id))
               .filter((question): question is Question => Boolean(question));
