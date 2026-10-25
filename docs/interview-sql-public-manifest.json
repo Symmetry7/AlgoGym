@@ -1,0 +1,741 @@
+{
+  "observedAt": "2026-10-24",
+  "source": "https://leetcode.com/api/problems/database/",
+  "selected": [
+    {
+      "number": 175,
+      "slug": "combine-two-tables",
+      "title": "Combine Two Tables",
+      "difficulty": "Easy",
+      "id": "sql-combine-two-tables"
+    },
+    {
+      "number": 176,
+      "slug": "second-highest-salary",
+      "title": "Second Highest Salary",
+      "difficulty": "Medium",
+      "id": "sql-second-highest-salary"
+    },
+    {
+      "number": 177,
+      "slug": "nth-highest-salary",
+      "title": "Nth Highest Salary",
+      "difficulty": "Medium",
+      "id": "sql-nth-highest-salary"
+    },
+    {
+      "number": 178,
+      "slug": "rank-scores",
+      "title": "Rank Scores",
+      "difficulty": "Medium",
+      "id": "sql-rank-scores"
+    },
+    {
+      "number": 180,
+      "slug": "consecutive-numbers",
+      "title": "Consecutive Numbers",
+      "difficulty": "Medium",
+      "id": "sql-consecutive-numbers"
+    },
+    {
+      "number": 181,
+      "slug": "employees-earning-more-than-their-managers",
+      "title": "Employees Earning More Than Their Managers",
+      "difficulty": "Easy",
+      "id": "sql-employees-earning-more-than-managers"
+    },
+    {
+      "number": 182,
+      "slug": "duplicate-emails",
+      "title": "Duplicate Emails",
+      "difficulty": "Easy",
+      "id": "sql-duplicate-emails"
+    },
+    {
+      "number": 183,
+      "slug": "customers-who-never-order",
+      "title": "Customers Who Never Order",
+      "difficulty": "Easy",
+      "id": "sql-customers-who-never-order"
+    },
+    {
+      "number": 184,
+      "slug": "department-highest-salary",
+      "title": "Department Highest Salary",
+      "difficulty": "Medium",
+      "id": "sql-department-highest-salary"
+    },
+    {
+      "number": 185,
+      "slug": "department-top-three-salaries",
+      "title": "Department Top Three Salaries",
+      "difficulty": "Hard",
+      "id": "sql-department-top-three-salaries"
+    },
+    {
+      "number": 196,
+      "slug": "delete-duplicate-emails",
+      "title": "Delete Duplicate Emails",
+      "difficulty": "Easy",
+      "id": "sql-delete-duplicate-emails"
+    },
+    {
+      "number": 197,
+      "slug": "rising-temperature",
+      "title": "Rising Temperature",
+      "difficulty": "Easy",
+      "id": "sql-rising-temperature"
+    },
+    {
+      "number": 262,
+      "slug": "trips-and-users",
+      "title": "Trips and Users",
+      "difficulty": "Hard",
+      "id": "sql-trips-and-users"
+    },
+    {
+      "number": 511,
+      "slug": "game-play-analysis-i",
+      "title": "Game Play Analysis I",
+      "difficulty": "Easy",
+      "id": "sql-game-play-analysis-i"
+    },
+    {
+      "number": 550,
+      "slug": "game-play-analysis-iv",
+      "title": "Game Play Analysis IV",
+      "difficulty": "Medium",
+      "id": "sql-game-play-analysis-iv"
+    },
+    {
+      "number": 570,
+      "slug": "managers-with-at-least-5-direct-reports",
+      "title": "Managers with at Least 5 Direct Reports",
+      "difficulty": "Medium",
+      "id": "sql-managers-with-at-least-5-direct-reports"
+    },
+    {
+      "number": 577,
+      "slug": "employee-bonus",
+      "title": "Employee Bonus",
+      "difficulty": "Easy",
+      "id": "sql-employee-bonus"
+    },
+    {
+      "number": 584,
+      "slug": "find-customer-referee",
+      "title": "Find Customer Referee",
+      "difficulty": "Easy",
+      "id": "sql-find-customer-referee"
+    },
+    {
+      "number": 585,
+      "slug": "investments-in-2016",
+      "title": "Investments in 2016",
+      "difficulty": "Medium",
+      "id": "sql-investments-in-2016"
+    },
+    {
+      "number": 586,
+      "slug": "customer-placing-the-largest-number-of-orders",
+      "title": "Customer Placing the Largest Number of Orders",
+      "difficulty": "Easy",
+      "id": "sql-customer-placing-the-largest-number-of-orders"
+    },
+    {
+      "number": 595,
+      "slug": "big-countries",
+      "title": "Big Countries",
+      "difficulty": "Easy",
+      "id": "sql-big-countries"
+    },
+    {
+      "number": 596,
+      "slug": "classes-with-at-least-5-students",
+      "title": "Classes With at Least 5 Students",
+      "difficulty": "Easy",
+      "id": "sql-classes-with-at-least-5-students"
+    },
+    {
+      "number": 601,
+      "slug": "human-traffic-of-stadium",
+      "title": "Human Traffic of Stadium",
+      "difficulty": "Hard",
+      "id": "sql-human-traffic-of-stadium"
+    },
+    {
+      "number": 602,
+      "slug": "friend-requests-ii-who-has-the-most-friends",
+      "title": "Friend Requests II: Who Has the Most Friends",
+      "difficulty": "Medium",
+      "id": "sql-friend-requests-ii-who-has-the-most-friends"
+    },
+    {
+      "number": 607,
+      "slug": "sales-person",
+      "title": "Sales Person",
+      "difficulty": "Easy",
+      "id": "sql-sales-person"
+    },
+    {
+      "number": 608,
+      "slug": "tree-node",
+      "title": "Tree Node",
+      "difficulty": "Medium",
+      "id": "sql-tree-node"
+    },
+    {
+      "number": 610,
+      "slug": "triangle-judgement",
+      "title": "Triangle Judgement",
+      "difficulty": "Easy",
+      "id": "sql-triangle-judgement"
+    },
+    {
+      "number": 619,
+      "slug": "biggest-single-number",
+      "title": "Biggest Single Number",
+      "difficulty": "Easy",
+      "id": "sql-biggest-single-number"
+    },
+    {
+      "number": 620,
+      "slug": "not-boring-movies",
+      "title": "Not Boring Movies",
+      "difficulty": "Easy",
+      "id": "sql-not-boring-movies"
+    },
+    {
+      "number": 626,
+      "slug": "exchange-seats",
+      "title": "Exchange Seats",
+      "difficulty": "Medium",
+      "id": "sql-exchange-seats"
+    },
+    {
+      "number": 627,
+      "slug": "swap-sex-of-employees",
+      "title": "Swap Sex of Employees",
+      "difficulty": "Easy",
+      "id": "sql-swap-sex-of-employees"
+    },
+    {
+      "number": 1045,
+      "slug": "customers-who-bought-all-products",
+      "title": "Customers Who Bought All Products",
+      "difficulty": "Medium",
+      "id": "sql-customers-who-bought-all-products"
+    },
+    {
+      "number": 1050,
+      "slug": "actors-and-directors-who-cooperated-at-least-three-times",
+      "title": "Actors and Directors Who Cooperated At Least Three Times",
+      "difficulty": "Easy",
+      "id": "sql-actors-and-directors-who-cooperated-at-least-three-times"
+    },
+    {
+      "number": 1068,
+      "slug": "product-sales-analysis-i",
+      "title": "Product Sales Analysis I",
+      "difficulty": "Easy",
+      "id": "sql-product-sales-analysis-i"
+    },
+    {
+      "number": 1070,
+      "slug": "product-sales-analysis-iii",
+      "title": "Product Sales Analysis III",
+      "difficulty": "Medium",
+      "id": "sql-product-sales-analysis-iii"
+    },
+    {
+      "number": 1075,
+      "slug": "project-employees-i",
+      "title": "Project Employees I",
+      "difficulty": "Easy",
+      "id": "sql-project-employees-i"
+    },
+    {
+      "number": 1084,
+      "slug": "sales-analysis-iii",
+      "title": "Sales Analysis III",
+      "difficulty": "Easy",
+      "id": "sql-sales-analysis-iii"
+    },
+    {
+      "number": 1141,
+      "slug": "user-activity-for-the-past-30-days-i",
+      "title": "User Activity for the Past 30 Days I",
+      "difficulty": "Easy",
+      "id": "sql-user-activity-for-the-past-30-days-i"
+    },
+    {
+      "number": 1148,
+      "slug": "article-views-i",
+      "title": "Article Views I",
+      "difficulty": "Easy",
+      "id": "sql-article-views-i"
+    },
+    {
+      "number": 1158,
+      "slug": "market-analysis-i",
+      "title": "Market Analysis I",
+      "difficulty": "Medium",
+      "id": "sql-market-analysis-i"
+    },
+    {
+      "number": 1164,
+      "slug": "product-price-at-a-given-date",
+      "title": "Product Price at a Given Date",
+      "difficulty": "Medium",
+      "id": "sql-product-price-at-a-given-date"
+    },
+    {
+      "number": 1174,
+      "slug": "immediate-food-delivery-ii",
+      "title": "Immediate Food Delivery II",
+      "difficulty": "Medium",
+      "id": "sql-immediate-food-delivery-ii"
+    },
+    {
+      "number": 1179,
+      "slug": "reformat-department-table",
+      "title": "Reformat Department Table",
+      "difficulty": "Easy",
+      "id": "sql-reformat-department-table"
+    },
+    {
+      "number": 1193,
+      "slug": "monthly-transactions-i",
+      "title": "Monthly Transactions I",
+      "difficulty": "Medium",
+      "id": "sql-monthly-transactions-i"
+    },
+    {
+      "number": 1204,
+      "slug": "last-person-to-fit-in-the-bus",
+      "title": "Last Person to Fit in the Bus",
+      "difficulty": "Medium",
+      "id": "sql-last-person-to-fit-in-the-bus"
+    },
+    {
+      "number": 1211,
+      "slug": "queries-quality-and-percentage",
+      "title": "Queries Quality and Percentage",
+      "difficulty": "Easy",
+      "id": "sql-queries-quality-and-percentage"
+    },
+    {
+      "number": 1251,
+      "slug": "average-selling-price",
+      "title": "Average Selling Price",
+      "difficulty": "Easy",
+      "id": "sql-average-selling-price"
+    },
+    {
+      "number": 1280,
+      "slug": "students-and-examinations",
+      "title": "Students and Examinations",
+      "difficulty": "Easy",
+      "id": "sql-students-and-examinations"
+    },
+    {
+      "number": 1321,
+      "slug": "restaurant-growth",
+      "title": "Restaurant Growth",
+      "difficulty": "Medium",
+      "id": "sql-restaurant-growth"
+    },
+    {
+      "number": 1327,
+      "slug": "list-the-products-ordered-in-a-period",
+      "title": "List the Products Ordered in a Period",
+      "difficulty": "Easy",
+      "id": "sql-list-the-products-ordered-in-a-period"
+    },
+    {
+      "number": 1341,
+      "slug": "movie-rating",
+      "title": "Movie Rating",
+      "difficulty": "Medium",
+      "id": "sql-movie-rating"
+    },
+    {
+      "number": 1378,
+      "slug": "replace-employee-id-with-the-unique-identifier",
+      "title": "Replace Employee ID With The Unique Identifier",
+      "difficulty": "Easy",
+      "id": "sql-replace-employee-id-with-the-unique-identifier"
+    },
+    {
+      "number": 1393,
+      "slug": "capital-gainloss",
+      "title": "Capital Gain/Loss",
+      "difficulty": "Medium",
+      "id": "sql-capital-gainloss"
+    },
+    {
+      "number": 1407,
+      "slug": "top-travellers",
+      "title": "Top Travellers",
+      "difficulty": "Easy",
+      "id": "sql-top-travellers"
+    },
+    {
+      "number": 1484,
+      "slug": "group-sold-products-by-the-date",
+      "title": "Group Sold Products By The Date",
+      "difficulty": "Easy",
+      "id": "sql-group-sold-products-by-the-date"
+    },
+    {
+      "number": 1517,
+      "slug": "find-users-with-valid-e-mails",
+      "title": "Find Users With Valid E-Mails",
+      "difficulty": "Easy",
+      "id": "sql-find-users-with-valid-e-mails"
+    },
+    {
+      "number": 1527,
+      "slug": "patients-with-a-condition",
+      "title": "Patients With a Condition",
+      "difficulty": "Easy",
+      "id": "sql-patients-with-a-condition"
+    },
+    {
+      "number": 1581,
+      "slug": "customer-who-visited-but-did-not-make-any-transactions",
+      "title": "Customer Who Visited but Did Not Make Any Transactions",
+      "difficulty": "Easy",
+      "id": "sql-customer-who-visited-but-did-not-make-any-transactions"
+    },
+    {
+      "number": 1587,
+      "slug": "bank-account-summary-ii",
+      "title": "Bank Account Summary II",
+      "difficulty": "Easy",
+      "id": "sql-bank-account-summary-ii"
+    },
+    {
+      "number": 1633,
+      "slug": "percentage-of-users-attended-a-contest",
+      "title": "Percentage of Users Attended a Contest",
+      "difficulty": "Easy",
+      "id": "sql-percentage-of-users-attended-a-contest"
+    },
+    {
+      "number": 1661,
+      "slug": "average-time-of-process-per-machine",
+      "title": "Average Time of Process per Machine",
+      "difficulty": "Easy",
+      "id": "sql-average-time-of-process-per-machine"
+    },
+    {
+      "number": 1667,
+      "slug": "fix-names-in-a-table",
+      "title": "Fix Names in a Table",
+      "difficulty": "Easy",
+      "id": "sql-fix-names-in-a-table"
+    },
+    {
+      "number": 1683,
+      "slug": "invalid-tweets",
+      "title": "Invalid Tweets",
+      "difficulty": "Easy",
+      "id": "sql-invalid-tweets"
+    },
+    {
+      "number": 1693,
+      "slug": "daily-leads-and-partners",
+      "title": "Daily Leads and Partners",
+      "difficulty": "Easy",
+      "id": "sql-daily-leads-and-partners"
+    },
+    {
+      "number": 1729,
+      "slug": "find-followers-count",
+      "title": "Find Followers Count",
+      "difficulty": "Easy",
+      "id": "sql-find-followers-count"
+    },
+    {
+      "number": 1731,
+      "slug": "the-number-of-employees-which-report-to-each-employee",
+      "title": "The Number of Employees Which Report to Each Employee",
+      "difficulty": "Easy",
+      "id": "sql-the-number-of-employees-which-report-to-each-employee"
+    },
+    {
+      "number": 1741,
+      "slug": "find-total-time-spent-by-each-employee",
+      "title": "Find Total Time Spent by Each Employee",
+      "difficulty": "Easy",
+      "id": "sql-find-total-time-spent-by-each-employee"
+    },
+    {
+      "number": 1757,
+      "slug": "recyclable-and-low-fat-products",
+      "title": "Recyclable and Low Fat Products",
+      "difficulty": "Easy",
+      "id": "sql-recyclable-and-low-fat-products"
+    },
+    {
+      "number": 1789,
+      "slug": "primary-department-for-each-employee",
+      "title": "Primary Department for Each Employee",
+      "difficulty": "Easy",
+      "id": "sql-primary-department-for-each-employee"
+    },
+    {
+      "number": 1795,
+      "slug": "rearrange-products-table",
+      "title": "Rearrange Products Table",
+      "difficulty": "Easy",
+      "id": "sql-rearrange-products-table"
+    },
+    {
+      "number": 1873,
+      "slug": "calculate-special-bonus",
+      "title": "Calculate Special Bonus",
+      "difficulty": "Easy",
+      "id": "sql-calculate-special-bonus"
+    },
+    {
+      "number": 1890,
+      "slug": "the-latest-login-in-2020",
+      "title": "The Latest Login in 2020",
+      "difficulty": "Easy",
+      "id": "sql-the-latest-login-in-2020"
+    },
+    {
+      "number": 1907,
+      "slug": "count-salary-categories",
+      "title": "Count Salary Categories",
+      "difficulty": "Medium",
+      "id": "sql-count-salary-categories"
+    },
+    {
+      "number": 1934,
+      "slug": "confirmation-rate",
+      "title": "Confirmation Rate",
+      "difficulty": "Medium",
+      "id": "sql-confirmation-rate"
+    },
+    {
+      "number": 1965,
+      "slug": "employees-with-missing-information",
+      "title": "Employees With Missing Information",
+      "difficulty": "Easy",
+      "id": "sql-employees-with-missing-information"
+    },
+    {
+      "number": 1978,
+      "slug": "employees-whose-manager-left-the-company",
+      "title": "Employees Whose Manager Left the Company",
+      "difficulty": "Easy",
+      "id": "sql-employees-whose-manager-left-the-company"
+    },
+    {
+      "number": 2356,
+      "slug": "number-of-unique-subjects-taught-by-each-teacher",
+      "title": "Number of Unique Subjects Taught by Each Teacher",
+      "difficulty": "Easy",
+      "id": "sql-number-of-unique-subjects-taught-by-each-teacher"
+    },
+    {
+      "number": 3220,
+      "slug": "odd-and-even-transactions",
+      "title": "Odd and Even Transactions",
+      "difficulty": "Medium",
+      "id": "sql-odd-and-even-transactions"
+    },
+    {
+      "number": 3374,
+      "slug": "first-letter-capitalization-ii",
+      "title": "First Letter Capitalization II",
+      "difficulty": "Hard",
+      "id": "sql-first-letter-capitalization-ii"
+    },
+    {
+      "number": 3421,
+      "slug": "find-students-who-improved",
+      "title": "Find Students Who Improved",
+      "difficulty": "Medium",
+      "id": "sql-find-students-who-improved"
+    },
+    {
+      "number": 3436,
+      "slug": "find-valid-emails",
+      "title": "Find Valid Emails",
+      "difficulty": "Easy",
+      "id": "sql-find-valid-emails"
+    },
+    {
+      "number": 3451,
+      "slug": "find-invalid-ip-addresses",
+      "title": "Find Invalid IP Addresses",
+      "difficulty": "Hard",
+      "id": "sql-find-invalid-ip-addresses"
+    },
+    {
+      "number": 3465,
+      "slug": "find-products-with-valid-serial-numbers",
+      "title": "Find Products with Valid Serial Numbers",
+      "difficulty": "Easy",
+      "id": "sql-find-products-with-valid-serial-numbers"
+    },
+    {
+      "number": 3475,
+      "slug": "dna-pattern-recognition",
+      "title": "DNA Pattern Recognition ",
+      "difficulty": "Medium",
+      "id": "sql-dna-pattern-recognition"
+    },
+    {
+      "number": 3482,
+      "slug": "analyze-organization-hierarchy",
+      "title": "Analyze Organization Hierarchy",
+      "difficulty": "Hard",
+      "id": "sql-analyze-organization-hierarchy"
+    },
+    {
+      "number": 3497,
+      "slug": "analyze-subscription-conversion",
+      "title": "Analyze Subscription Conversion ",
+      "difficulty": "Medium",
+      "id": "sql-analyze-subscription-conversion"
+    },
+    {
+      "number": 3521,
+      "slug": "find-product-recommendation-pairs",
+      "title": "Find Product Recommendation Pairs",
+      "difficulty": "Medium",
+      "id": "sql-find-product-recommendation-pairs"
+    },
+    {
+      "number": 3554,
+      "slug": "find-category-recommendation-pairs",
+      "title": "Find Category Recommendation Pairs",
+      "difficulty": "Hard",
+      "id": "sql-find-category-recommendation-pairs"
+    },
+    {
+      "number": 3564,
+      "slug": "seasonal-sales-analysis",
+      "title": "Seasonal Sales Analysis",
+      "difficulty": "Medium",
+      "id": "sql-seasonal-sales-analysis"
+    },
+    {
+      "number": 3570,
+      "slug": "find-books-with-no-available-copies",
+      "title": "Find Books with No Available Copies",
+      "difficulty": "Easy",
+      "id": "sql-find-books-with-no-available-copies"
+    },
+    {
+      "number": 3580,
+      "slug": "find-consistently-improving-employees",
+      "title": "Find Consistently Improving Employees",
+      "difficulty": "Medium",
+      "id": "sql-find-consistently-improving-employees"
+    },
+    {
+      "number": 3586,
+      "slug": "find-covid-recovery-patients",
+      "title": "Find COVID Recovery Patients",
+      "difficulty": "Medium",
+      "id": "sql-find-covid-recovery-patients"
+    },
+    {
+      "number": 3601,
+      "slug": "find-drivers-with-improved-fuel-efficiency",
+      "title": "Find Drivers with Improved Fuel Efficiency",
+      "difficulty": "Medium",
+      "id": "sql-find-drivers-with-improved-fuel-efficiency"
+    },
+    {
+      "number": 3611,
+      "slug": "find-overbooked-employees",
+      "title": "Find Overbooked Employees",
+      "difficulty": "Medium",
+      "id": "sql-find-overbooked-employees"
+    },
+    {
+      "number": 3617,
+      "slug": "find-students-with-study-spiral-pattern",
+      "title": "Find Students with Study Spiral Pattern",
+      "difficulty": "Hard",
+      "id": "sql-find-students-with-study-spiral-pattern"
+    },
+    {
+      "number": 3626,
+      "slug": "find-stores-with-inventory-imbalance",
+      "title": "Find Stores with Inventory Imbalance",
+      "difficulty": "Medium",
+      "id": "sql-find-stores-with-inventory-imbalance"
+    },
+    {
+      "number": 3642,
+      "slug": "find-books-with-polarized-opinions",
+      "title": "Find Books with Polarized Opinions",
+      "difficulty": "Medium",
+      "id": "sql-find-books-with-polarized-opinions"
+    },
+    {
+      "number": 3657,
+      "slug": "find-loyal-customers",
+      "title": "Find Loyal Customers",
+      "difficulty": "Medium",
+      "id": "sql-find-loyal-customers"
+    },
+    {
+      "number": 3673,
+      "slug": "find-zombie-sessions",
+      "title": "Find Zombie Sessions",
+      "difficulty": "Hard",
+      "id": "sql-find-zombie-sessions"
+    },
+    {
+      "number": 3705,
+      "slug": "find-golden-hour-customers",
+      "title": "Find Golden Hour Customers",
+      "difficulty": "Medium",
+      "id": "sql-find-golden-hour-customers"
+    },
+    {
+      "number": 3716,
+      "slug": "find-churn-risk-customers",
+      "title": "Find Churn Risk Customers",
+      "difficulty": "Medium",
+      "id": "sql-find-churn-risk-customers"
+    },
+    {
+      "number": 3764,
+      "slug": "most-common-course-pairs",
+      "title": "Most Common Course Pairs",
+      "difficulty": "Hard",
+      "id": "sql-most-common-course-pairs"
+    },
+    {
+      "number": 3793,
+      "slug": "find-users-with-high-token-usage",
+      "title": "Find Users with High Token Usage",
+      "difficulty": "Easy",
+      "id": "sql-find-users-with-high-token-usage"
+    },
+    {
+      "number": 3808,
+      "slug": "find-emotionally-consistent-users",
+      "title": "Find Emotionally Consistent Users",
+      "difficulty": "Medium",
+      "id": "sql-find-emotionally-consistent-users"
+    },
+    {
+      "number": 3832,
+      "slug": "find-users-with-persistent-behavior-patterns",
+      "title": "Find Users with Persistent Behavior Patterns",
+      "difficulty": "Hard",
+      "id": "sql-find-users-with-persistent-behavior-patterns"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import {
   CodingPlatformMark,
 } from "@/components/brand/CodingPlatformMark";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
+import { CoinMark } from "@/components/brand/ChakraMark";
 import { HeroCubes } from "@/components/brand/HeroCubes";
 import { SymmLaunchPreview } from "@/components/brand/SymmLaunchPreview";
 import { LandingFeatures } from "@/components/brand/LandingFeatures";
@@ -30,6 +31,7 @@ const links = [
   ["Symm AI", "/#symm-ai"],
   ["Explore", "/problems"],
   ["Training", "/training"],
+  ["Interview Prep", "/interview-preparations/company-wise"],
   ["Leaderboards", "/leaderboards"],
   ["Communities", "/societies"],
   ["Pricing", "/pricing"],
@@ -164,6 +166,11 @@ export default function Landing() {
                 <p className="hero-auth-note">
                   <Link href="/sign-in">Or sign in with email</Link>
                 </p>
+                <nav className="hero-destinations" aria-label="Explore AlgoGym features">
+                  <Link href="/interview-preparations/company-wise">Company interview sheets <ArrowUpRight size={14} /></Link>
+                  <Link href="/training"><CoinMark className="hero-destination-coin" /> Earn Coins <ArrowUpRight size={14} /></Link>
+                  <Link href="/societies">Communities <ArrowUpRight size={14} /></Link>
+                </nav>
               </div>
               <Link
                 href="#how-it-works"

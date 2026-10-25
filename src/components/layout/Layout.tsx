@@ -11,6 +11,7 @@ import {
   Compass,
   Crown,
   FileText,
+  Flame,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -28,6 +29,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccount } from "@/hooks/use-account";
 import { useBilling } from "@/hooks/use-billing";
+import { useTracker } from "@/hooks/use-tracker";
+import { activityStreaks } from "@/lib/activity-streaks";
 import {
   Sheet,
   SheetContent,
@@ -60,12 +63,15 @@ const primary = [
 const learning = [
   ["/training/symm", "Symm AI", BookOpen],
   ["/training", "Training Gym", GraduationCap],
+  ["/interview-preparations", "Interview Preparations", GraduationCap],
   ["/resources", "Resources", FileText],
 ] as const;
 const community = [
   ["/leaderboards", "Leaderboards", Trophy],
   ["/societies", "Communities", Users],
 ] as const;
+const compactBalance = (value: number | undefined) => value === undefined ? "—" : Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+const headerMetric = "inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-1 rounded-lg border border-border bg-card px-1.5 text-[11px] font-semibold tabular-nums text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 sm:rounded-full sm:px-2.5 sm:text-xs";
 export function Layout({
   children,
   onOpenHandleModal,
@@ -78,6 +84,8 @@ export function Layout({
   const { user, signOut } = useAuth();
   const account = useAccount();
   const billing = useBilling();
+  const streakActivity = useTracker(31, "all", false);
+  const currentStreak = activityStreaks(streakActivity.data?.activity ?? []).current;
   const [compact, setCompact] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -175,6 +183,8 @@ export function Layout({
         )}
       </nav>
       <div className="border-t p-3">
+        <div className="mb-2 flex items-center justify-between rounded-md px-3 py-1 text-xs text-muted-foreground lg:hidden"><span>Appearance</span><ThemeToggle /></div>
+        {onOpenHandleModal && <button type="button" onClick={() => {setMobile(false);onOpenHandleModal();}} className="mb-2 flex h-10 w-full items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted lg:hidden">Connect profiles</button>}
         {user ? (
           <button
             disabled={signingOut}
@@ -218,7 +228,7 @@ export function Layout({
         {sidebar(compact)}
       </aside>
       <div className={compact ? "lg:pl-[72px]" : "lg:pl-[232px]"}>
-        <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between gap-3 border-b bg-background/95 px-4 backdrop-blur sm:px-7 lg:px-8">
+        <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between gap-2 border-b bg-background/95 px-3 backdrop-blur sm:gap-3 sm:px-7 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={mobile} onOpenChange={setMobile}>
               <SheetTrigger asChild>
@@ -250,7 +260,7 @@ export function Layout({
                 <PanelLeftClose size={17} />
               )}
             </button>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="hidden truncate text-xs text-muted-foreground sm:block">
               {[...primary, ...learning, ...community].find(
                 ([href]) => href === pathname,
               )?.[1] ??
@@ -261,15 +271,16 @@ export function Layout({
                     : "AlgoGym")}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            {user&&<div className="flex items-center gap-1.5 sm:gap-2" aria-label="Account balances">
-              {billing.data?.tier!=="free"&&billing.data?.tier&&<Link href="/pricing" className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide",billing.data.tier==="premium"?"border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-200":"border-violet-500/40 bg-violet-500/15 text-violet-700 dark:text-violet-200")}>{billing.data.tier==="premium"?<Crown size={13}/>:<Sparkles size={13}/>}<span className="hidden sm:inline">{billing.data.tier}</span></Link>}
-              <Link href="/statistics" className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-200" title="Gold coins earned from verified solves"><CoinMark className="size-[18px] object-contain" />{billing.data?.coins??"—"}</Link>
-              <Link href="/training/symm" className="inline-flex items-center gap-1 rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-200" title="AI learning path credits"><Sparkles size={14}/>{billing.data?.credits?.available??"—"}</Link>
+          <div className="flex min-w-0 items-center gap-1 sm:gap-3">
+            {user&&<div className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label="Account balances">
+              <Link href="/statistics" className={cn(headerMetric,"sm:border-orange-500/25 sm:bg-orange-500/10 sm:text-orange-700 dark:sm:text-orange-200")} aria-label={`Current verified practice streak: ${streakActivity.data ? currentStreak : "unknown"} days`} title="Current verified practice streak"><Flame size={17} strokeWidth={2} className="shrink-0 text-orange-500" /><span>{streakActivity.data ? currentStreak : "—"}</span><span className="hidden md:inline">day streak</span></Link>
+              {billing.data?.tier!=="free"&&billing.data?.tier&&<Link href="/pricing" className={cn(headerMetric,"px-1.5 text-[11px] font-bold uppercase tracking-wide",billing.data.tier==="premium"?"sm:border-amber-500/40 sm:bg-amber-500/15 sm:text-amber-700 dark:sm:text-amber-200":"sm:border-violet-500/40 sm:bg-violet-500/15 sm:text-violet-700 dark:sm:text-violet-200")} aria-label={`${billing.data.tier} plan`}>{billing.data.tier==="premium"?<Crown size={14} className="text-amber-500"/>:<Sparkles size={14} className="text-violet-500"/>}<span className="hidden sm:inline">{billing.data.tier}</span></Link>}
+              <Link href="/statistics" className={cn(headerMetric,"sm:border-amber-500/25 sm:bg-amber-500/10 sm:text-amber-700 dark:sm:text-amber-200")} aria-label={`${billing.data?.coins ?? "Unknown"} gold coins`} title="Gold coins earned from verified solves"><CoinMark className="size-[19px] shrink-0 object-contain" /><span className="sm:hidden">{compactBalance(billing.data?.coins)}</span><span className="hidden sm:inline">{billing.data?.coins??"—"}</span></Link>
+              <Link href="/training/symm" className={cn(headerMetric,"sm:border-violet-500/25 sm:bg-violet-500/10 sm:text-violet-700 dark:sm:text-violet-200")} aria-label={`${billing.data?.credits?.available ?? "Unknown"} AI learning path credits`} title="AI learning path credits"><Sparkles size={17} strokeWidth={1.8} className="shrink-0 text-violet-500" /><span className="sm:hidden">{compactBalance(billing.data?.credits?.available)}</span><span className="hidden sm:inline">{billing.data?.credits?.available??"—"}</span></Link>
             </div>}
-            <ThemeToggle />
+            <div className="hidden sm:block"><ThemeToggle /></div>
             {onOpenHandleModal && (
-              <Button variant="outline" size="sm" onClick={onOpenHandleModal}>
+              <Button variant="outline" size="sm" onClick={onOpenHandleModal} className="hidden sm:inline-flex">
                 Connect profiles
               </Button>
             )}
@@ -277,7 +288,7 @@ export function Layout({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="flex items-center gap-2 rounded-full border py-1 pl-1 pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-auto sm:gap-2 sm:py-1 sm:pl-1 sm:pr-2"
                     aria-label="Open account menu"
                   >
                     <span className="flex size-7 items-center justify-center rounded-full bg-primary/15 text-xs font-medium text-primary">
@@ -286,7 +297,7 @@ export function Layout({
                     <span className="hidden max-w-36 truncate text-xs sm:block">
                       {name}
                     </span>
-                    <ChevronDown size={12} className="text-muted-foreground" />
+                    <ChevronDown size={12} className="hidden text-muted-foreground sm:block" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">

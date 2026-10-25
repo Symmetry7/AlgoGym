@@ -191,6 +191,11 @@
   align-items: center;
   gap: 20px;
 }
+.hero-destinations { display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px; margin-top:15px; }
+.hero-destinations a { display:inline-flex; align-items:center; gap:5px; color:#d8d0e1; font-size:11px; text-decoration:none; border-bottom:1px solid #ffffff35; padding-bottom:3px; transition:color .18s,border-color .18s; }
+.hero-destinations a:hover { color:#fff; border-color:#fff; }
+.hero-destination-coin { width:14px; height:14px; object-fit:contain; }
+@media(max-width:600px) { .hero-destinations { max-width:345px; gap:8px 12px; } .hero-destinations a { font-size:10px; } }
 .hero-google-button {
   display: inline-flex;
   align-items: center;

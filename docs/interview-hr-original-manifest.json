@@ -1,0 +1,547 @@
+{
+  "authoredAt": "2026-10-24",
+  "author": "AlgoGym",
+  "note": "Original rehearsal prompts; general guide is not a per-question answer",
+  "prompts": [
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "Which experience first made software engineering interesting to you?",
+      "id": "hr-original-001"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "How has your area of study shaped the way you solve problems?",
+      "id": "hr-original-002"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "Which skill have you improved most during the last year?",
+      "id": "hr-original-003"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "What part of your background would not be obvious from your resume?",
+      "id": "hr-original-004"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "Which class or course changed how you approach a technical challenge?",
+      "id": "hr-original-005"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "How do you explain your current work to someone outside technology?",
+      "id": "hr-original-006"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "What have you learned from a nontechnical experience?",
+      "id": "hr-original-007"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "Which accomplishment are you most proud of, and what was your contribution?",
+      "id": "hr-original-008"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "What would a former teammate say you do especially well?",
+      "id": "hr-original-009"
+    },
+    {
+      "topic": "Background",
+      "difficulty": "Easy",
+      "title": "How has your career direction changed since you began studying?",
+      "id": "hr-original-010"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "What specific problem in this role would you be excited to work on?",
+      "id": "hr-original-011"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "What would you like to learn in your first six months here?",
+      "id": "hr-original-012"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "How did you decide which companies to apply to?",
+      "id": "hr-original-013"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "Which part of our product would you want to understand first?",
+      "id": "hr-original-014"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "What does a successful first year in this role look like to you?",
+      "id": "hr-original-015"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "Which kind of engineering team helps you do your best work?",
+      "id": "hr-original-016"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "Why are you considering a change from your current path?",
+      "id": "hr-original-017"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "What makes this opportunity different from the others you are considering?",
+      "id": "hr-original-018"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "Which company value connects most clearly to your own experience?",
+      "id": "hr-original-019"
+    },
+    {
+      "topic": "Motivation",
+      "difficulty": "Easy",
+      "title": "How would you decide whether an offer is right for you?",
+      "id": "hr-original-020"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "Tell me about a project where the requirements changed halfway through.",
+      "id": "hr-original-021"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "What was the hardest trade-off in a project you owned?",
+      "id": "hr-original-022"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "Which project decision would you revisit with what you know now?",
+      "id": "hr-original-023"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "How did you verify that a feature you built solved the user problem?",
+      "id": "hr-original-024"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "Describe a project where you had to learn an unfamiliar tool quickly.",
+      "id": "hr-original-025"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "What part of a team project was specifically your responsibility?",
+      "id": "hr-original-026"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "How did you recover when a project milestone slipped?",
+      "id": "hr-original-027"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "What evidence shows that your project had an impact?",
+      "id": "hr-original-028"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "When did you choose a simpler implementation over an ambitious one?",
+      "id": "hr-original-029"
+    },
+    {
+      "topic": "Projects",
+      "difficulty": "Medium",
+      "title": "How would you explain a failed project to a new teammate?",
+      "id": "hr-original-030"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "Describe a time you helped unblock someone else's work.",
+      "id": "hr-original-031"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "How did you share credit for a result that several people produced?",
+      "id": "hr-original-032"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "When did you adapt your communication style for another teammate?",
+      "id": "hr-original-033"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "How do you keep remote teammates informed without overwhelming them?",
+      "id": "hr-original-034"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "What did you do when a teammate needed more support than expected?",
+      "id": "hr-original-035"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "How did you make a technical decision with people from different disciplines?",
+      "id": "hr-original-036"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "Describe a time you asked for help earlier than you usually would.",
+      "id": "hr-original-037"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "How have you helped a new teammate become effective?",
+      "id": "hr-original-038"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "What do you do when a team member misses an agreed deadline?",
+      "id": "hr-original-039"
+    },
+    {
+      "topic": "Teamwork",
+      "difficulty": "Medium",
+      "title": "How do you make sure a quiet teammate can contribute to a discussion?",
+      "id": "hr-original-040"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "What feedback initially surprised you, and how did you respond?",
+      "id": "hr-original-041"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "When have you changed your mind after a code review?",
+      "id": "hr-original-042"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "How do you give critical feedback to a peer respectfully?",
+      "id": "hr-original-043"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "Describe a time you had to clarify feedback before acting on it.",
+      "id": "hr-original-044"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "What recurring feedback have you worked to address?",
+      "id": "hr-original-045"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "When did you recognize that your feedback was not useful?",
+      "id": "hr-original-046"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "How did you handle disagreement about the quality of your work?",
+      "id": "hr-original-047"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "What feedback have you requested proactively?",
+      "id": "hr-original-048"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "How do you separate a critique of your idea from a critique of yourself?",
+      "id": "hr-original-049"
+    },
+    {
+      "topic": "Feedback",
+      "difficulty": "Medium",
+      "title": "What did you learn from a mentor that changed your work habits?",
+      "id": "hr-original-050"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "When did you notice a problem nobody had assigned to you?",
+      "id": "hr-original-051"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "How did you make progress when your manager was unavailable?",
+      "id": "hr-original-052"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "Describe a time you documented a decision for people who came later.",
+      "id": "hr-original-053"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "What did you do when a task had no clear owner?",
+      "id": "hr-original-054"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "How do you decide when to escalate a risk?",
+      "id": "hr-original-055"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "When did you simplify a process that others had accepted as normal?",
+      "id": "hr-original-056"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "How have you protected quality under a tight deadline?",
+      "id": "hr-original-057"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "When did you follow through after a feature was shipped?",
+      "id": "hr-original-058"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "What responsibility have you taken that was outside your formal role?",
+      "id": "hr-original-059"
+    },
+    {
+      "topic": "Ownership",
+      "difficulty": "Medium",
+      "title": "How do you balance independence with keeping stakeholders informed?",
+      "id": "hr-original-060"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "How do you choose between two urgent requests from different people?",
+      "id": "hr-original-061"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "Describe a time you cut scope while preserving the main outcome.",
+      "id": "hr-original-062"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "When did new information force you to change your plan?",
+      "id": "hr-original-063"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "How do you estimate work you have never done before?",
+      "id": "hr-original-064"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "What do you do when a deadline and a quality concern conflict?",
+      "id": "hr-original-065"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "How have you handled an interruption during focused work?",
+      "id": "hr-original-066"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "What signal tells you that you should stop polishing a task?",
+      "id": "hr-original-067"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "When did you have to explain a delay before it became a surprise?",
+      "id": "hr-original-068"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "How do you prioritize maintenance against new features?",
+      "id": "hr-original-069"
+    },
+    {
+      "topic": "Priorities",
+      "difficulty": "Medium",
+      "title": "What would you do if you had only one day to improve a troubled project?",
+      "id": "hr-original-070"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "What have you taught yourself outside a formal course?",
+      "id": "hr-original-071"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "How do you check whether you really understand a new concept?",
+      "id": "hr-original-072"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "What technical habit have you changed recently?",
+      "id": "hr-original-073"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "Which challenge currently stretches you most?",
+      "id": "hr-original-074"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "How do you choose what to learn next?",
+      "id": "hr-original-075"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "What have you learned from someone with less experience than you?",
+      "id": "hr-original-076"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "How do you turn a mistake into a repeatable improvement?",
+      "id": "hr-original-077"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "What would you like colleagues to teach you?",
+      "id": "hr-original-078"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "How do you keep up with tools without chasing every new trend?",
+      "id": "hr-original-079"
+    },
+    {
+      "topic": "Growth",
+      "difficulty": "Easy",
+      "title": "What would you do differently in your next internship or project?",
+      "id": "hr-original-080"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "What would you do if a teammate asked you to hide a production incident?",
+      "id": "hr-original-081"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "How would you respond if a manager asked you to skip a security review?",
+      "id": "hr-original-082"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "When would you challenge a decision made by a more senior engineer?",
+      "id": "hr-original-083"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "How would you handle discovering that a metric you reported was wrong?",
+      "id": "hr-original-084"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "What would you do if a customer request conflicted with user privacy?",
+      "id": "hr-original-085"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "How would you address repeated unkind behavior from a high-performing teammate?",
+      "id": "hr-original-086"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "What would you do if your code caused a costly outage?",
+      "id": "hr-original-087"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "How would you handle pressure to claim credit for another person's work?",
+      "id": "hr-original-088"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "When might you decline a task even though it was assigned to you?",
+      "id": "hr-original-089"
+    },
+    {
+      "topic": "Judgment",
+      "difficulty": "Hard",
+      "title": "How would you respond if an interview question revealed confidential information?",
+      "id": "hr-original-090"
+    }
+  ]
+}
