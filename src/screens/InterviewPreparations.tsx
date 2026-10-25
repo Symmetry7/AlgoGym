@@ -91,8 +91,8 @@ type QuestionState = {
 };
 type Sheet = { company: Company; questions: Question[] };
 type Playlist = { slug: string; group_slug: string; title: string; creator: string; source_url: string; thumbnail_url: string; count: number };
-type Role = { slug: string; title: string; group_name: string; source_url: string; question_count: number };
-type TechnicalSheetMeta = { slug: string; title: string; group_name: string; source_url: string; question_count: number };
+type Role = { slug: string; title: string; group_name: string; question_count: number };
+type TechnicalSheetMeta = { slug: string; title: string; group_name: string; question_count: number };
 const packageBands = ["3–5 LPA", "5–10 LPA", "10–20 LPA", "20–40 LPA", "40–60 LPA", "60+ LPA"] as const;
 export function packageBand(question: Question): string {
   const variant = [...question.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % 2;
@@ -345,9 +345,9 @@ const starterResources: Record<
         url: "https://www.bigocheatsheet.com/",
       },
       {
-        title: "PostgreSQL Tutorial",
+        title: "MySQL Tutorial",
         description: "Official SQL syntax and examples.",
-        url: "https://www.postgresql.org/docs/current/tutorial.html",
+        url: "https://dev.mysql.com/doc/refman/8.4/en/tutorial.html",
       },
       {
         title: "React Learn",
@@ -732,6 +732,7 @@ function QuestionTable({
   saving,
   showPopularity = true,
   showDifficulty = true,
+  hideLinks = false,
   questionLabel = "Problem",
   packageFor,
 }: {
@@ -741,6 +742,7 @@ function QuestionTable({
   saving: string;
   showPopularity?: boolean;
   showDifficulty?: boolean;
+  hideLinks?: boolean;
   questionLabel?: string;
   packageFor?: (question: Question) => string;
 }) {
@@ -751,7 +753,7 @@ function QuestionTable({
   return (
     <div className="ip-table-wrap">
       <p className="ip-scroll-hint">
-        Swipe the table to see topics, source, difficulty, and saved status.
+        Swipe the table to see topics, difficulty, and saved status.
       </p>
       <div className="ip-table-scroll">
         <table className="ip-table">
@@ -760,7 +762,7 @@ function QuestionTable({
               <th>Status</th>
               <th>{questionLabel}</th>
               <th>Tags</th>
-              <th>Link</th>
+              {!hideLinks && <th>Link</th>}
               {packageFor && <th>Package</th>}
               {showDifficulty && <th>Difficulty</th>}
               {showPopularity && <th>Popularity</th>}
@@ -786,7 +788,7 @@ function QuestionTable({
                 </td>
                 <td>
                   <span className="ip-number">{index + 1}.</span>
-                  {["General interview guide", "Role prompt", "SQL practice"].includes(question.source) ? (
+                  {!question.url || ["General interview guide", "Role prompt", "SQL practice"].includes(question.source) ? (
                     <span>{question.title}</span>
                   ) : (
                     <a href={question.url} target="_blank" rel="noopener noreferrer">
@@ -801,8 +803,8 @@ function QuestionTable({
                     ))}
                   </div>
                 </td>
-                <td>
-                  <a
+                {!hideLinks && <td>
+                  {question.url ? <a
                     className="ip-source"
                     href={question.url}
                     target="_blank"
@@ -812,8 +814,8 @@ function QuestionTable({
                     {(["leetcode", "geeksforgeeks", "codeforces"] as ProviderId[]).includes(question.source.toLowerCase() as ProviderId)
                       ? <CodingPlatformMark platform={question.source.toLowerCase() as ProviderId} className="ip-source-mark" />
                       : <span className="ip-source-name">{question.source === "General interview guide" ? "Guide ↗" : question.source === "Role prompt" ? "Source sheet ↗" : question.source === "SQL practice" ? "Topic guide ↗" : question.source}</span>}
-                  </a>
-                </td>
+                  </a> : <span className="ip-muted">—</span>}
+                </td>}
                 {packageFor && <td><span className="ip-package-badge">{packageFor(question)}</span></td>}
                 {showDifficulty && <td>
                   <span
@@ -1124,7 +1126,7 @@ function PlaylistDetail({ group, slug }: { group: string; slug: string }) {
   return <>
     <div className="ip-crumb"><Link href={`/interview-preparations/${group}`}>{titles[group]}</Link><ChevronRight size={13} /> {playlist?.title ?? "Playlist"}</div>
     {query.isLoading ? <p className="ip-feedback">Loading lessons…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> : playlist && <>
-      <div className="ip-playlist-head"><img src={`/interview-playlist-thumbnails/${playlist.slug}.jpg`} alt="" /><div><span className="ip-eyebrow">{playlist.creator} · video series</span><h1>{playlist.title}</h1><p>{completed} of {videos.length} lessons completed</p><a href={playlist.source_url} target="_blank" rel="noopener noreferrer">Original collection <ArrowUpRight size={15} /></a></div></div>
+      <div className="ip-playlist-head"><img src={`/interview-playlist-thumbnails/${playlist.slug}.jpg`} alt="" /><div><span className="ip-eyebrow">{playlist.creator} · video series</span><h1>{playlist.title}</h1><p>{completed} of {videos.length} lessons completed</p>{playlist.source_url && <a href={playlist.source_url} target="_blank" rel="noopener noreferrer">Original collection <ArrowUpRight size={15} /></a>}</div></div>
       <div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Find a lesson..." aria-label="Search lessons" /></div>
       <div className="ip-lesson-list">{visible.map((video, index) => <div className="ip-lesson" key={`${video.id}-${index}`}>
         <button type="button" className={`ip-check ${states.get(video.id)?.completed ? "ip-checked" : ""}`} aria-label={`${states.get(video.id)?.completed ? "Mark incomplete" : "Mark complete"}: ${video.title}`} aria-pressed={Boolean(states.get(video.id)?.completed)} disabled={saving === video.id} onClick={() => toggle(video.id, "completed")}>{states.get(video.id)?.completed && <Check size={14} strokeWidth={3} />}</button>
@@ -1173,10 +1175,10 @@ function RoleSheet({ slug }: { slug: string }) {
   return <>
     <div className="ip-crumb"><Link href="/interview-preparations/role-wise">Role Wise</Link><ChevronRight size={13} /> {query.data?.role.title ?? "Role"}</div>
     {query.isLoading ? <p className="ip-feedback">Loading role questions…</p> : query.error ? <p role="alert" className="ip-error">{query.error.message}</p> : <>
-      <div className="ip-page-heading"><span className="ip-eyebrow">{query.data?.role.group_name}</span><h1>{query.data?.role.title}</h1><p>{completed} of {questions.length} questions completed · <a href={query.data?.role.source_url} target="_blank" rel="noopener noreferrer">Reference sheet ↗</a></p></div>
+      <div className="ip-page-heading"><span className="ip-eyebrow">{query.data?.role.group_name}</span><h1>{query.data?.role.title}</h1><p>{completed} of {questions.length} questions completed</p></div>
       <div className="ip-role-controls"><div className="ip-search"><Search size={18} /><input type="search" value={search} onChange={(event) => {setSearch(event.target.value); setPage(0);}} placeholder="Search questions..." aria-label="Search role questions" /></div><select aria-label="Difficulty" value={difficulty} onChange={(event) => {setDifficulty(event.target.value); setPage(0);}}><option value="">All difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option></select><button type="button" className={bookmarked ? "ip-selected" : ""} onClick={() => {setBookmarked(!bookmarked); setPage(0);}}>Bookmarked</button></div>
       <p className="ip-count">{visible.length} questions</p>
-      <QuestionTable questions={visible.slice(currentPage * 50, (currentPage + 1) * 50)} states={states} onToggle={toggle} saving={saving} showPopularity={false} questionLabel="Interview question" />
+      <QuestionTable questions={visible.slice(currentPage * 50, (currentPage + 1) * 50)} states={states} onToggle={toggle} saving={saving} showPopularity={false} hideLinks questionLabel="Interview question" />
       {pages > 1 && <div className="ip-pagination"><button disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Previous</button><span>Page {currentPage + 1} of {pages}</span><button disabled={currentPage + 1 >= pages} onClick={() => setPage(currentPage + 1)}>Next</button></div>}
       {error && <p role="alert" className="ip-error">{error}</p>}
     </>}
@@ -1445,7 +1447,7 @@ function AnswerQuestionList({
         <button type="button" className={`ip-save-button ${states.get(question.id)?.bookmarked ? "ip-saved" : ""}`} disabled={saving === question.id} aria-label={`${states.get(question.id)?.bookmarked ? "Remove bookmark" : "Bookmark"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.bookmarked)} onClick={() => onToggle(question.id, "bookmarked")}><Bookmark size={17} fill={states.get(question.id)?.bookmarked ? "currentColor" : "none"} /></button>
       </div>
       {expanded && <div id={`ip-answer-${question.id}`} className="ip-answer-detail">
-        {slug === "sql" && <><div className="ip-answer-detail-title"><strong>One PostgreSQL answer</strong>{question.answerCode && <button type="button" onClick={async () => {try {await navigator.clipboard.writeText(question.answerCode ?? "");setCopiedId(question.id);setCopyError("");} catch {setCopyError("Could not copy the query.");}}}><Copy size={14} />{copiedId === question.id ? "Copied" : "Copy query"}</button>}</div><p>Illustrative tables and columns are described above. Adapt them to your schema.</p>{question.answerCode ? <pre><code>{question.answerCode}</code></pre> : <p role="alert">Answer unavailable.</p>}</>}
+        {slug === "sql" && <><div className="ip-answer-detail-title"><strong>One MySQL 8 answer</strong>{question.answerCode && <button type="button" onClick={async () => {try {await navigator.clipboard.writeText(question.answerCode ?? "");setCopiedId(question.id);setCopyError("");} catch {setCopyError("Could not copy the query.");}}}><Copy size={14} />{copiedId === question.id ? "Copied" : "Copy query"}</button>}</div><p>Illustrative tables and columns are described above. Adapt them to your schema.</p>{question.answerCode ? <pre><code>{question.answerCode}</code></pre> : <p role="alert">Answer unavailable.</p>}</>}
         {slug === "hr-questions" && <><strong>Example response</strong><p>{question.answerText ?? "Answer unavailable."}</p><small>Replace bracketed details with your own truthful experience.</small></>}
         {slug === "system-design" && <><strong>Explore this design</strong><p>Start with requirements and scale, then explain data flow, failure cases, and trade-offs.</p><div className="ip-answer-resources">{question.articleUrl && <a href={question.articleUrl} target="_blank" rel="noopener noreferrer"><FileText size={16} /> Read article <ArrowUpRight size={14} /></a>}{question.videoUrl && <a href={question.videoUrl} target="_blank" rel="noopener noreferrer"><Play size={16} /> Watch video <ArrowUpRight size={14} /></a>}</div></>}
         {copyError && <p role="alert" className="ip-error">{copyError}</p>}
@@ -1482,7 +1484,7 @@ function QuestionCategory({ slug }: { slug: string }) {
     (question) => states.get(question.id)?.completed,
   ).length;
   const descriptions: Record<string, string> = {
-    sql: "Practice 110 SQL prompts with PostgreSQL examples. The sample queries use employees, departments, orders, customers, and related tables; adapt names and values to your own schema.",
+    sql: "Practice 110 SQL prompts with MySQL 8 examples. The sample queries use employees, departments, orders, customers, and related tables; adapt names and values to your own schema.",
     "system-design":
       "Explore 22 HLD and 10 LLD prompts with separate article and video references. Difficulty is AlgoGym guidance, not a reference-site rating.",
     "hr-questions":

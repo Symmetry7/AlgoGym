@@ -78,6 +78,16 @@ type Placement = {
   source_url: string | null;
 };
 
+// Reference-page URLs are import provenance, not destinations in AlgoGym.
+function publicPreparationUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  try {
+    return /(^|\.)hynts\.in$/i.test(new URL(url).hostname) ? "" : url;
+  } catch {
+    return "";
+  }
+}
+
 // PostgREST limits a single result page. Fetch every placement so directory
 // counts and company sheets remain correct as the catalog grows past 1,000 rows.
 async function readPlacements(
@@ -216,7 +226,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .select("id,title,source,url,difficulty,tags,popularity")
           .order("title");
         if (result.error) throw result.error;
-        return res.status(200).json({ questions: result.data });
+        return res.status(200).json({ questions: (result.data ?? []).map((question) => ({...question, url: publicPreparationUrl(question.url)})) });
       }
       if (mode === "playlists") {
         const group = params.get("group");
@@ -230,7 +240,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         if (playlists.error || videos.error) throw playlists.error ?? videos.error;
         const counts = new Map<string, number>();
         for (const video of videos.data ?? []) counts.set(video.playlist_slug, (counts.get(video.playlist_slug) ?? 0) + 1);
-        return res.status(200).json({ playlists: (playlists.data ?? []).map((playlist) => ({ ...playlist, count: counts.get(playlist.slug) ?? 0 })) });
+        return res.status(200).json({ playlists: (playlists.data ?? []).map((playlist) => ({ ...playlist, source_url: publicPreparationUrl(playlist.source_url), count: counts.get(playlist.slug) ?? 0 })) });
       }
       if (mode === "playlist") {
         const playlistSlug = params.get("playlist");
@@ -246,14 +256,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const questions = ids.length ? await client.from("interview_questions").select("id,title,url").in("id", ids) : { data: [], error: null };
         if (questions.error) throw questions.error;
         const byId = new Map((questions.data ?? []).map((item) => [item.id, item]));
-        return res.status(200).json({ playlist: playlist.data, videos: ids.map((id) => byId.get(id)).filter(Boolean) });
+        return res.status(200).json({ playlist: {...playlist.data, source_url: publicPreparationUrl(playlist.data?.source_url)}, videos: ids.map((id) => byId.get(id)).filter(Boolean) });
       }
       if (mode === "roles") {
         const result = await client.from("interview_roles")
           .select("slug,title,group_name,source_url,position,question_count")
           .order("position");
         if (result.error) throw result.error;
-        return res.status(200).json({ roles: result.data ?? [] });
+        return res.status(200).json({ roles: (result.data ?? []).map(({source_url: _sourceUrl, ...role}) => role) });
       }
       if (mode === "roleSheet") {
         const roleSlug = params.get("role");
@@ -275,10 +285,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           for (const question of result.data ?? []) byId.set(question.id, question);
         }
         return res.status(200).json({
-          role: role.data,
+          role: {slug: role.data.slug, title: role.data.title, group_name: role.data.group_name, question_count: role.data.question_count},
           questions: entries.map((entry) => {
             const question = byId.get(entry.question_id);
-            return question;
+            return question && {...question, url: publicPreparationUrl(question.url)};
           }).filter(Boolean),
         });
       }
@@ -287,7 +297,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .select("slug,title,group_name,source_url,question_count,position")
           .order("position");
         if (result.error) throw result.error;
-        return res.status(200).json({ sheets: result.data ?? [] });
+        return res.status(200).json({ sheets: (result.data ?? []).map(({source_url: _sourceUrl, ...sheet}) => sheet) });
       }
       if (mode === "technicalSheet") {
         const sheetSlug = params.get("sheet");
@@ -313,8 +323,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           for (const question of result.data ?? []) byId.set(question.id, question);
         }
         return res.status(200).json({
-          sheet: sheet.data,
-          questions: entries.map((entry) => byId.get(entry.question_id)).filter(Boolean),
+          sheet: {slug: sheet.data.slug, title: sheet.data.title, group_name: sheet.data.group_name, question_count: sheet.data.question_count},
+          questions: entries.map((entry) => {const question=byId.get(entry.question_id);return question&&{...question,url:publicPreparationUrl(question.url)};}).filter(Boolean),
         });
       }
       if (mode === "technicalAnswer") {
@@ -364,7 +374,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           .json({ questions: ids.map((id) => {
             const question = byId.get(id);
             const detail = contentById.get(id);
-            return question && { ...question, answerText: detail?.answer_text ?? null, answerCode: detail?.answer_code ?? null, articleUrl: detail?.article_url ?? null, videoUrl: detail?.video_url ?? null };
+            return question && { ...question, url: publicPreparationUrl(question.url), answerText: detail?.answer_text ?? null, answerCode: detail?.answer_code ?? null, articleUrl: publicPreparationUrl(detail?.article_url), videoUrl: publicPreparationUrl(detail?.video_url) };
           }).filter(Boolean) });
       }
       const companies = await client
@@ -411,7 +421,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         .filter((entry) => entry.company_slug === slug)
         .map((entry) => {
           const question = byId.get(entry.question_id);
-          return question && { ...question, url: entry.source_url ?? question.url };
+          return question && { ...question, url: publicPreparationUrl(entry.source_url ?? question.url) };
         })
         .filter(Boolean);
       return res.status(200).json({ company, questions: ordered });
