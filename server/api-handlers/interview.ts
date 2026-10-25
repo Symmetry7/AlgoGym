@@ -20,6 +20,11 @@ const technicalAnswerSchema = z.object({
   questionId: z.string().regex(/^[a-z0-9-]{2,120}$/),
   sheetSlug: z.string().regex(/^[a-z0-9-]{2,80}$/),
 }).strict();
+const roleAnswerSchema = z.object({
+  action: z.literal("roleAnswer"),
+  questionId: z.string().regex(/^[a-z0-9-]{2,120}$/),
+  roleSlug: z.string().regex(/^[a-z0-9-]{2,80}$/),
+}).strict();
 const companySchema = z
   .object({
     kind: z.literal("company"),
@@ -150,6 +155,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           "technicalDirectory",
           "technicalSheet",
           "technicalAnswer",
+          "roleAnswer",
           "progress",
         ]).has(mode)
       )
@@ -341,6 +347,19 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         if (cached.error) throw cached.error;
         return res.status(200).json({answer:cached.data?.answer_text??null});
       }
+      if (mode === "roleAnswer") {
+        const parsed = roleAnswerSchema.safeParse({action:"roleAnswer",questionId:params.get("question"),roleSlug:params.get("role")});
+        if (!parsed.success) return res.status(400).json({error:"Choose a valid role question."});
+        const {questionId,roleSlug}=parsed.data;
+        const placement=await client.from("interview_role_questions")
+          .select("question_id").eq("role_slug",roleSlug).eq("question_id",questionId).maybeSingle();
+        if (placement.error) throw placement.error;
+        if (!placement.data) return res.status(404).json({error:"Question not found in this role."});
+        const cached=await client.from("interview_question_content")
+          .select("answer_text").eq("question_id",questionId).maybeSingle();
+        if (cached.error) throw cached.error;
+        return res.status(200).json({answer:cached.data?.answer_text??null});
+      }
       if (mode === "category") {
         const category = params.get("category");
         if (!category || !/^[a-z0-9-]{2,80}$/.test(category))
@@ -430,15 +449,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return res
         .status(401)
         .json({ error: "Sign in to save your preparation." });
-    if (req.method === "POST" && (req.body as {action?:unknown}|null)?.action === "technicalAnswer") {
-      const parsed = technicalAnswerSchema.safeParse(req.body);
+    if (req.method === "POST" && ["technicalAnswer","roleAnswer"].includes(String((req.body as {action?:unknown}|null)?.action))) {
+      const isRole=(req.body as {action?:unknown}).action === "roleAnswer";
+      const parsed = isRole ? roleAnswerSchema.safeParse(req.body) : technicalAnswerSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({error:"Choose a valid question."});
-      const {questionId,sheetSlug}=parsed.data;
+      const questionId=parsed.data.questionId;
+      const scopeSlug=isRole ? (parsed.data as z.infer<typeof roleAnswerSchema>).roleSlug : (parsed.data as z.infer<typeof technicalAnswerSchema>).sheetSlug;
       const admin=adminSupabase();
       const [placement,question,sheet,cached]=await Promise.all([
-        client.from("interview_technical_questions").select("question_id").eq("sheet_slug",sheetSlug).eq("question_id",questionId).maybeSingle(),
+        client.from(isRole ? "interview_role_questions" : "interview_technical_questions").select("question_id").eq(isRole ? "role_slug" : "sheet_slug",scopeSlug).eq("question_id",questionId).maybeSingle(),
         client.from("interview_questions").select("title,tags").eq("id",questionId).maybeSingle(),
-        client.from("interview_technical_sheets").select("title").eq("slug",sheetSlug).maybeSingle(),
+        client.from(isRole ? "interview_roles" : "interview_technical_sheets").select("title").eq("slug",scopeSlug).maybeSingle(),
         client.from("interview_question_content").select("answer_text").eq("question_id",questionId).maybeSingle(),
       ]);
       if (placement.error||question.error||sheet.error||cached.error) throw placement.error??question.error??sheet.error??cached.error;
