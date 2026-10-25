@@ -532,6 +532,7 @@
 .ip-answer-resources { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
 .ip-answer-resources a { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 8px 12px; border: 1px solid #4b405a; border-radius: 8px; color: #e2ccf7; font-size: 12px; }
 .ip-answer-resources a:hover { background: #29212f; }
+.ip-answer-retry{display:inline-flex;align-items:center;min-height:38px;padding:8px 12px;border:1px solid #715586;border-radius:7px;background:#2b2034;color:#ead6fa;font-size:12px;font-weight:650;cursor:pointer}.ip-answer-retry:hover{background:#3c2b48}.ip-answer-retry:focus-visible{outline:2px solid #dec1f1;outline-offset:3px}.ip-answer-signin{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.ip-answer-detail>small{display:block;margin-top:12px}
 @media(max-width: 600px) { .ip-answer-head { gap: 9px; padding: 10px 12px; } .ip-answer-icon { display: none; } .ip-answer-detail { padding: 15px 16px; } .ip-answer-head .ip-difficulty { font-size: 10px; } }
 @media(max-width: 520px) { .ip-mobile-brand { display: inline-flex; } .ip-topbar-location { display: none; } }
 @media(prefers-reduced-motion: reduce) { .ip-answer-chevron { transition: none; } }

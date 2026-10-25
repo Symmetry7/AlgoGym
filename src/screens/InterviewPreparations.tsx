@@ -1218,6 +1218,26 @@ function TechnicalDirectory() {
   </>;
 }
 
+function TechnicalAnswer({question,sheet}:{question:Question;sheet:TechnicalSheetMeta}) {
+  const {user,signInWithGoogle}=useAuth();
+  const path=`/api/interview?mode=technicalAnswer&sheet=${encodeURIComponent(sheet.slug)}&question=${encodeURIComponent(question.id)}`;
+  const result=useQuery({
+    queryKey:["interview-original-answer",sheet.slug,question.id,user?.id??"public"],
+    queryFn:()=>jsonRequest<{answer:string|null}>(path,user?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"technicalAnswer",sheetSlug:sheet.slug,questionId:question.id})}:undefined),
+    retry:false,
+    staleTime:Infinity,
+    refetchOnWindowFocus:false,
+  });
+  return <div className="ip-answer-detail">
+    <strong>AlgoGym answer</strong>
+    {result.isLoading?<p role="status">{user?"Writing an answer for this question…":"Loading answer…"}</p>
+      :result.error?<><p role="alert">{result.error.message}</p><button type="button" className="ip-answer-retry" onClick={()=>void result.refetch()}>Try again</button></>
+      :result.data?.answer?<>{result.data.answer.split(/\n\n+/).map((paragraph,index)=><p key={index}>{paragraph}</p>)}<small>Original AI-assisted explanation. Check details before using it in an interview.</small></>
+      :<div className="ip-answer-signin"><p>Sign in to create an original answer for this question.</p><button type="button" className="ip-answer-retry" onClick={()=>void signInWithGoogle(window.location.pathname)}>Sign in to see answer</button></div>}
+    <div className="ip-answer-resources"><SymmPrepLink topic={`Explain ${question.title} in ${sheet.title}`} label="Explore with SYMM AI"/></div>
+  </div>;
+}
+
 function TechnicalSheet({ slug }: { slug: string }) {
   const [search,setSearch]=useState("");
   const [difficulty,setDifficulty]=useState("");
@@ -1235,10 +1255,10 @@ function TechnicalSheet({ slug }: { slug: string }) {
   return <>
     <div className="ip-crumb"><Link href="/interview-preparations/interview-questions">Interview Questions</Link><ChevronRight size={13}/>{sheet?.title??"Topic"}</div>
     {query.isLoading?<p className="ip-feedback">Loading questions…</p>:query.error?<p role="alert" className="ip-error">{query.error.message}</p>:<>
-      <div className="ip-page-heading ip-page-heading-with-action"><div><h1>{sheet?.title} Questions</h1><p>{completed}/{questions.length} completed · Questions and difficulty metadata from the public reference. Explain each answer in your own words.</p></div><SymmPrepLink topic={`Learn ${sheet?.title} for technical interviews`} /></div>
+      <div className="ip-page-heading ip-page-heading-with-action"><div><h1>{sheet?.title} Questions</h1><p>{completed}/{questions.length} completed · Open a question for its AlgoGym answer.</p></div><SymmPrepLink topic={`Learn ${sheet?.title} for technical interviews`} /></div>
       <div className="ip-role-controls"><div className="ip-search"><Search size={18}/><input type="search" value={search} onChange={event=>{setSearch(event.target.value);setPage(0)}} placeholder="Search questions..." aria-label="Search technical questions"/></div><select aria-label="Difficulty" value={difficulty} onChange={event=>{setDifficulty(event.target.value);setPage(0)}}><option value="">All difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option></select><button type="button" className={bookmarked?"ip-selected":""} onClick={()=>{setBookmarked(!bookmarked);setPage(0)}}>Bookmarked</button></div>
       <p className="ip-count">{visible.length} questions</p>
-      <div className="ip-answer-list">{visible.slice(currentPage*40,(currentPage+1)*40).map((question,index)=>{const expanded=openId===`${currentPage}-${index}`;return <article className="ip-answer-item" key={`${question.id}-${index}`}><div className="ip-answer-head"><button type="button" className={`ip-check ${states.get(question.id)?.completed?"ip-checked":""}`} disabled={saving===question.id} aria-label={`${states.get(question.id)?.completed?"Mark incomplete":"Mark complete"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.completed)} onClick={()=>toggle(question.id,"completed")}>{states.get(question.id)?.completed&&<Check size={14}/>}</button><button type="button" className="ip-answer-toggle" aria-expanded={expanded} onClick={()=>setOpenId(expanded?null:`${currentPage}-${index}`)}><span className="ip-answer-label"><small>{String(currentPage*40+index+1).padStart(2,"0")}</small><strong>{question.title}</strong></span><ChevronDown size={18} className="ip-answer-chevron"/></button>{question.difficulty&&<span className={`ip-difficulty ip-${question.difficulty.toLowerCase()}`}>{question.difficulty}</span>}<button type="button" className={`ip-save-button ${states.get(question.id)?.bookmarked?"ip-saved":""}`} disabled={saving===question.id} aria-label={`${states.get(question.id)?.bookmarked?"Remove bookmark":"Bookmark"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.bookmarked)} onClick={()=>toggle(question.id,"bookmarked")}><Bookmark size={17} fill={states.get(question.id)?.bookmarked?"currentColor":"none"}/></button></div>{expanded&&<div className="ip-answer-detail"><p>Write your own explanation, then compare it with the reference or use SYMM AI to build a study path for this concept.</p><div className="ip-answer-resources"><a href={sheet?.source_url} target="_blank" rel="noopener noreferrer"><BookOpen size={16}/> Reference sheet <ArrowUpRight size={14}/></a><SymmPrepLink topic={`Explain ${question.title} in ${sheet?.title}`} label="Study with SYMM AI"/></div></div>}</article>})}</div>
+      <div className="ip-answer-list">{visible.slice(currentPage*40,(currentPage+1)*40).map((question,index)=>{const expanded=openId===`${currentPage}-${index}`;return <article className="ip-answer-item" key={`${question.id}-${index}`}><div className="ip-answer-head"><button type="button" className={`ip-check ${states.get(question.id)?.completed?"ip-checked":""}`} disabled={saving===question.id} aria-label={`${states.get(question.id)?.completed?"Mark incomplete":"Mark complete"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.completed)} onClick={()=>toggle(question.id,"completed")}>{states.get(question.id)?.completed&&<Check size={14}/>}</button><button type="button" className="ip-answer-toggle" aria-expanded={expanded} onClick={()=>setOpenId(expanded?null:`${currentPage}-${index}`)}><span className="ip-answer-label"><small>{String(currentPage*40+index+1).padStart(2,"0")}</small><strong>{question.title}</strong></span><ChevronDown size={18} className="ip-answer-chevron"/></button>{question.difficulty&&<span className={`ip-difficulty ip-${question.difficulty.toLowerCase()}`}>{question.difficulty}</span>}<button type="button" className={`ip-save-button ${states.get(question.id)?.bookmarked?"ip-saved":""}`} disabled={saving===question.id} aria-label={`${states.get(question.id)?.bookmarked?"Remove bookmark":"Bookmark"}: ${question.title}`} aria-pressed={Boolean(states.get(question.id)?.bookmarked)} onClick={()=>toggle(question.id,"bookmarked")}><Bookmark size={17} fill={states.get(question.id)?.bookmarked?"currentColor":"none"}/></button></div>{expanded&&sheet&&<TechnicalAnswer question={question} sheet={sheet}/>}</article>})}</div>
       {pages>1&&<div className="ip-pagination"><button disabled={currentPage===0} onClick={()=>setPage(currentPage-1)}>Previous</button><span>Page {currentPage+1} of {pages}</span><button disabled={currentPage+1>=pages} onClick={()=>setPage(currentPage+1)}>Next</button></div>}
       {error&&<p role="alert" className="ip-error">{error}</p>}
     </>}

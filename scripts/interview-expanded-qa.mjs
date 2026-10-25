@@ -35,7 +35,7 @@ try{
       if(await page.locator('.ip-technical-card').count()<2)failures.push({interaction:'topic search'});
       await page.goto(`${origin}/interview-preparations/interview-questions/dbms-questions`);await page.locator('.ip-answer-item').first().waitFor();
       await page.locator('.ip-answer-toggle').first().click();
-      if(!await page.getByRole('link',{name:/Study with SYMM AI/}).first().isVisible())failures.push({interaction:'technical symm link'});
+      if(!await page.getByRole('link',{name:/Explore with SYMM AI/}).first().isVisible())failures.push({interaction:'technical symm link'});
       await page.goto(`${origin}/interview-preparations/cool-notes/sql-joins`);
       const noteDownload=page.waitForEvent('download');await page.getByRole('button',{name:'Download note'}).click();
       if(!(await noteDownload).suggestedFilename().endsWith('.md'))failures.push({interaction:'note download'});

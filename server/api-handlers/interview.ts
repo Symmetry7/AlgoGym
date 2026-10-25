@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { adminSupabase } from "../admin";
+import { writeInterviewAnswer } from "../interview-answer";
 import {
   originFromRequest,
   serverSupabase,
@@ -14,6 +15,11 @@ const stateSchema = z
     bookmarked: z.boolean(),
   })
   .strict();
+const technicalAnswerSchema = z.object({
+  action: z.literal("technicalAnswer"),
+  questionId: z.string().regex(/^[a-z0-9-]{2,120}$/),
+  sheetSlug: z.string().regex(/^[a-z0-9-]{2,80}$/),
+}).strict();
 const companySchema = z
   .object({
     kind: z.literal("company"),
@@ -133,6 +139,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           "roleSheet",
           "technicalDirectory",
           "technicalSheet",
+          "technicalAnswer",
           "progress",
         ]).has(mode)
       )
@@ -310,6 +317,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           questions: entries.map((entry) => byId.get(entry.question_id)).filter(Boolean),
         });
       }
+      if (mode === "technicalAnswer") {
+        const questionId = params.get("question");
+        const sheetSlug = params.get("sheet");
+        const parsed = technicalAnswerSchema.safeParse({action:"technicalAnswer",questionId,sheetSlug});
+        if (!parsed.success) return res.status(400).json({error:"Choose a valid question."});
+        const placement = await client.from("interview_technical_questions")
+          .select("question_id").eq("sheet_slug",sheetSlug).eq("question_id",questionId).maybeSingle();
+        if (placement.error) throw placement.error;
+        if (!placement.data) return res.status(404).json({error:"Question not found in this topic."});
+        const cached = await client.from("interview_question_content")
+          .select("answer_text").eq("question_id",questionId).maybeSingle();
+        if (cached.error) throw cached.error;
+        return res.status(200).json({answer:cached.data?.answer_text??null});
+      }
       if (mode === "category") {
         const category = params.get("category");
         if (!category || !/^[a-z0-9-]{2,80}$/.test(category))
@@ -399,6 +420,38 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return res
         .status(401)
         .json({ error: "Sign in to save your preparation." });
+    if (req.method === "POST" && (req.body as {action?:unknown}|null)?.action === "technicalAnswer") {
+      const parsed = technicalAnswerSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({error:"Choose a valid question."});
+      const {questionId,sheetSlug}=parsed.data;
+      const admin=adminSupabase();
+      const [placement,question,sheet,cached]=await Promise.all([
+        client.from("interview_technical_questions").select("question_id").eq("sheet_slug",sheetSlug).eq("question_id",questionId).maybeSingle(),
+        client.from("interview_questions").select("title,tags").eq("id",questionId).maybeSingle(),
+        client.from("interview_technical_sheets").select("title").eq("slug",sheetSlug).maybeSingle(),
+        client.from("interview_question_content").select("answer_text").eq("question_id",questionId).maybeSingle(),
+      ]);
+      if (placement.error||question.error||sheet.error||cached.error) throw placement.error??question.error??sheet.error??cached.error;
+      if (!placement.data||!question.data||!sheet.data) return res.status(404).json({error:"Question not found in this topic."});
+      if (cached.data?.answer_text) return res.status(200).json({answer:cached.data.answer_text});
+      const [daily,minute]=await Promise.all([
+        admin.from("interview_answer_requests").select("id",{count:"exact",head:true}).eq("user_id",user.id).gte("requested_at",new Date(Date.now()-86400000).toISOString()),
+        admin.from("interview_answer_requests").select("id",{count:"exact",head:true}).eq("user_id",user.id).gte("requested_at",new Date(Date.now()-60000).toISOString()),
+      ]);
+      if (daily.error||minute.error) throw daily.error??minute.error;
+      if ((daily.count??0)>=25||(minute.count??0)>=3) return res.status(429).json({error:"You have reached the answer limit for now. Please try again later."});
+      const claim=await admin.from("interview_answer_requests").insert({user_id:user.id,question_id:questionId});
+      if (claim.error) throw claim.error;
+      let answer:string;
+      try {
+        answer=await writeInterviewAnswer({question:question.data.title,subject:sheet.data.title,category:question.data.tags?.[1]??sheet.data.title});
+      } catch {
+        return res.status(503).json({error:"The answer could not be written right now. Please retry later."});
+      }
+      const saved=await admin.from("interview_question_content").upsert({question_id:questionId,answer_text:answer},{onConflict:"question_id"});
+      if (saved.error) throw saved.error;
+      return res.status(200).json({answer});
+    }
     if (req.method === "PATCH") {
       const parsed = stateSchema.safeParse(req.body);
       if (!parsed.success)
