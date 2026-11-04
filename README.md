@@ -17,6 +17,7 @@ Coding progress is fragmented across providers, practice often lacks a sequence,
 | Statistics | Codeforces rating and submission history; public LeetCode aggregates where available. |
 | Communities | College search, societies, applications, memberships, invitations, and management roles. |
 | Leaderboards | Individual, society, and college scopes with metric-specific database rankings. |
+| Interview preparation | Company, role, technical, SQL, patterns, notes, resumes, and progress libraries. Paid access is planned, not enforced yet. |
 
 See [integration coverage](docs/integrations.md) and [reward rules](docs/chakra.md) for precise limitations.
 
@@ -59,11 +60,11 @@ supabase/migrations/   Ordered PostgreSQL schema history
 supabase/functions/    Profile verification Edge Function
 scripts/               Explicit development and diagnostic tools
 docs/                  Engineering reference
-assets/                Design references used by ui-ux.md
+assets/                Design references used by docs/history/ui-ux.md
 public/                Runtime assets and licensed fonts
 ```
 
-`src/app/api/[...path]/route.ts` preserves existing `/api/*` URLs through a dispatch table. Older root product and design documents remain historical references; `/docs` contains the current engineering description.
+`src/app/api/[...path]/route.ts` preserves existing `/api/*` URLs through a dispatch table. Start with the [documentation index](docs/README.md) for the project map, current guides, and historical product documents.
 
 ## Local development
 

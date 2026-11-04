@@ -33,3 +33,17 @@ coverage/
 tmp/
 output/
 desktop.ini
+
+# Local design tools and their installed project skills
+.agents/
+.codex/
+.cursor/
+.gemini/
+.impeccable/
+.taste-skill/
+skills-lock.json
+
+# Reproducible deploy bundles and browser QA output
+artifacts/deploy-*/
+artifacts/deploy-*.zip
+artifacts/*-qa/

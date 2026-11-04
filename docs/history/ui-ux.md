@@ -23,16 +23,16 @@
 ## Design reference pictures (included in this ZIP)
 
 ### Dashboard
-![Dashboard example](assets/01-dashboard-example.png)
+![Dashboard example](../../assets/01-dashboard-example.png)
 
 ### Explore Problems
-![Explore Problems example](assets/02-explore-problems-example.png)
+![Explore Problems example](../../assets/02-explore-problems-example.png)
 
 ### Training Gym
-![Training Gym example](assets/03-training-gym-example.png)
+![Training Gym example](../../assets/03-training-gym-example.png)
 
 ### Statistics
-![Statistics example](assets/04-statistics-example.png)
+![Statistics example](../../assets/04-statistics-example.png)
 
 All pictures are illustrative visual guidance. They deliberately avoid an embedded code editor, fake user-generated social feeds, or features outside the current product brief.
 

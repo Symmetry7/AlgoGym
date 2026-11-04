@@ -6,7 +6,7 @@ Reconstruct AlgoGym around the supplied PRD, architecture, API/database, and UI/
 
 ## Decisions and guardrails
 
-- Use Next.js App Router as approved in `architecture.md`; do not retain a second client router.
+- Use Next.js App Router as approved in `docs/history/architecture.md`; do not retain a second client router.
 - Keep LeetCode Chakra awards disabled until the system can prove individual accepted submissions through a dependable, compliant integration.
 - Never invent profiles, verification, awards, rankings, society approvals, or provider data. Use explicit unavailable, stale, pending, and empty states.
 - Implement additive, reviewed SQL migrations locally. Do not deploy broader production schema changes without a backup and explicit migration review.

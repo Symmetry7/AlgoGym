@@ -7,7 +7,7 @@ Audit date: 2026-10-20. Scope: checked-in source, package scripts and lockfile, 
 | Class | Items and evidence |
 | --- | --- |
 | Required | `src/app`, `src/proxy.ts`, `server/next-api`, `server/api-handlers`, provider/AI/job services, `supabase/migrations`, `vercel.json`, Next/Tailwind/TypeScript configuration: route, dispatch, runtime, SQL, or build conventions. |
-| Shared | `src/components`, `src/hooks`, `src/lib` helpers, `public/` brand/hero/fonts and their license notice, and design-reference PNGs linked from `ui-ux.md`. |
+| Shared | `src/components`, `src/hooks`, `src/lib` helpers, `public/` brand/hero/fonts and their license notice, and design-reference PNGs linked from `history/ui-ux.md`. |
 | Generated/local | `.next`, `node_modules`, `*.tsbuildinfo`, `tmp`, `output`, local environment files, coverage: reproducible or local working artifacts, now ignored. Existing untracked files were left in place. |
 | Documentation | Root PRD/design/history documents and `docs/SYMM_AI_TRANSFORMATION.md` retain historical context; the new `/docs` files are the current engineering reference. |
 | Redundant/unused | Old Vite entry and configuration, one isolated unused API helper, unused standalone screens/components, and their direct dependencies (listed below). |
