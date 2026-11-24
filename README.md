@@ -58,9 +58,9 @@ server/next-api/       Next.js request adapters
 server/               Provider, AI, and job services
 supabase/migrations/   Ordered PostgreSQL schema history
 supabase/functions/    Profile verification Edge Function
-scripts/               Explicit development and diagnostic tools
-docs/                  Engineering reference
-assets/                Design references used by docs/history/ui-ux.md
+scripts/               qa/ browser+DB checks, data/ imports+migration builders,
+                       ops/ admin+billing setup, sql/ test SQL, lib/ shared helpers
+docs/                  Product, architecture, design and engineering docs
 public/                Runtime assets and licensed fonts
 ```
 

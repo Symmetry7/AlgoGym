@@ -13,7 +13,7 @@ AlgoGym is a Next.js 16 App Router application using React 19, TypeScript, Tailw
 
 ## Development
 
-Run `npm run dev` for the local server on port 8080, `npm run typecheck` for TypeScript, `npm test` for Vitest, and `npm run build` for a production build. New unit tests use `.spec.ts` or `.spec.tsx` beside the code under test. Browser and database QA scripts in `scripts/` have separate credentials and setup requirements.
+Run `npm run dev` for the local server on port 8080, `npm run typecheck` for TypeScript, `npm test` for Vitest, and `npm run build` for a production build. New unit tests use `.spec.ts` or `.spec.tsx` beside the code under test. Scripts live in `scripts/qa/` (browser/DB checks), `scripts/data/` (imports, migration builders), `scripts/ops/` (setup/admin), `scripts/sql/`, and `scripts/lib/`; they have separate credentials and setup requirements.
 
 ## Product and data boundaries
 
