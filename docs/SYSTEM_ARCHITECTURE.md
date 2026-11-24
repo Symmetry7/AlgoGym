@@ -99,7 +99,7 @@ algogym/
 │  └─ shared/         # zod schemas, constants (languages, limits, plans)
 ├─ supabase/          # Stays at the repo root: migrations/ (source of truth), functions/
 ├─ content/learn/     # MDX lessons
-└─ scripts/           # CSV company import, seeders, content validators,
+└─ scripts/           # data/import-companies.mjs (CSV import), seeders, content validators,
                       # build-icons.ts (copies used Devicon/Simple Icons SVGs → public/icons, writes iconMap.ts)
 ```
 `supabase/migrations/` stays where the Supabase CLI and the production migration ledger expect it; moving it would break `supabase db push` against 51 already-applied migrations. npm workspaces (not pnpm) keep the existing `package-lock.json` and tooling.
@@ -167,7 +167,7 @@ The worker parses whatever lines arrived and compares each `output` with the exp
 - Quiz answers and "lesson read" events → `user_topic_progress`.
 
 ### 4.5 Company data import
-`scripts/import-companies.ts` reads the company-wise CSVs → upserts `companies`, `problems` (status `pending`, metadata only) and `problem_companies` (frequency, timeframe). Idempotent; re-runnable when data updates.
+`scripts/data/import-companies.mjs` reads the company-wise CSVs → upserts `companies`, `problems` (status `pending`, metadata only) and `problem_companies` (frequency, timeframe). Idempotent; re-runnable when data updates.
 
 ### 4.6 Rooms (v1.1)
 - `orgs` → `org_members` (owner/interviewer) → `rooms` → `room_problems` (from `problems` where `pool = 'room'`) → `room_candidates` (invite token) → `room_attempts` (code, verdicts, timings).
