@@ -17,4 +17,4 @@ RLS is enabled in the migrations for private application records. Read policies 
 
 Indexes support owner/recent learning-path reads, ordered module/lesson reads, runnable sync jobs, provider identity, and leaderboard lookups. Keep query shape and index changes together. To set up a linked **development** project, configure the Supabase CLI and run `supabase db push`; verify migration status before applying anything to production. Never reset an existing production database for local testing.
 
-See [architecture](architecture.md) for the relationship diagram and [Chakra](chakra.md) for award integrity.
+See [system architecture](SYSTEM_ARCHITECTURE.md) for the data model.

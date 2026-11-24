@@ -19,7 +19,7 @@ Coding progress is fragmented across providers, practice often lacks a sequence,
 | Leaderboards | Individual, society, and college scopes with metric-specific database rankings. |
 | Interview preparation | Company, role, technical, SQL, patterns, notes, resumes, and progress libraries. Paid access is planned, not enforced yet. |
 
-See [integration coverage](docs/integrations.md) and [reward rules](docs/chakra.md) for precise limitations.
+See [docs/PRD.md](docs/PRD.md).
 
 ## Technology and architecture
 
@@ -42,7 +42,7 @@ flowchart LR
   API --> Gemini[Gemini API]
 ```
 
-Provider sync and Symm AI jobs are stored in PostgreSQL and executed from Next.js requests or a Vercel cron invocation. Redis, a dedicated worker service, and a second authentication system are **not deployed**. See [architecture](docs/architecture.md).
+Provider sync and Symm AI jobs are stored in PostgreSQL and executed from Next.js requests or a Vercel cron invocation. Redis, a dedicated worker service, and a second authentication system are **not deployed**. See [docs/PRD.md](docs/PRD.md).
 
 ## Repository map
 
@@ -101,9 +101,9 @@ The server also accepts `NEXT_PUBLIC_SUPABASE_*` and historical `VITE_SUPABASE_*
 
 Supabase migrations define profiles, colleges, societies, provider sync and submission records, problems, learning paths, and the reward ledger. Row-level security protects private records; server handlers validate the current user and ownership before privileged access. Google OAuth uses Supabase PKCE; email/password, confirmation, recovery, and sign-out are implemented. Session cookies are refreshed by `src/proxy.ts`. See [database](docs/database.md), [authentication](docs/authentication.md), and [API](docs/api.md).
 
-Codeforces provides public submission and contest history. LeetCode provides public profile aggregates but no individual accepted-submission evidence suitable for current rewards. Other connected providers focus on ownership and public metadata. See [integrations](docs/integrations.md).
+Codeforces provides public submission and contest history. LeetCode provides public profile aggregates but no individual accepted-submission evidence suitable for current rewards. Other connected providers focus on ownership and public metadata. See [docs/PRD.md](docs/PRD.md).
 
-Symm AI plans the roadmap first, persists lesson outlines, and generates details or language variants on demand. Its database jobs can be recovered by request execution or the cron path. Reading a lesson does not itself award coins. See [Symm AI](docs/symm-ai.md) and [Chakra](docs/chakra.md).
+Symm AI plans the roadmap first, persists lesson outlines, and generates details or language variants on demand. Its database jobs can be recovered by request execution or the cron path. Reading a lesson does not itself award coins. See [docs/PRD.md](docs/PRD.md).
 
 ## Commands
 

@@ -6,4 +6,4 @@ Protected API handlers obtain the current user from Supabase rather than trustin
 
 Google OAuth configuration lives in the Supabase project, not a separate Google-auth server. The application callback is `/api/auth/callback`; set allowed redirect URLs for each local and deployed origin. `APP_ORIGIN` provides the canonical server origin. Public profiles and leaderboards intentionally expose selected public data, while learning paths and tutor conversations are owner-scoped.
 
-For the complete request sequence see [architecture](architecture.md); for endpoint details see [API](api.md).
+For the complete request sequence see [system architecture](SYSTEM_ARCHITECTURE.md); for endpoint details see [API](api.md).
