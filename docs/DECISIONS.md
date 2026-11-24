@@ -1,0 +1,13 @@
+# Decisions
+
+Decisions made from 24 Nov 2026 onward. Earlier decisions are recorded in [PRD.md §4](./PRD.md#4-decisions-log). Newest at the bottom.
+
+| Date | Decision | Reason |
+| --- | --- | --- |
+| 2026-11-24 | **One Judge0 submission per Run/Submit.** A hidden harness runs all cases in one process, times each case itself and prints one flushed JSON line per case, and stops cleanly when the overall time budget runs out. Cases left over are reported as `not_run`, not lost. Overall limit = per-case limit × case count, capped per problem (`max_total_ms`) and by the Judge0 plan's max wall time. Expected outputs stay in the worker. | Judge0 on RapidAPI bills and rate-limits per submission. One submission per test case would cost 12+ calls per Submit. |
+| 2026-11-24 | **`supabase/` stays at the repo root**, and `supabase/migrations/` stays the source of truth. The monorepo uses **npm workspaces**, not pnpm. `packages/db` holds generated types and query helpers only. | The Supabase CLI and production's migration ledger (51 applied migrations) expect `supabase/migrations/`. npm keeps the existing lockfile and tooling. |
+| 2026-11-24 | **Submissions are private and leak-safe.** For hidden cases the worker writes only case number, verdict and runtime, never input or output. An owner-only `SELECT` RLS policy (`user_id = auth.uid()`) on `submissions` is what makes Realtime subscriptions safe. | Realtime pushes whatever row the subscriber can read. Without these rules, hidden tests or other users' code could reach the browser. |
+| 2026-11-24 | **Code font is Geist Mono everywhere**, including code blocks (DESIGN.md §5). | §2.2 and §10 limit families to Instrument Serif, Geist and Geist Mono. §5's JetBrains Mono contradicted that. |
+| 2026-11-24 | **ESLint lint script and CI arrive in milestone 1.** CI runs typecheck, lint, Vitest, build and `npx impeccable detect`. The detector covers new UI paths until the legacy UI is removed. | The repo had no lint script or CI. Quality gates need to exist before the new UI grows. |
+| 2026-11-24 | **Launch content: playable problems are Algogym originals only.** LeetCode/GFG problems appear as metadata (source badge, company tags, "View original", "Similar Algogym problem" when linked) on the Companies and Problems pages. Adapted statements come after launch, highest company frequency first. | Lowest takedown risk at launch, and quality over volume. Company metadata still gives users the "what does X ask" value. |
+| 2026-11-24 | **`docs/SYSTEM_ARCHITECTURE.md` is the architecture doc.** No separate `ARCHITECTURE.md`. | Avoids two competing architecture files. |
