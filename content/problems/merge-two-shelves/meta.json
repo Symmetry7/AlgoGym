@@ -1,0 +1,43 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "merge-two-shelves",
+  "title": "Merge Two Shelves",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "two-pointers"
+  ],
+  "patterns": [
+    "two-pointers"
+  ],
+  "similar_to": [
+    "leetcode:88"
+  ],
+  "signature": {
+    "function": "mergeSorted",
+    "params": [
+      {
+        "name": "left",
+        "type": "int[]"
+      },
+      {
+        "name": "right",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

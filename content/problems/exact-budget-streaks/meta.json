@@ -1,0 +1,44 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "exact-budget-streaks",
+  "title": "Exact Budget Streaks",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "hashing",
+    "arrays-and-strings"
+  ],
+  "patterns": [
+    "prefix-sums"
+  ],
+  "similar_to": [
+    "leetcode:560"
+  ],
+  "signature": {
+    "function": "countTargetStretches",
+    "params": [
+      {
+        "name": "changes",
+        "type": "int[]"
+      },
+      {
+        "name": "target",
+        "type": "int"
+      }
+    ],
+    "returns": "long"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

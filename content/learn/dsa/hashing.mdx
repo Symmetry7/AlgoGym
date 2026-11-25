@@ -1,0 +1,145 @@
+---
+track: dsa
+layer: 1
+topic: hashing
+title: Hashing
+summary: 'Trade memory for speed: a hash map answers "have I seen this, and how often?" in O(1), turning many O(n²) searches into one pass.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - badge-collisions
+  - first-one-time-visitor
+  - anagram-groups
+  - matching-receipts
+  - exact-budget-streaks
+quiz:
+  - question: 'Scanning left to right, each new value v must pair with earlier values equal to target − v. What should the map store?'
+    options: ["Each value's index in the sorted array", "How many times each value has appeared so far", "Only the first value", "The total of all values"]
+    answer: 1
+    why: 'The number of earlier matches is exactly the count of target − v seen so far, and you add v afterwards so it never pairs with itself.'
+  - question: 'Which key groups words that are rearrangements of each other?'
+    options: ["The sum of the letter codes", "The word's length", "The word's letters sorted", "The first letter"]
+    answer: 2
+    why: 'Sorting the letters gives the same string exactly for anagrams. Sums and lengths collide for different words, such as "ad" and "bc".'
+  - question: 'In "count stretches that sum to target", why does the map start with {0: 1}?'
+    options: ["To avoid a division by zero", "It stands for the empty prefix, so stretches that start at index 0 are counted", "Hash maps need one entry to start", "It speeds up the first lookup"]
+    answer: 1
+    why: 'A stretch from index 0 to j totals prefix[j] − 0, so the empty prefix with total 0 must already be in the map.'
+---
+
+## The idea
+
+A hash map stores key → value pairs and finds, inserts or updates a key in **O(1) time on average**. Whenever an algorithm keeps asking "have I seen this before?" or "how many times?", a nested loop that searches the array (O(n²)) can usually become a single pass with a map (O(n)).
+
+## Intuition
+
+<Figure src="/learn/dsa/hashing/buckets.webp" alt="Words flowing into labelled buckets; each bucket's label is a key and the number on it is how many words landed there." />
+
+A cloakroom gives you a numbered token. To find your coat, the attendant goes straight to the hook with that number instead of checking every coat. Hashing turns a key into a hook number in the same way, so a lookup doesn't depend on how many items are stored.
+
+## Step through it
+
+{/* Counting word frequencies with a map. */}
+
+<StepThrough
+  array={["tea", "jam", "tea", "bun", "tea", "jam"]}
+  steps={[
+    { left: 0, right: 0, note: "tea → count 1." },
+    { left: 1, right: 1, note: "jam → count 1." },
+    { left: 2, right: 2, note: "tea seen before → count 2." },
+    { left: 3, right: 3, note: "bun → count 1." },
+    { left: 4, right: 4, note: "tea → count 3. Best so far: tea (3)." },
+    { left: 5, right: 5, note: "jam → count 2. Most frequent: tea." },
+  ]}
+/>
+
+## Worked example
+
+Find the **most frequent word** in `["tea", "jam", "tea", "bun", "tea", "jam"]`.
+
+Comparing every word with every other word takes 15 comparisons here and about n²/2 in general. Instead, walk the list once and keep `count[word]`. After the walk the map holds `tea: 3, jam: 2, bun: 1`, and you track the leader as you go: **tea**.
+
+Two decisions make most hashing solutions correct:
+
+1. **Choose the key.** For anagrams, the key is the sorted letters, not the word itself.
+2. **Choose when to update.** When counting pairs, look up the partner *before* adding the current item, so it can't pair with itself.
+
+## Code
+
+<CodeTabs>
+
+```js
+function mostFrequent(words) {
+  const count = new Map();
+  let best = null;
+  for (const w of words) {
+    const c = (count.get(w) ?? 0) + 1;
+    count.set(w, c);
+    if (best === null || c > count.get(best)) best = w;
+  }
+  return best;
+}
+```
+
+```python
+def most_frequent(words: list[str]) -> str:
+    count: dict[str, int] = {}
+    best = None
+    for w in words:
+        count[w] = count.get(w, 0) + 1
+        if best is None or count[w] > count[best]:
+            best = w
+    return best
+```
+
+```cpp
+string mostFrequent(const vector<string>& words) {
+    unordered_map<string, int> count;
+    string best;
+    int bestCount = 0;
+    for (const string& w : words) {
+        int c = ++count[w];
+        if (c > bestCount) {
+            bestCount = c;
+            best = w;
+        }
+    }
+    return best;
+}
+```
+
+```java
+String mostFrequent(String[] words) {
+    HashMap<String, Integer> count = new HashMap<>();
+    String best = null;
+    int bestCount = 0;
+    for (String w : words) {
+        int c = count.merge(w, 1, Integer::sum);
+        if (c > bestCount) {
+            bestCount = c;
+            best = w;
+        }
+    }
+    return best;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n) on average; each map operation is O(1) expected |
+| Space | O(k) for k distinct keys |
+
+## Common mistakes
+
+<Callout>
+
+- **A key that isn't unique.** Summing letter codes makes "ad" and "bc" look the same. Use sorted letters or a 26-letter count.
+- **Pairing an item with itself.** Build the map as you go and look up before inserting, or handle `x == target − x` with `c × (c − 1) / 2`.
+- **Overflowing the count.** Pair counts grow like n²/2: 100,000 equal items give about 5 × 10^9 pairs, which needs a 64-bit integer.
+
+</Callout>

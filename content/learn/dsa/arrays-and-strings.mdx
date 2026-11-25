@@ -1,0 +1,140 @@
+---
+track: dsa
+layer: 1
+topic: arrays-and-strings
+title: Arrays & Strings
+summary: 'Solve most array questions in one pass by carrying the right running state, and answer range questions with prefix sums.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - quiet-hours
+  - shift-rotation
+  - run-compression
+  - range-totals
+quiz:
+  - question: 'You need the longest run of values below a limit. What must you carry while scanning left to right?'
+    options: ["Every run seen so far", "The current run's length and the best length so far", "A sorted copy of the array", "Only the last value"]
+    answer: 1
+    why: 'Each run either continues or resets at the next value, so its length and the best result are all the state you need.'
+  - question: 'With prefix[0] = 0 and prefix[i + 1] = prefix[i] + values[i], what is the total of values[l..r], both ends included?'
+    options: ["prefix[r] − prefix[l]", "prefix[r + 1] − prefix[l]", "prefix[r + 1] − prefix[l + 1]", "prefix[r] − prefix[l − 1]"]
+    answer: 1
+    why: 'prefix[r + 1] holds the first r + 1 values; subtracting prefix[l] removes the first l, leaving indices l through r.'
+  - question: 'Rotating an array of length n right by k positions, which index does the value at index i move to?'
+    options: ["(i − k) mod n", "i + k", "(i + k) mod n", "k mod i"]
+    answer: 2
+    why: 'Each rotation moves a value one place right and wraps the end to the front, so after k rotations it sits at (i + k) mod n.'
+---
+
+{/* Section order is fixed (PRD §7.4). */}
+
+## The idea
+
+An array is a row of values you can reach by index in O(1). Most array questions can be answered in **one pass** if you decide up front what to carry from one index to the next: a running count, a running total, the best answer so far. Questions about many ranges get a second tool, **prefix sums**: precompute running totals once, then answer each range with one subtraction.
+
+## Intuition
+
+<Figure src="/learn/dsa/arrays-and-strings/one-pass.webp" alt="A row of eight cells scanned left to right; a small box under the scan pointer holds two counters, current and best, updated at each cell." />
+
+Think of reading a bank statement line by line. You never re-read earlier lines; you keep the balance in your head and update it. If someone then asks "how much did I spend between the 3rd and the 9th?", you don't add those lines up again: you subtract the balance before the 3rd from the balance after the 9th.
+
+## Step through it
+
+{/* Running "record days": count days hotter than every earlier day. */}
+
+<StepThrough
+  array={[21, 19, 24, 24, 27, 22, 30]}
+  steps={[
+    { left: 0, right: 0, note: "Day 0 is a record by default. hottest = 21, records = 1." },
+    { left: 1, right: 1, note: "19 is not above 21. Nothing changes." },
+    { left: 2, right: 2, note: "24 beats 21: a record. hottest = 24, records = 2." },
+    { left: 3, right: 3, note: "24 only ties the record, which is not 'hotter'." },
+    { left: 4, right: 4, note: "27 beats 24. hottest = 27, records = 3." },
+    { left: 6, right: 6, note: "30 beats 27. Final answer: 4 record days." },
+  ]}
+/>
+
+## Worked example
+
+Count the **record days** in `[21, 19, 24, 24, 27, 22, 30]`: days whose temperature is strictly higher than every earlier day.
+
+Carry one value, `hottest`, the maximum seen so far. Day 0 (21) is a record because nothing came before it. 19 is not above 21. 24 is, so `hottest` becomes 24. The next 24 only ties it. 27 and later 30 each beat the running maximum. That is **4** records, found in a single pass with one extra variable.
+
+The same shape solves *Quiet Hours*: carry the current run and the best run. *Range Totals* needs the other tool: build `prefix` once, then each question is `prefix[r + 1] − prefix[l]`.
+
+## Code
+
+<CodeTabs>
+
+```js
+function recordDays(temps) {
+  let hottest = -Infinity;
+  let records = 0;
+  for (const t of temps) {
+    if (t > hottest) {
+      records++;
+      hottest = t;
+    }
+  }
+  return records;
+}
+```
+
+```python
+def record_days(temps: list[int]) -> int:
+    hottest = float("-inf")
+    records = 0
+    for t in temps:
+        if t > hottest:
+            records += 1
+            hottest = t
+    return records
+```
+
+```cpp
+int recordDays(const vector<int>& temps) {
+    long long hottest = LLONG_MIN;
+    int records = 0;
+    for (int t : temps) {
+        if (t > hottest) {
+            records++;
+            hottest = t;
+        }
+    }
+    return records;
+}
+```
+
+```java
+int recordDays(int[] temps) {
+    long hottest = Long.MIN_VALUE;
+    int records = 0;
+    for (int t : temps) {
+        if (t > hottest) {
+            records++;
+            hottest = t;
+        }
+    }
+    return records;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n) for one pass; O(n + q) for n values and q range questions with prefix sums |
+| Space | O(1) for running state; O(n) for a prefix array |
+
+## Common mistakes
+
+<Callout>
+
+- **Starting the best value at 0.** If every value can be negative, start from the first element (or −∞) instead.
+- **Off by one in prefix sums.** With `prefix[0] = 0`, the range `[l, r]` is `prefix[r + 1] − prefix[l]`, not `prefix[r] − prefix[l]`.
+- **Forgetting the last group.** When you build output while scanning (as in run-length compression), the group still open at the end has to be written after the loop.
+
+</Callout>

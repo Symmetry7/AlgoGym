@@ -1,0 +1,47 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "range-totals",
+  "title": "Range Totals",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "arrays-and-strings"
+  ],
+  "patterns": [
+    "prefix-sums"
+  ],
+  "similar_to": [
+    "leetcode:303"
+  ],
+  "signature": {
+    "function": "rangeTotals",
+    "params": [
+      {
+        "name": "values",
+        "type": "int[]"
+      },
+      {
+        "name": "lefts",
+        "type": "int[]"
+      },
+      {
+        "name": "rights",
+        "type": "int[]"
+      }
+    ],
+    "returns": "long[]"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

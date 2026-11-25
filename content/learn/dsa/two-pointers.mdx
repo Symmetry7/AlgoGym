@@ -1,0 +1,138 @@
+---
+track: dsa
+layer: 2
+topic: two-pointers
+title: Two Pointers
+summary: 'Walk two indices through the data so each step rules out a whole group of candidates, turning O(n²) pair searches into O(n).'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - noisy-palindrome
+  - merge-two-shelves
+  - pair-budget
+  - widest-tank
+quiz:
+  - question: 'In a sorted array, values[lo] + values[hi] is smaller than the target. Which move can''t skip a valid pair?'
+    options: ["Move hi left", "Move lo right", "Move both inwards", "Restart from the ends"]
+    answer: 1
+    why: 'values[lo] is too small even with the largest remaining partner, so no pair using lo can reach the target.'
+  - question: 'Why is the two-pointer pair search O(n)?'
+    options: ["It sorts the array first", "Each step moves one pointer inwards, and they meet after at most n steps", "It uses a hash map", "It stops at the first pair"]
+    answer: 1
+    why: 'The gap between the pointers shrinks by one every step, so the loop runs at most n − 1 times.'
+  - question: 'Merging two sorted lists with one pointer each, what happens when one list runs out?'
+    options: ["Sort what's left", "Stop: the merge is done", "Append the rest of the other list as it is", "Swap the lists"]
+    answer: 2
+    why: 'The remaining values are already sorted and are all at least as large as everything taken so far.'
+---
+
+## The idea
+
+Many questions ask about **pairs**: two values that add up to something, two ends that match, two walls that hold the most water. Checking every pair is O(n²). With **two pointers**, usually one at each end of a sorted array or one in each of two lists, every step lets you discard a candidate for good, so the whole search takes O(n).
+
+## Intuition
+
+<Figure src="/learn/dsa/two-pointers/closing-in.webp" alt="A sorted row of numbers with arrows at both ends moving toward each other; crossed-out cells show values ruled out at each step." />
+
+Two people search a sorted bookshelf for two books whose page counts add up to 500, one starting at the thinnest book and one at the thickest. If the pair is too short, the thin-end reader moves on: that thin book can't reach 500 with anything thicker than the thickest. If it's too long, the thick-end reader moves inwards. Neither of them ever has to go back.
+
+## Step through it
+
+{/* Does the sorted array contain two values that add up to 10? */}
+
+<StepThrough
+  array={[1, 2, 4, 5, 7, 11]}
+  steps={[
+    { left: 0, right: 5, note: "1 + 11 = 12 > 10: 11 is too big for any partner. Move right inwards." },
+    { left: 0, right: 4, note: "1 + 7 = 8 < 10: 1 is too small for any partner. Move left inwards." },
+    { left: 1, right: 4, note: "2 + 7 = 9 < 10: move left." },
+    { left: 2, right: 4, note: "4 + 7 = 11 > 10: move right." },
+    { left: 2, right: 3, note: "4 + 5 = 9 < 10: move left. The pointers meet: no pair sums to 10." },
+  ]}
+/>
+
+## Worked example
+
+Is there a pair in `[1, 2, 4, 5, 7, 11]` that adds up to **10**?
+
+Start with `lo` on 1 and `hi` on 11. Their sum, 12, is too big, and since 1 is the smallest value left, 11 can't be part of any answer. Discard it. Now 1 + 7 = 8 is too small, and 7 is the largest value left, so 1 is out. Continuing (2 + 7 = 9, 4 + 7 = 11, 4 + 5 = 9), the pointers meet without finding 10. The answer is **no**, after 5 steps instead of 15 pair checks.
+
+The same reasoning powers *Pair Budget*, where one comparison counts many pairs at once, and *Widest Tank*, where you always discard the shorter wall.
+
+## Code
+
+<CodeTabs>
+
+```js
+function hasPairWithSum(sortedValues, target) {
+  let lo = 0;
+  let hi = sortedValues.length - 1;
+  while (lo < hi) {
+    const sum = sortedValues[lo] + sortedValues[hi];
+    if (sum === target) return true;
+    if (sum < target) lo++;
+    else hi--;
+  }
+  return false;
+}
+```
+
+```python
+def has_pair_with_sum(sorted_values: list[int], target: int) -> bool:
+    lo, hi = 0, len(sorted_values) - 1
+    while lo < hi:
+        total = sorted_values[lo] + sorted_values[hi]
+        if total == target:
+            return True
+        if total < target:
+            lo += 1
+        else:
+            hi -= 1
+    return False
+```
+
+```cpp
+bool hasPairWithSum(const vector<int>& sortedValues, long long target) {
+    int lo = 0, hi = (int)sortedValues.size() - 1;
+    while (lo < hi) {
+        long long sum = (long long)sortedValues[lo] + sortedValues[hi];
+        if (sum == target) return true;
+        if (sum < target) lo++;
+        else hi--;
+    }
+    return false;
+}
+```
+
+```java
+boolean hasPairWithSum(int[] sortedValues, long target) {
+    int lo = 0, hi = sortedValues.length - 1;
+    while (lo < hi) {
+        long sum = (long) sortedValues[lo] + sortedValues[hi];
+        if (sum == target) return true;
+        if (sum < target) lo++;
+        else hi--;
+    }
+    return false;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n): each step moves one pointer, and they meet after at most n − 1 steps |
+| Space | O(1) |
+
+## Common mistakes
+
+<Callout>
+
+- **Using two pointers on unsorted data.** Discarding a value relies on order. Sort first, or use a hash map instead.
+- **Moving the wrong pointer.** Move the side that can't be part of any better answer: the smaller sum's low end, or the shorter wall.
+- **Overflow in the sum.** Two values near 2 × 10^9 overflow a 32-bit integer; add them in 64 bits.
+
+</Callout>

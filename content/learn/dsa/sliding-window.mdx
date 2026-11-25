@@ -1,0 +1,141 @@
+---
+track: dsa
+layer: 2
+topic: sliding-window
+title: Sliding Window
+summary: 'Keep a window over the array and move its edges instead of re-scanning, for fixed-size and variable-size contiguous ranges.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - best-window
+  - playlist-without-repeats
+  - shortest-funding-window
+quiz:
+  - question: 'A fixed-size window of k elements moves one step right. How many elements change?'
+    options: ["One leaves and one enters", "All k elements", "None", "k − 1 elements"]
+    answer: 0
+    why: 'Only the element that falls off the left edge and the one that joins on the right are different.'
+  - question: 'For "longest stretch with total at most budget" (all values non-negative), when does the left edge move?'
+    options: ["Every step", "While the window's total is over the budget", "Only when the right edge reaches the end", "Never"]
+    answer: 1
+    why: 'Shrink just enough to make the window valid again, then keep growing from the right.'
+  - question: 'Why does a variable sliding window fail when values can be negative?'
+    options: ["Negative numbers can't be added", "Shrinking the window may raise its total, so the 'move left only while invalid' rule breaks", "It becomes O(n log n)", "It needs a sorted array"]
+    answer: 1
+    why: 'The window relies on totals rising as it grows and falling as it shrinks. Negative values break that, so use prefix sums with a hash map instead.'
+---
+
+## The idea
+
+Questions about **contiguous** stretches (the best k consecutive days, the longest run without repeats, the shortest stretch reaching a goal) don't need every subarray. Keep one **window** `[left, right]` and maintain its total, counts or set as the edges move. Each element enters once and leaves once, so the whole scan is O(n).
+
+There are two shapes:
+
+- **Fixed size:** the window always has k elements; each step adds one on the right and removes one on the left.
+- **Variable size:** grow the right edge; shrink the left edge only while the window breaks the condition (too big a total, a repeated item).
+
+## Intuition
+
+<Figure src="/learn/dsa/sliding-window/window.webp" alt="An array with a highlighted window of three cells; the left edge moves right as the right edge grows." />
+
+A train window shows a fixed stretch of the landscape. As the train moves, one tree disappears behind you and one appears ahead; you never look at the whole landscape again. A variable window is like an accordion: stretch it while the music allows, squeeze it from the left when it gets too loud.
+
+## Step through it
+
+{/* Longest stretch with total ≤ 8 (all values non-negative). */}
+
+<StepThrough
+  array={[2, 1, 5, 1, 3, 2]}
+  steps={[
+    { left: 0, right: 1, note: "2 + 1 = 3 ≤ 8. Window length 2." },
+    { left: 0, right: 2, note: "Add 5: total 8 ≤ 8. Length 3, the best so far." },
+    { left: 0, right: 3, note: "Add 1: total 9 > 8. The window is invalid." },
+    { left: 1, right: 3, note: "Drop 2 from the left: total 7. Valid again, length 3." },
+    { left: 3, right: 4, note: "Add 3 (total 10), drop 1 (total 9), still over budget; drop 5: total 4." },
+    { left: 3, right: 5, note: "Add 2: total 6, length 3. The best stays 3." },
+  ]}
+/>
+
+## Worked example
+
+Find the **longest stretch with a total of at most 8** in `[2, 1, 5, 1, 3, 2]`.
+
+Grow the right edge: 2, then 3, then 8, so the window `[2, 1, 5]` has length 3. Adding the next 1 makes 9, too much, so drop the 2 on the left (total 7). Adding 3 gives 10; drop the 1 (9), still too much; drop the 5 (4). Adding the final 2 gives 6 with `[1, 3, 2]`. The best length is **3**, and every element entered and left the window at most once.
+
+*Best Window* is the fixed-size version. *Playlist Without Repeats* is variable-size with a set of the window's songs, and *Shortest Funding Window* flips the goal: record the length while the window is valid, then shrink.
+
+## Code
+
+<CodeTabs>
+
+```js
+function longestWithin(values, budget) {
+  let left = 0;
+  let total = 0;
+  let best = 0;
+  for (let right = 0; right < values.length; right++) {
+    total += values[right];
+    while (total > budget) total -= values[left++];
+    best = Math.max(best, right - left + 1);
+  }
+  return best;
+}
+```
+
+```python
+def longest_within(values: list[int], budget: int) -> int:
+    left = total = best = 0
+    for right, v in enumerate(values):
+        total += v
+        while total > budget:
+            total -= values[left]
+            left += 1
+        best = max(best, right - left + 1)
+    return best
+```
+
+```cpp
+int longestWithin(const vector<int>& values, long long budget) {
+    int left = 0, best = 0;
+    long long total = 0;
+    for (int right = 0; right < (int)values.size(); right++) {
+        total += values[right];
+        while (total > budget) total -= values[left++];
+        best = max(best, right - left + 1);
+    }
+    return best;
+}
+```
+
+```java
+int longestWithin(int[] values, long budget) {
+    int left = 0, best = 0;
+    long total = 0;
+    for (int right = 0; right < values.length; right++) {
+        total += values[right];
+        while (total > budget) total -= values[left++];
+        best = Math.max(best, right - left + 1);
+    }
+    return best;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n): the left and right edges each move at most n times |
+| Space | O(1) for totals; O(k) when the window keeps a set or counts |
+
+## Common mistakes
+
+<Callout>
+
+- **`if` instead of `while` when shrinking.** One step left may not be enough to make the window valid again.
+- **Moving the left edge backwards.** With last-seen positions, use `left = max(left, last[x] + 1)` so an old repeat doesn't reopen the window.
+- **Negative values.** A variable window assumes totals only grow as it widens. With refunds or negative readings, use prefix sums and a hash map instead.
+
+</Callout>
