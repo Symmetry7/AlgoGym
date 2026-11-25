@@ -38,7 +38,7 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 **Files:**
 - `src/styles/tokens.css`: DESIGN.md §2 tokens as CSS variables.
 - `tailwind.config.ts`: map the tokens to Tailwind theme colours, radius and spacing.
-- `src/app/layout.tsx`: load Instrument Serif, Geist and Geist Mono through `next/font/google`.
+- `src/app/layout.tsx`: load Instrument Serif, Hanken Grotesk and Geist Mono through `next/font/google`.
 - `src/components/shell/`: `MarketingNav`, `AppShell` (top nav: Roadmap, Problems, Companies, Interview, Arena *Soon*, Pricing), `Footer`, plus button, card and segmented-tab primitives (DESIGN.md §5).
 - `eslint.config.mjs`: flat config with `eslint-config-next`. Next 16 has no `next lint`, so the script runs `eslint .`.
 - `package.json` scripts: `lint`.

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -18,7 +19,35 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["var(--font-instrument-serif)", "serif"],
+        ui: ["var(--font-ui)", "sans-serif"],
+        "geist-mono": ["var(--font-geist-mono)", "monospace"],
+      },
+      transitionTimingFunction: { ag: "var(--ag-ease)" },
+      transitionDuration: { "ag-hover": "var(--ag-dur-hover)", "ag-panel": "var(--ag-dur-panel)", "ag-reveal": "var(--ag-dur-reveal)" },
       colors: {
+        // Algogym tokens (src/styles/tokens.css); legacy shadcn colours below until M2.
+        ag: {
+          bg: "var(--ag-bg)",
+          "bg-app": "var(--ag-bg-app)",
+          "surface-1": "var(--ag-surface-1)",
+          "surface-2": "var(--ag-surface-2)",
+          "surface-3": "var(--ag-surface-3)",
+          border: "var(--ag-border)",
+          "border-strong": "var(--ag-border-strong)",
+          text: "var(--ag-text)",
+          "text-muted": "var(--ag-text-muted)",
+          "text-faint": "var(--ag-text-faint)",
+          accent: "var(--ag-accent)",
+          "accent-hover": "var(--ag-accent-hover)",
+          "accent-soft": "var(--ag-accent-soft)",
+          "on-accent": "var(--ag-on-accent)",
+          easy: "var(--ag-easy)",
+          medium: "var(--ag-medium)",
+          hard: "var(--ag-hard)",
+          pro: "var(--ag-pro)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -113,6 +142,8 @@ export default {
         },
       },
       borderRadius: {
+        "ag-control": "var(--ag-radius-control)",
+        "ag-card": "var(--ag-radius-card)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
@@ -157,5 +188,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

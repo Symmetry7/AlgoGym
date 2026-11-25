@@ -15,6 +15,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     path === "/sign-in" ||
     path === "/privacy" ||
     path === "/pricing" ||
+    path.startsWith("/_design") ||
     path.startsWith("/problems") ||
     path.startsWith("/interview-preparations") ||
     path.startsWith("/leaderboards") ||
