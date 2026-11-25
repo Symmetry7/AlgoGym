@@ -3,34 +3,22 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Activity,
-  BookOpen,
-  CalendarDays,
   ChevronDown,
   Code2,
   Compass,
   Crown,
-  FileText,
-  Flame,
   GraduationCap,
-  LayoutDashboard,
   LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  RefreshCw,
   Settings,
-  Share2,
   Sparkles,
-  Trophy,
-  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccount } from "@/hooks/use-account";
 import { useBilling } from "@/hooks/use-billing";
-import { useTracker } from "@/hooks/use-tracker";
-import { activityStreaks } from "@/lib/activity-streaks";
 import {
   Sheet,
   SheetContent,
@@ -47,30 +35,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { AlgoGymLogo } from "@/components/brand/AlgoGymLogo";
-import { CoinMark } from "@/components/brand/ChakraMark";
-import { SymmMark } from "@/components/brand/SymmMark";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
-const primary = [
-  ["/dashboard", "Dashboard", LayoutDashboard],
-  ["/problems", "Problems", Compass],
-  ["/upsolve", "Upsolve", RefreshCw],
-  ["/workspace", "My Workspace", BookOpen],
-  ["/notes", "My Notes", FileText],
-  ["/statistics", "Statistics", Activity],
-  ["/contests", "Contests", CalendarDays],
-] as const;
-const learning = [
-  ["/training/symm", "Symm AI", BookOpen],
-  ["/training", "Training Gym", GraduationCap],
-  ["/interview-preparations", "Interview Preparations", GraduationCap],
-  ["/resources", "Resources", FileText],
-] as const;
-const community = [
-  ["/leaderboards", "Leaderboards", Trophy],
-  ["/societies", "Communities", Users],
-] as const;
-const compactBalance = (value: number | undefined) => value === undefined ? "—" : Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+// Legacy layout, kept for the pages that survive M2 until the new app shell replaces them.
+const primary = [["/problems", "Problems", Compass]] as const;
+const learning = [["/interview-preparations", "Interview Preparations", GraduationCap]] as const;
 const headerMetric = "inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-1 rounded-lg border border-border bg-card px-1.5 text-[11px] font-semibold tabular-nums text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 sm:rounded-full sm:px-2.5 sm:text-xs";
 export function Layout({
   children,
@@ -84,8 +53,6 @@ export function Layout({
   const { user, signOut } = useAuth();
   const account = useAccount();
   const billing = useBilling();
-  const streakActivity = useTracker(31, "all", false);
-  const currentStreak = activityStreaks(streakActivity.data?.activity ?? []).current;
   const [compact, setCompact] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -127,12 +94,7 @@ export function Layout({
       </p>
       <div className="space-y-1">
         {items.map(([href, label, Icon]) => {
-          const active =
-            href === "/workspace"
-              ? pathname === "/workspace" || pathname === "/sheets"
-              : href === "/training"
-                ? pathname === "/training"
-              : pathname === href || pathname.startsWith(`${href}/`);
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
@@ -143,13 +105,12 @@ export function Layout({
               className={cn(
                 "flex h-10 items-center gap-3 rounded-md px-3 text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active
-                  ? href === "/training/symm" ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-200" : "bg-foreground text-background"
+                  ? "bg-foreground text-background"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                href === "/training/symm" && !active && "font-medium text-foreground",
                 small && "justify-center px-0",
               )}
             >
-              {href === "/training/symm" ? <SymmMark className="size-[19px] rounded object-contain" /> : <Icon size={17} strokeWidth={1.7} />}
+              <Icon size={17} strokeWidth={1.7} />
               <span className={small ? "sr-only" : ""}>{label}</span>
             </Link>
           );
@@ -160,7 +121,7 @@ export function Layout({
   const sidebar = (small: boolean) => (
     <>
       <Link
-        href={user ? "/dashboard" : "/"}
+        href={user ? "/problems" : "/"}
         aria-label="AlgoGym home"
         className="flex h-[68px] shrink-0 items-center justify-center border-b px-4"
       >
@@ -172,15 +133,7 @@ export function Layout({
       >
         {group("Workspace", primary, small)}
         {group("Learning", learning, small)}
-        {group("Community", community, small)}
-        {group(
-          "Account",
-          [
-            ["/profile", "Coding portfolio", Code2],
-            ["/settings", "Settings", Settings],
-          ],
-          small,
-        )}
+        {group("Account", [["/settings", "Settings", Settings]], small)}
       </nav>
       <div className="border-t p-3">
         <div className="mb-2 flex items-center justify-between rounded-md px-3 py-1 text-xs text-muted-foreground lg:hidden"><span>Appearance</span><ThemeToggle /></div>
@@ -261,22 +214,13 @@ export function Layout({
               )}
             </button>
             <p className="hidden truncate text-xs text-muted-foreground sm:block">
-              {[...primary, ...learning, ...community].find(
-                ([href]) => href === pathname,
-              )?.[1] ??
-                (pathname === "/profile"
-                  ? "Coding portfolio"
-                  : pathname === "/settings"
-                    ? "Settings"
-                    : "AlgoGym")}
+              {[...primary, ...learning].find(([href]) => href === pathname)?.[1] ??
+                (pathname === "/settings" ? "Settings" : "AlgoGym")}
             </p>
           </div>
           <div className="flex min-w-0 items-center gap-1 sm:gap-3">
-            {user&&<div className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label="Account balances">
-              <Link href="/statistics" className={cn(headerMetric,"sm:border-orange-500/25 sm:bg-orange-500/10 sm:text-orange-700 dark:sm:text-orange-200")} aria-label={`Current verified practice streak: ${streakActivity.data ? currentStreak : "unknown"} days`} title="Current verified practice streak"><Flame size={17} strokeWidth={2} className="shrink-0 text-orange-500" /><span>{streakActivity.data ? currentStreak : "—"}</span><span className="hidden md:inline">day streak</span></Link>
+            {user&&<div className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label="Plan">
               {billing.data?.tier!=="free"&&billing.data?.tier&&<Link href="/pricing" className={cn(headerMetric,"px-1.5 text-[11px] font-bold uppercase tracking-wide",billing.data.tier==="premium"?"sm:border-amber-500/40 sm:bg-amber-500/15 sm:text-amber-700 dark:sm:text-amber-200":"sm:border-violet-500/40 sm:bg-violet-500/15 sm:text-violet-700 dark:sm:text-violet-200")} aria-label={`${billing.data.tier} plan`}>{billing.data.tier==="premium"?<Crown size={14} className="text-amber-500"/>:<Sparkles size={14} className="text-violet-500"/>}<span className="hidden sm:inline">{billing.data.tier}</span></Link>}
-              <Link href="/statistics" className={cn(headerMetric,"sm:border-amber-500/25 sm:bg-amber-500/10 sm:text-amber-700 dark:sm:text-amber-200")} aria-label={`${billing.data?.coins ?? "Unknown"} gold coins`} title="Gold coins earned from verified solves"><CoinMark className="size-[19px] shrink-0 object-contain" /><span className="sm:hidden">{compactBalance(billing.data?.coins)}</span><span className="hidden sm:inline">{billing.data?.coins??"—"}</span></Link>
-              <Link href="/training/symm" className={cn(headerMetric,"sm:border-violet-500/25 sm:bg-violet-500/10 sm:text-violet-700 dark:sm:text-violet-200")} aria-label={`${billing.data?.credits?.available ?? "Unknown"} AI learning path credits`} title="AI learning path credits"><Sparkles size={17} strokeWidth={1.8} className="shrink-0 text-violet-500" /><span className="sm:hidden">{compactBalance(billing.data?.credits?.available)}</span><span className="hidden sm:inline">{billing.data?.credits?.available??"—"}</span></Link>
             </div>}
             <div className="hidden sm:block"><ThemeToggle /></div>
             {onOpenHandleModal && (
@@ -305,12 +249,7 @@ export function Layout({
                     {user.email}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {[
-                    ["/profile", "Profile", Code2],
-                    ["/settings", "Edit profile", Settings],
-                    ["/profile/card", "Profile card", Share2],
-                    ["/workspace?tab=sheets", "My sheets", BookOpen],
-                  ].map(([href, label, Icon]) => {
+                  {[["/settings", "Settings", Settings]].map(([href, label, Icon]) => {
                     const Mark = Icon as typeof Code2;
                     return (
                       <DropdownMenuItem asChild key={String(href)}>

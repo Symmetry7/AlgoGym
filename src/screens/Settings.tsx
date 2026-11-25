@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, LoaderCircle } from "lucide-react";
+import { Check, LoaderCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,18 +87,6 @@ export default function Settings() {
       setSaving(false);
     }
   };
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/u/${query.data?.profile.username}`,
-      );
-      setMessage("Public profile link copied.");
-    } catch {
-      setError(
-        "The clipboard is unavailable. You can copy the profile link below.",
-      );
-    }
-  };
   return (
     <Layout>
       <div className="mx-auto max-w-3xl space-y-7">
@@ -111,7 +98,7 @@ export default function Settings() {
             Edit Profile
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Keep your public coding portfolio accurate.
+            Your name, contact details and links.
           </p>
         </header>
         {query.error && (
@@ -187,8 +174,8 @@ export default function Settings() {
                     className="mt-2 text-muted-foreground"
                   />
                   <span className="mt-2 block text-[11px] leading-5 text-muted-foreground">
-                    This is your authentication identity. Contact details in
-                    your portfolio never change this email.
+                    This is your sign-in identity. Editing your profile never
+                    changes this email.
                   </span>
                 </label>
                 <label className="block text-xs">
@@ -224,12 +211,6 @@ export default function Settings() {
                       ))}
                   </select>
                 </label>
-                <Link
-                  href="/onboarding?step=1"
-                  className="inline-block text-xs text-primary"
-                >
-                  Update your college and academic year →
-                </Link>
               </section>
               <section className="space-y-5 rounded-lg border bg-card p-5 sm:p-6">
                 <h2 className="text-sm font-medium">Portfolio links</h2>
@@ -267,31 +248,6 @@ export default function Settings() {
                   A GitHub link is a portfolio link, not OAuth ownership
                   verification or a connected analytics integration.
                 </p>
-              </section>
-              <section className="space-y-4 rounded-lg border bg-card p-5 sm:p-6">
-                <h2 className="text-sm font-medium">Public portfolio link</h2>
-                <p className="text-xs leading-6 text-muted-foreground">
-                  Your coding profile is public. Your email, saved questions, notes, and sheets stay private.
-                </p>
-                {query.data?.profile.username && (
-                    <p className="flex flex-wrap items-center gap-2 text-xs">
-                      <Link
-                        href={`/u/${query.data.profile.username}`}
-                        className="text-primary"
-                      >
-                        /u/{query.data.profile.username}
-                      </Link>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => void copy()}
-                      >
-                        <Copy size={12} />
-                        Copy link
-                      </Button>
-                    </p>
-                  )}
               </section>
               <Button type="submit" disabled={saving}>
                 {saving ? (

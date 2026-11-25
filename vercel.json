@@ -2,6 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "outputDirectory": null,
-  "crons": [{ "path": "/api/jobs/sync", "schedule": "0 0 * * *" }]
+  "outputDirectory": null
 }

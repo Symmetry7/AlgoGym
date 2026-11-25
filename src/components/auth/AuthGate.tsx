@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, type ReactNode } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +9,6 @@ import { SignInDialog } from "./SignInDialog";
 export function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading, sessionError, refreshSession } = useAuth();
   const path = usePathname();
-  const router = useRouter();
   const publicPage =
     path === "/" ||
     path === "/sign-in" ||
@@ -17,26 +16,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
     path === "/pricing" ||
     path.startsWith("/_design") ||
     path.startsWith("/problems") ||
-    path.startsWith("/interview-preparations") ||
-    path.startsWith("/leaderboards") ||
-    (path.startsWith("/societies") &&
-      !path.endsWith("/manage") &&
-      path !== "/societies/register") ||
-    path.startsWith("/u/");
-  const setupPage =
-    path === "/onboarding" ||
-    path === "/account/reset-password" ||
-    path === "/societies/register";
+    path.startsWith("/interview-preparations");
+  const setupPage = path === "/account/reset-password";
   const account = useAccount(!publicPage && !setupPage);
-  useEffect(() => {
-    if (
-      !publicPage &&
-      !setupPage &&
-      account.data &&
-      !account.data.profile.onboarding_completed_at
-    )
-      router.replace("/onboarding");
-  }, [publicPage, setupPage, account.data, router]);
   if (publicPage) return <>{children}</>;
   if (loading) return <Loading label="Restoring your session…" />;
   if (sessionError)
@@ -52,8 +34,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
         retry={() => void account.refetch()}
       />
     );
-  if (!account.data || !account.data.profile.onboarding_completed_at)
-    return <Loading label="Loading your profile…" />;
+  if (!account.data) return <Loading label="Loading your profile…" />;
   return <>{children}</>;
 }
 function Loading({ label }: { label: string }) {

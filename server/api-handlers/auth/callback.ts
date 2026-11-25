@@ -20,7 +20,7 @@ export default async function handler(
   const type = params.get("type");
   const next = safeNextPath(
     params.get("next"),
-    type === "recovery" ? "/account/reset-password" : "/dashboard",
+    type === "recovery" ? "/account/reset-password" : "/problems",
   );
   response.setHeader("Cache-Control", "private, no-store");
   const emailTypes = ["email", "signup", "recovery", "email_change"] as const;

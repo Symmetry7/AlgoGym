@@ -6,7 +6,7 @@ describe("session refresh routing", () => {
   it.each(["/_next/hmr", "/_next/static/chunk.js", "/_next/image?url=x", "/api/auth/session", "/brand/logo.webp"])("leaves infrastructure request %s alone", (url) => {
     expect(unstable_doesMiddlewareMatch({ config, nextConfig: {}, url })).toBe(false);
   });
-  it.each(["/pricing", "/training/symm", "/dashboard", "/statistics"])("refreshes sessions for %s", (url) => {
+  it.each(["/pricing", "/problems", "/settings", "/interview-preparations"])("refreshes sessions for %s", (url) => {
     expect(unstable_doesMiddlewareMatch({ config, nextConfig: {}, url })).toBe(true);
   });
 });
