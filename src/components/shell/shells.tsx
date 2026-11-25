@@ -4,20 +4,19 @@ import { cn } from "@/lib/utils";
 import { MobileMenu, NavLinks, ScrollHeader, type NavItem } from "./nav";
 import { ButtonLink, focusRing, Logo } from "./ui";
 
+// Only routes that exist: a link to a 404 is broken UI, and Next keeps its prefetch open forever.
+// Added back by their milestones (docs/BUILD_GUIDE.md): Roadmap (M13), Companies (M12), Arena (M18);
+// Interview moves to /interview in M7.
 export const APP_NAV: NavItem[] = [
-  { href: "/roadmap", label: "Roadmap" },
   { href: "/problems", label: "Problems" },
-  { href: "/companies", label: "Companies" },
-  { href: "/interview", label: "Interview" },
-  { href: "/arena", label: "Arena", soon: true },
+  { href: "/interview-preparations", label: "Interview" },
   { href: "/pricing", label: "Pricing" },
 ];
 
 // shortcut: "Features ▾" menu (DESIGN.md §6.1) arrives with the landing page in M16.
 export const MARKETING_NAV: NavItem[] = [
-  { href: "/companies", label: "Companies" },
+  { href: "/problems", label: "Problems" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/arena", label: "Arena", soon: true },
 ];
 
 const container = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
@@ -91,10 +90,11 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
 }
 
 const FOOTER: { title: string; links: { href: string; label: string }[] }[] = [
-  { title: "Product", links: [{ href: "/problems", label: "Problems" }, { href: "/companies", label: "Companies" }, { href: "/pricing", label: "Pricing" }, { href: "/arena", label: "Arena" }] },
-  { title: "Learn", links: [{ href: "/roadmap", label: "Roadmap" }, { href: "/study-plans", label: "Study plans" }, { href: "/interview", label: "Interview prep" }] },
-  { title: "Company", links: [{ href: "/pricing#rooms", label: "For colleges" }, { href: "/credits", label: "Credits" }] },
-  { title: "Legal", links: [{ href: "/terms", label: "Terms" }, { href: "/privacy", label: "Privacy" }] },
+  // Companies (M12), Arena (M18), Roadmap (M13), Study plans (M15), Credits and Terms (M18) join when built.
+  { title: "Product", links: [{ href: "/problems", label: "Problems" }, { href: "/pricing", label: "Pricing" }] },
+  { title: "Learn", links: [{ href: "/interview-preparations", label: "Interview prep" }] },
+  { title: "Company", links: [{ href: "/pricing", label: "For colleges" }] },
+  { title: "Legal", links: [{ href: "/privacy", label: "Privacy" }] },
 ];
 
 export function Footer() {
