@@ -102,7 +102,7 @@ algogym/
 └─ scripts/           # data/import-companies.mjs (CSV import), seeders, content validators,
                       # build-icons.ts (copies used Devicon/Simple Icons SVGs → public/icons, writes iconMap.ts)
 ```
-`supabase/migrations/` stays where the Supabase CLI and the production migration ledger expect it; moving it would break `supabase db push` against 51 already-applied migrations. npm workspaces (not pnpm) keep the existing `package-lock.json` and tooling.
+`supabase/migrations/` stays where the Supabase CLI and the production migration ledger expect it; moving it would break `supabase db push` against 50 already-applied migrations. npm workspaces (not pnpm) keep the existing `package-lock.json` and tooling.
 
 ## 4. Key flows
 

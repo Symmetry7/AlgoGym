@@ -39,7 +39,8 @@ desktop.ini
 .codex/
 .cursor/
 .gemini/
-.impeccable/
+.impeccable/*
+!.impeccable/config.json
 .taste-skill/
 skills-lock.json
 

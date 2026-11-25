@@ -28,7 +28,7 @@ Related docs: [PRD.md](./PRD.md) · [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTU
 | `--border-strong` | rgba(255,255,255,0.14) | Inputs, focused cards |
 | `--text` | #F5F5F7 | Headings, body |
 | `--text-muted` | #A1A1AA | Secondary text, nav links |
-| `--text-faint` | #71717A | Captions, placeholders |
+| `--text-faint` | #84848D | Captions, placeholders (≥ 4.5:1 on every surface; #71717A failed AA) |
 | `--accent` | #22C55E | Primary buttons, highlights, selected node |
 | `--accent-hover` | #16A34A | Button hover |
 | `--accent-soft` | rgba(34,197,94,0.12) | Badges, glows, selected row tint |
