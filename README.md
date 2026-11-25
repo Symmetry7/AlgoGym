@@ -6,8 +6,6 @@ AlgoGym is a competitive programming workspace for connected coding profiles, st
 
 Coding progress is fragmented across providers, practice often lacks a sequence, and college societies have few shared measures of progress. AlgoGym connects supported public profiles, organizes practice into tracks, shows provider-specific statistics, and offers Symm AI learning paths. Rewards use provider evidence rather than self-reported activity.
 
-[![AlgoGym landing page](docs/images/readme/home.jpg)](docs/images/readme/home.jpg)
-
 ## Features
 
 | Area | Implemented behavior |
@@ -21,59 +19,7 @@ Coding progress is fragmented across providers, practice often lacks a sequence,
 | Leaderboards | Individual, society, and college scopes with metric-specific database rankings. |
 | Interview preparation | Company, role, technical, SQL, patterns, notes, resumes, and progress libraries. Paid access is planned, not enforced yet. |
 
-See [integration coverage](docs/integrations.md) and [reward rules](docs/chakra.md) for precise limitations.
-
-## Product tour
-
-These screenshots show the local development build on 8 November 2026. Signed-in views use an existing account; names, email, and note content are obscured. Counts and available content vary by account and provider sync status. Select an image to open it at full size.
-
-### Learn and practice
-
-| Symm AI | Training Gym |
-| --- | --- |
-| [![Symm AI learning workspace](docs/images/readme/symm-ai.jpg)](docs/images/readme/symm-ai.jpg) | [![Training Gym](docs/images/readme/training.jpg)](docs/images/readme/training.jpg) |
-| [Symm AI](https://algogym.vercel.app/training/symm) turns a learning goal into saved lessons and guided practice. | [Training Gym](https://algogym.vercel.app/training) offers structured practice and session progress. |
-
-| Problem catalog | Upsolve queue |
-| --- | --- |
-| [![Problem catalog with filters](docs/images/readme/problems.jpg)](docs/images/readme/problems.jpg) | [![Upsolve queue](docs/images/readme/upsolve.jpg)](docs/images/readme/upsolve.jpg) |
-| [Explore Problems](https://algogym.vercel.app/problems) filters public catalogs by platform, rating, and topic. | [Upsolve](https://algogym.vercel.app/upsolve) revisits attempted Codeforces problems. |
-
-| Learning resources | Interview preparation |
-| --- | --- |
-| [![Competitive programming resources](docs/images/readme/resources.jpg)](docs/images/readme/resources.jpg) | [![Company-wise interview preparation](docs/images/readme/interview.jpg)](docs/images/readme/interview.jpg) |
-| [Resources](https://algogym.vercel.app/resources) links attributed guides to practice and Symm AI. | [Interview preparation](https://algogym.vercel.app/interview-preparations) organizes company, role, topic, and SQL libraries. |
-
-The public [Symm AI interactive preview](docs/images/readme/symm-preview.jpg) demonstrates the learning flow before sign-in.
-
-### Track and organize
-
-| Dashboard | Workspace |
-| --- | --- |
-| [![Personal dashboard](docs/images/readme/dashboard.jpg)](docs/images/readme/dashboard.jpg) | [![Workspace](docs/images/readme/workspace.jpg)](docs/images/readme/workspace.jpg) |
-| [Dashboard](https://algogym.vercel.app/dashboard) brings practice and connected-profile progress together. | [My Workspace](https://algogym.vercel.app/workspace) holds saved questions and practice sheets. |
-
-| Notes | Statistics |
-| --- | --- |
-| [![Personal notes with content hidden](docs/images/readme/notes.jpg)](docs/images/readme/notes.jpg) | [![Provider statistics](docs/images/readme/statistics.jpg)](docs/images/readme/statistics.jpg) |
-| [My Notes](https://algogym.vercel.app/notes) keeps learning notes with the relevant questions. | [Statistics](https://algogym.vercel.app/statistics) shows solves, ratings, and activity. |
-
-| Coding portfolio | Profile settings |
-| --- | --- |
-| [![Coding portfolio with identity hidden](docs/images/readme/profile.jpg)](docs/images/readme/profile.jpg) | [![Profile settings with identity fields hidden](docs/images/readme/settings.jpg)](docs/images/readme/settings.jpg) |
-| [Coding portfolio](https://algogym.vercel.app/profile) summarizes connected-provider evidence. | [Settings](https://algogym.vercel.app/settings) manages the account's public portfolio. |
-
-### Community and plans
-
-| Communities | Leaderboards |
-| --- | --- |
-| [![College communities](docs/images/readme/communities.jpg)](docs/images/readme/communities.jpg) | [![Leaderboards](docs/images/readme/leaderboards.jpg)](docs/images/readme/leaderboards.jpg) |
-| [Communities](https://algogym.vercel.app/societies) helps programmers find college societies. | [Leaderboards](https://algogym.vercel.app/leaderboards) separate ranking scopes and metrics. |
-
-| Contest calendar | Pricing |
-| --- | --- |
-| [![Contest calendar](docs/images/readme/contests.jpg)](docs/images/readme/contests.jpg) | [![Pricing page](docs/images/readme/pricing.jpg)](docs/images/readme/pricing.jpg) |
-| [Contests](https://algogym.vercel.app/contests) tracks upcoming rounds. | [Pricing](https://algogym.vercel.app/pricing) shows plan information; checkout is not yet live. |
+See [docs/PRD.md](docs/PRD.md).
 
 ## Technology and architecture
 
@@ -85,9 +31,18 @@ The public [Symm AI interactive preview](docs/images/readme/symm-preview.jpg) de
 | AI | Server-side Gemini API | Curriculum, lessons, code variants, tutor |
 | Hosting | Vercel | Next.js deployment and daily sync trigger |
 
-[![AlgoGym system architecture](docs/images/readme/architecture.png)](docs/images/readme/architecture.png)
+```mermaid
+flowchart LR
+  User --> Browser --> Next[Next.js on Vercel]
+  Next --> API[Route handlers and services]
+  API --> DB[(Supabase PostgreSQL)]
+  API --> Auth[Supabase Auth]
+  API --> CF[Codeforces API]
+  API --> LC[LeetCode public GraphQL]
+  API --> Gemini[Gemini API]
+```
 
-Provider sync and Symm AI jobs are stored in PostgreSQL and executed from Next.js requests or a Vercel cron invocation. Redis, a dedicated worker service, and a second authentication system are **not deployed**. See [architecture](docs/architecture.md).
+Provider sync and Symm AI jobs are stored in PostgreSQL and executed from Next.js requests or a Vercel cron invocation. Redis, a dedicated worker service, and a second authentication system are **not deployed**. See [docs/PRD.md](docs/PRD.md).
 
 ## Repository map
 
@@ -103,9 +58,9 @@ server/next-api/       Next.js request adapters
 server/               Provider, AI, and job services
 supabase/migrations/   Ordered PostgreSQL schema history
 supabase/functions/    Profile verification Edge Function
-scripts/               Explicit development and diagnostic tools
-docs/                  Engineering reference
-assets/                Design references used by docs/history/ui-ux.md
+scripts/               qa/ browser+DB checks, data/ imports+migration builders,
+                       ops/ admin+billing setup, sql/ test SQL, lib/ shared helpers
+docs/                  Product, architecture, design and engineering docs
 public/                Runtime assets and licensed fonts
 ```
 
@@ -146,9 +101,9 @@ The server also accepts `NEXT_PUBLIC_SUPABASE_*` and historical `VITE_SUPABASE_*
 
 Supabase migrations define profiles, colleges, societies, provider sync and submission records, problems, learning paths, and the reward ledger. Row-level security protects private records; server handlers validate the current user and ownership before privileged access. Google OAuth uses Supabase PKCE; email/password, confirmation, recovery, and sign-out are implemented. Session cookies are refreshed by `src/proxy.ts`. See [database](docs/database.md), [authentication](docs/authentication.md), and [API](docs/api.md).
 
-Codeforces provides public submission and contest history. LeetCode provides public profile aggregates but no individual accepted-submission evidence suitable for current rewards. Other connected providers focus on ownership and public metadata. See [integrations](docs/integrations.md).
+Codeforces provides public submission and contest history. LeetCode provides public profile aggregates but no individual accepted-submission evidence suitable for current rewards. Other connected providers focus on ownership and public metadata. See [docs/PRD.md](docs/PRD.md).
 
-Symm AI plans the roadmap first, persists lesson outlines, and generates details or language variants on demand. Its database jobs can be recovered by request execution or the cron path. Reading a lesson does not itself award coins. See [Symm AI](docs/symm-ai.md) and [Chakra](docs/chakra.md).
+Symm AI plans the roadmap first, persists lesson outlines, and generates details or language variants on demand. Its database jobs can be recovered by request execution or the cron path. Reading a lesson does not itself award coins. See [docs/PRD.md](docs/PRD.md).
 
 ## Commands
 

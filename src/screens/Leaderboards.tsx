@@ -2,9 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Trophy, X } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { CollegeAutocomplete } from "@/components/auth/CollegeAutocomplete";
 import { useAccount, jsonRequest, type College } from "@/hooks/use-account";
 import { countryCodes, countryLabel } from "@/lib/countries";
@@ -49,6 +50,8 @@ export default function Leaderboards() {
   const [country, setCountry] = useState("IN");
   const [college, setCollege] = useState<College | null>(null);
   const [society, setSociety] = useState("");
+  const [societySearch, setSocietySearch] = useState("");
+  const [submittedSocietySearch, setSubmittedSocietySearch] = useState("");
   const [page, setPage] = useState(0);
   const [preferenceError, setPreferenceError] = useState("");
   const selectedInitialCollege = useRef(false);
@@ -77,6 +80,7 @@ export default function Leaderboards() {
   if (filter === "country") params.set("country", country);
   if (filter === "college" && college) params.set("collegeId", college.id);
   if (filter === "society" && society) params.set("societyId", society);
+  if (scope === "society" && submittedSocietySearch) params.set("search", submittedSocietySearch);
   const ready = !(
     (filter === "college" && !college) ||
     (filter === "society" && !society)
@@ -143,6 +147,7 @@ export default function Leaderboards() {
               key={value}
               onClick={() => {
                 setScope(value);
+                if (value === "society") setFilter("global");
                 setPage(0);
               }}
               aria-current={scope === value ? "page" : undefined}
@@ -167,6 +172,19 @@ export default function Leaderboards() {
             </button>
           ))}
         </div>
+        {scope === "society" && (
+          <form className="flex max-w-xl items-end gap-2" role="search" onSubmit={event => { event.preventDefault(); setSubmittedSocietySearch(societySearch.trim()); setPage(0); }}>
+            <label className="block min-w-0 flex-1 text-sm font-medium">
+              Find a ranked society
+              <span className="relative mt-2 block">
+                <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input value={societySearch} onChange={event => setSocietySearch(event.target.value)} maxLength={80} placeholder="Search by society name" className="h-10 pl-10" />
+              </span>
+            </label>
+            <Button type="submit" variant="outline" className="h-10">Search</Button>
+            {submittedSocietySearch && <Button type="button" size="icon" variant="ghost" aria-label="Clear society search" onClick={() => { setSocietySearch(""); setSubmittedSocietySearch(""); setPage(0); }}><X size={16} /></Button>}
+          </form>
+        )}
         {supportsPeriod && <div className="flex gap-1" aria-label="Time period">{[["week","This week"],["month","This month"],["all","All time"]].map(([value,label])=><button key={value} aria-pressed={period===value} onClick={()=>{setPeriod(value);setPage(0);}} className={`rounded-md border px-3 py-2 text-xs ${period===value?"border-primary/40 bg-primary/10 text-primary":"text-muted-foreground hover:bg-muted"}`}>{label}</button>)}</div>}
         <div className="flex flex-wrap items-start gap-3">
           <label>
@@ -339,7 +357,9 @@ export default function Leaderboards() {
             <section className="overflow-hidden rounded-lg border bg-card">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
                 <h2 className="text-sm font-medium">
-                  {filter === "global"
+                  {submittedSocietySearch && scope === "society"
+                    ? `Societies matching “${submittedSocietySearch}”`
+                    : filter === "global"
                     ? "Global"
                     : filter === "country"
                       ? countryLabel(country)
@@ -418,9 +438,7 @@ export default function Leaderboards() {
                     size={25}
                     className="mx-auto mb-4 text-muted-foreground"
                   />
-                  <p className="text-sm font-medium">
-                    No eligible participants yet.
-                  </p>
+                  <p className="text-sm font-medium">{submittedSocietySearch && scope === "society" ? "No ranked societies match this search." : "No eligible participants yet."}</p>
                   <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-muted-foreground">
                     {data.methodology}
                   </p>

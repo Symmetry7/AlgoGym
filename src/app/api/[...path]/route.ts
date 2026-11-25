@@ -20,6 +20,7 @@ const routes: Record<string, () => Promise<RouteModule>> = {
   colleges: () => import("@/../server/next-api/colleges"),
   contests: () => import("@/../server/next-api/contests"),
   "jobs/sync": () => import("@/../server/next-api/jobs/sync"),
+  interview: () => import("@/../server/next-api/interview"),
   leaderboards: () => import("@/../server/next-api/leaderboards"),
   onboarding: () => import("@/../server/next-api/onboarding"),
   problem: () => import("@/../server/next-api/problem"),

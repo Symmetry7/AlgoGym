@@ -2,15 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowUpRight,
-  Check,
-  MapPin,
-  Plus,
-  Search,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { ArrowUpRight, MapPin, Plus, Users } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,13 +80,13 @@ export default function Societies() {
   };
   return (
     <Layout>
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs text-muted-foreground">
               Find your people
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-3xl font-semibold tracking-tight">
               College Communities
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -108,7 +100,7 @@ export default function Societies() {
             </Link>
           </Button>
         </header>
-        <div className="grid gap-4 rounded-lg border bg-card p-5 md:grid-cols-2">
+        <div className="grid gap-5 rounded-xl border bg-card/70 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <label className="relative">
             <span className="mb-2 block text-[11px] text-muted-foreground">
               Society name
@@ -121,7 +113,6 @@ export default function Societies() {
             />
           </label>
           <div>
-            <p className="mb-2 text-[11px] text-muted-foreground">College</p>
             <CollegeAutocomplete
               value={college}
               onSelect={(value) => {
@@ -167,38 +158,34 @@ export default function Societies() {
           />
         ) : query.data?.societies.length ? (
           <>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
               {query.data.societies.map((society) => {
                 const membership = query.data?.memberships.find(
                   (item) => item.society_id === society.id,
                 );
                 return (
-                  <article
-                    key={society.id}
-                    className="rounded-lg border bg-card p-5"
-                  >
-                    <div className="flex items-start justify-between gap-4">
+                  <article key={society.id} className="flex min-w-0 flex-col rounded-xl border bg-card p-5 transition-colors hover:border-foreground/25 sm:p-6">
+                    <div className="flex items-start gap-4">
+                      <div aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-lg border bg-background text-lg font-semibold text-primary">{society.name.slice(0,1).toUpperCase()}</div>
+                      <div className="min-w-0">
                       <Link
                         href={`/societies/${society.slug}`}
-                        className="text-base font-medium hover:text-primary"
+                        className="inline-flex items-center gap-1 text-base font-semibold tracking-tight hover:text-primary"
                       >
                         {society.name}
-                        <ArrowUpRight size={13} className="ml-1 inline" />
+                        <ArrowUpRight size={14} aria-hidden="true" />
                       </Link>
-                      
+                      <p className="mt-1 flex items-start gap-1.5 text-xs leading-5 text-muted-foreground"><MapPin size={13} className="mt-0.5 shrink-0" aria-hidden="true" />{society.colleges?.name ?? "Independent community"}</p>
+                      </div>
                     </div>
-                    <p className="mt-3 flex items-start gap-2 text-xs leading-6 text-muted-foreground">
-                      <MapPin size={13} className="mt-1 shrink-0" />
-                      {society.colleges?.name ?? "Independent community"}
-                    </p>
-                    <p className="mt-3 line-clamp-2 min-h-10 text-xs leading-5 text-muted-foreground">
+                    <p className="mt-5 line-clamp-2 text-sm leading-6 text-muted-foreground">
                       {society.description ||
                         "A programming community for consistent practice and shared progress."}
                     </p>
-                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <Users size={12} />
-                        {society.summary.members} members
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-5 text-xs">
+                      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                        <Users size={14} aria-hidden="true" />
+                        {society.summary.members} {society.summary.members === 1 ? "member" : "members"}
                       </span>
                       {membership?.status === "active" ? (
                         <span className="text-xs text-emerald-400">
@@ -265,9 +252,6 @@ export default function Societies() {
             </Button>
           </section>
         )}
-        <p className="text-[11px] leading-6 text-muted-foreground">
-          Join an open society, request approval, or use an invitation link.
-        </p>
       </div>
     </Layout>
   );
