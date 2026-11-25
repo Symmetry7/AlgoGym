@@ -1,0 +1,98 @@
+---
+# Copy to content/learn/<track>/<topic>.mdx. Files starting with "_" are never published.
+track: dsa                  # dsa | patterns
+layer: 2                    # roadmap layer number (PRD §7.3)
+topic: sliding-window       # must match the file name and the roadmap topic slug
+title: Sliding Window
+summary: Keep a window over the array and move its edges instead of re-scanning.
+status: example             # example | draft | review | ready
+authors: [algogym]
+reviewers: []               # someone other than the authors, before status: ready
+practice:                   # problem slugs from content/problems, easiest first
+  - quiet-hours
+quiz:                       # exactly 3 questions
+  - question: A fixed-size window of k elements moves one step right. How many elements change?
+    options: ["One leaves and one enters", "All k elements", "None", "k − 1 elements"]
+    answer: 0
+    why: Only the element that falls off the left edge and the one that joins on the right are different.
+  - question: When does a variable-size window shrink?
+    options: ["Every step", "When the window breaks the condition", "Only at the end", "Never"]
+    answer: 1
+    why: Move the left edge only while the window is invalid, then keep growing from the right.
+  - question: Each element enters and leaves the window at most once. What is the total time?
+    options: ["O(n²)", "O(n log n)", "O(n)", "O(k)"]
+    answer: 2
+    why: Both edges only move forward, so together they take at most 2n steps.
+---
+
+{/* Section order is fixed (PRD §7.4). Keep each section short: the lesson is a 10-minute read. */}
+
+## The idea
+
+{/* 2–3 sentences. What problem shape this solves and the one move that makes it fast. */}
+
+Many array problems ask about a contiguous stretch: the longest, the shortest, or one with a given sum. Instead of checking every stretch from scratch, keep one window and slide its edges.
+
+## Intuition
+
+{/* One diagram. Images go in public/learn/<track>/<topic>/, with real alt text. */}
+
+<Figure src="/learn/dsa/sliding-window/window.webp" alt="An array with a highlighted window of three cells; the left edge moves right as the right edge grows." />
+
+## Step through it
+
+{/* Interactive visual. `steps` is the data the component animates; keep it under 12 steps. */}
+
+<StepThrough
+  array={[3, 1, 4, 1, 5, 9, 2, 6]}
+  steps={[
+    { left: 0, right: 0, note: "Start with an empty window at the left." },
+    { left: 0, right: 3, note: "Grow right while the condition holds." },
+    { left: 4, right: 4, note: "5 breaks it: move left past the bad element." },
+  ]}
+/>
+
+## Worked example
+
+{/* One example, solved in prose with the numbers written out. Use a public test of a practice problem. */}
+
+## Code
+
+{/* Same algorithm in all four languages, matching the editorial's names. */}
+
+<CodeTabs>
+
+```js
+// JavaScript
+```
+
+```python
+# Python
+```
+
+```cpp
+// C++
+```
+
+```java
+// Java
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n) |
+| Space | O(1) |
+
+## Common mistakes
+
+<Callout>
+
+- {/* The 2–3 bugs people actually write, each with the fix. */}
+
+</Callout>
+
+{/* The quiz and the "Practice this" list are rendered from the frontmatter. Don't repeat them here. */}

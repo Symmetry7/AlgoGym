@@ -1,0 +1,25 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "quiet-hours",
+  "title": "Quiet Hours",
+  "status": "example",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": ["arrays"],
+  "patterns": [],
+  "similar_to": [],
+  "signature": {
+    "function": "longestQuietRun",
+    "params": [
+      { "name": "levels", "type": "int[]" },
+      { "name": "limit", "type": "int" }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": { "time_ms_per_case": 1000, "max_total_ms": 10000, "memory_mb": 256 },
+  "is_pro": false,
+  "pool": "public",
+  "authors": ["algogym"],
+  "reviewers": []
+}
