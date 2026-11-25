@@ -19,7 +19,7 @@ Algogym runs as **one Next.js app on Vercel**, **Supabase** for Postgres/Auth/Re
 1. **Two deployables, not ten.** Next.js app + engine. No more services until a real bottleneck appears.
 2. **Server decides access.** Pro and Rooms entitlements are checked on the server; RLS backs it up.
 3. **Content is fast and indexable.** Landing, Learn and problem statements are server-rendered and cached.
-4. **Additive data changes.** Production has real users: new tables and columns only; old tables move to a `legacy` schema.
+4. **Additive data changes.** Production has real users and, until launch, the legacy app shares the database: new tables and columns only. Old tables move to a `legacy` schema at the launch cutover (BUILD_GUIDE M20), never before.
 5. **Swappable judge.** Judge0 sits behind one interface so hosted RapidAPI can become self-hosted Judge0 later.
 
 ## 2. Architecture diagram
@@ -283,7 +283,7 @@ Reads for pages happen directly in Server Components (Supabase server client), n
 | --- | --- | --- | --- |
 | Local | `next dev` | `node --watch` + local Redis (Docker) | Supabase local (CLI) |
 | Preview | Vercel preview per PR | Railway PR environment | Supabase branch |
-| Production | Vercel production | Railway production | Supabase production |
+| Production | Vercel production (`release/legacy` until launch, then `main`) | Railway production | Supabase production |
 
 - CI (GitHub Actions): typecheck, lint, Vitest, migration dry-run, content validator (every problem's tests pass against its reference solution in 4 languages), `npx impeccable detect apps/web/src` (UI anti-pattern check, see DESIGN.md §9).
 - Icons: `devicon`, `simple-icons` and `lucide-react` pinned in package.json; no runtime icon CDN.
@@ -295,12 +295,12 @@ Reads for pages happen directly in Server Components (Supabase server client), n
 - Engine metrics: queue depth, job duration, Judge0 error rate; alert if Judge0 errors > 5% for 5 minutes.
 
 ## 11. Migration from the current app
-1. Freeze old features behind flags; ship clean-up on a branch.
-2. Move old tables to the `legacy` schema (no drops); keep `profiles` and auth users.
-3. Strip onboarding redirects from `src/proxy.ts`.
-4. Migrate Interview Prep content into `interview_items`.
-5. Create new tables; run CSV import and seed launch problems.
-6. Turn on new UI; monitor; drop nothing until 30 days after launch, and only with sign-off.
+1. Production keeps serving the legacy app from `release/legacy` (Vercel Production Branch). New work merges to `main`, which deploys previews only.
+2. Remove old features from `main` (M2); strip the onboarding redirect from `AuthGate`.
+3. Create new tables with additive migrations only; the legacy app shares the database (M4).
+4. Migrate Interview Prep content into `interview_items`; run the CSV import and seed launch problems.
+5. Launch cutover (M20): backfill entitlements from legacy subscriptions, repoint the Razorpay webhook, move legacy-only tables to the `legacy` schema (no drops; keep `profiles` and auth users), then switch the Production Branch to `main`.
+6. Monitor; drop nothing until 30 days after launch, and only with sign-off.
 
 ## 12. Cost (to confirm)
 Vercel, Supabase and Railway have paid plans that fit this scale; Judge0 RapidAPI pricing depends on request volume. Check current prices for each before launch and set a monthly budget (open question in the PRD).

@@ -58,9 +58,9 @@ No number in a test may exceed ±2^53, the limit for exact JavaScript numbers. `
 
 Use only the standard library. Reference solutions are the editorial's approach, written clearly; they are what Pro users see.
 
-### Starter code and harness: generated (pending approval)
+### Starter code and harness: generated
 
-The starter stub and the hidden driver for each language are **generated from `meta.json`'s signature** (M5), following the judge contract in [SYSTEM_ARCHITECTURE.md §4.2](./SYSTEM_ARCHITECTURE.md#42-code-harness). A problem that needs something unusual can add `starter/` or `harness/` overrides. This replaces hand-writing 8 files per problem. It's a proposed change to BUILD_GUIDE M5 and needs sign-off.
+The starter stub and the hidden driver for each language are **generated from `meta.json`'s signature** (M5), following the judge contract in [SYSTEM_ARCHITECTURE.md §4.2](./SYSTEM_ARCHITECTURE.md#42-code-harness). A problem that needs something unusual can add `starter/` or `harness/` overrides. This replaces hand-writing 8 files per problem (approved, see DECISIONS.md).
 
 ### Tests checklist
 
