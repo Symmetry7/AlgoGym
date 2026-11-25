@@ -1,0 +1,40 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "anagram-groups",
+  "title": "Anagram Groups",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "hashing",
+    "arrays-and-strings"
+  ],
+  "patterns": [
+    "frequency-counting"
+  ],
+  "similar_to": [
+    "leetcode:49"
+  ],
+  "signature": {
+    "function": "countAnagramGroups",
+    "params": [
+      {
+        "name": "words",
+        "type": "string[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

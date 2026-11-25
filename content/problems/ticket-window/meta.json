@@ -1,0 +1,41 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "ticket-window",
+  "title": "Ticket Window",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "binary-search"
+  ],
+  "patterns": [
+    "binary-search"
+  ],
+  "similar_to": [],
+  "signature": {
+    "function": "countOpenedBy",
+    "params": [
+      {
+        "name": "times",
+        "type": "int[]"
+      },
+      {
+        "name": "queries",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

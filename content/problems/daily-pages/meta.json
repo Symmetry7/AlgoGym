@@ -1,0 +1,44 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "daily-pages",
+  "title": "Daily Pages",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "binary-search"
+  ],
+  "patterns": [
+    "binary-search-on-answer"
+  ],
+  "similar_to": [
+    "leetcode:410",
+    "gfg:allocate-minimum-number-of-pages"
+  ],
+  "signature": {
+    "function": "minDailyLoad",
+    "params": [
+      {
+        "name": "pages",
+        "type": "int[]"
+      },
+      {
+        "name": "days",
+        "type": "int"
+      }
+    ],
+    "returns": "long"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}
