@@ -1,0 +1,39 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "first-one-time-visitor",
+  "title": "First One-Time Visitor",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "hashing"
+  ],
+  "patterns": [
+    "frequency-counting"
+  ],
+  "similar_to": [
+    "leetcode:387"
+  ],
+  "signature": {
+    "function": "firstSingleVisit",
+    "params": [
+      {
+        "name": "visitors",
+        "type": "string[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}
