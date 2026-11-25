@@ -132,7 +132,7 @@ const output = {
   ungrouped,
 };
 writeFileSync("data/interview-editorial-manifest.json", JSON.stringify(output, null, 2) + "\n");
-writeFileSync("src/screens/interview-pattern-groups.json", JSON.stringify(patternIds, null, 2) + "\n");
+writeFileSync("apps/web/src/screens/interview-pattern-groups.json", JSON.stringify(patternIds, null, 2) + "\n");
 
 const placementRows = Object.entries(manifest).flatMap(([slug, track]) =>
   track.questionIds.map((id, position) => `(${sqlQuote(slug)},${sqlQuote(id)},${position})`)

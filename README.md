@@ -47,24 +47,24 @@ Provider sync and Symm AI jobs are stored in PostgreSQL and executed from Next.j
 ## Repository map
 
 ```text
-src/app/               Next.js pages, layouts, API dispatch
-src/features/          Symm AI and Training Gym screens
-src/screens/           Other product screens
-src/components/        Shared layout, brand, and UI components
-src/hooks/, src/lib/    Hooks and domain helpers
-src/proxy.ts            Supabase session refresh
-server/api-handlers/   Validated business endpoints
-server/next-api/       Next.js request adapters
-server/               Provider, AI, and job services
+apps/web/              Next.js app (npm workspace @algogym/web)
+  src/app/             Pages, layouts, API dispatch
+  src/components/      Shell (design system), layout, auth and UI components
+  src/screens/         Product screens
+  src/proxy.ts         Supabase session refresh
+  server/              Business endpoints (api-handlers/), Next adapters (next-api/), services
+  public/              Runtime assets and licensed fonts
+content/               Problems and lessons as files (docs/CONTENT_GUIDE.md)
 supabase/migrations/   Ordered PostgreSQL schema history
 supabase/functions/    Profile verification Edge Function
 scripts/               qa/ browser+DB checks, data/ imports+migration builders,
                        ops/ admin+billing setup, sql/ test SQL, lib/ shared helpers
 docs/                  Product, architecture, design and engineering docs
-public/                Runtime assets and licensed fonts
 ```
 
-`src/app/api/[...path]/route.ts` preserves existing `/api/*` URLs through a dispatch table. Start with the [documentation index](docs/README.md) for the project map, current guides, and historical product documents.
+The repo is an npm workspace: run every command from the root. `npm run dev`, `build`, `start`, `test` and `typecheck` forward to `apps/web`; `lint` and `design:check` run across the repo.
+
+`apps/web/src/app/api/[...path]/route.ts` preserves existing `/api/*` URLs through a dispatch table. Start with the [documentation index](docs/README.md) for the project map, current guides, and historical product documents.
 
 ## Local development
 
@@ -76,7 +76,7 @@ cd AlgoGym
 npm ci
 ```
 
-Copy `.env.example` to `.env.local` and supply credentials from a **development** Supabase project. Apply `supabase/migrations/` in order to that project; for a linked development project, the Supabase CLI command is `supabase db push`. Configure the Supabase Google provider and allow `http://localhost:8080/api/auth/callback` for local OAuth testing. Do not reset production data.
+Copy `.env.example` to `.env.local` **at the repo root** (the app and the scripts both read it there) and supply credentials from a **development** Supabase project. Apply `supabase/migrations/` in order to that project; for a linked development project, the Supabase CLI command is `supabase db push`. Configure the Supabase Google provider and allow `http://localhost:8080/api/auth/callback` for local OAuth testing. Do not reset production data.
 
 ```sh
 npm run dev
@@ -120,7 +120,7 @@ There is currently no lint script or CI workflow. Browser and SQL integration sc
 
 ## Deployment and limitations
 
-`vercel.json` selects Next.js and schedules `/api/jobs/sync` daily. Deployment needs server secrets, migrations, Auth redirect configuration, and an authorized cron request. Job throughput is limited by serverless execution time and the schedule. Gemini and provider availability affect generation and synchronization; no throughput benchmark is asserted here. See [deployment](docs/deployment.md).
+Vercel builds `apps/web` (project Root Directory `apps/web`, where `apps/web/vercel.json` lives) and installs from the root lockfile. Production serves `release/legacy` until launch; `main` deploys previews. Deployment needs server secrets, migrations and Auth redirect configuration. See [deployment](docs/deployment.md).
 
 ## Contributing and license
 

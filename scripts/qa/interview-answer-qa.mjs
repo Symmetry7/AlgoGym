@@ -6,7 +6,7 @@ const env=Object.fromEntries(readFileSync('.env.local','utf8').split(/\r?\n/).ma
 }).filter((item)=>item.length===2));
 const client=createClient(env.SUPABASE_URL??env.NEXT_PUBLIC_SUPABASE_URL,env.SUPABASE_PUBLISHABLE_KEY??env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 const source=JSON.parse(readFileSync('data/interview-pattern-hr-reference.json','utf8'));
-const patternManifest=JSON.parse(readFileSync('src/screens/interview-pattern-groups.json','utf8'));
+const patternManifest=JSON.parse(readFileSync('apps/web/src/screens/interview-pattern-groups.json','utf8'));
 async function rows(table,columns,field,value){
   const {data,error}=await client.from(table).select(columns).eq(field,value).order('position').range(0,999);
   if(error)throw error;return data??[];

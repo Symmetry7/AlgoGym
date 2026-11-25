@@ -2,54 +2,27 @@
   "name": "algogym",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "next dev -p 8080",
-    "build": "next build",
-    "start": "next start -p 8080",
-    "test": "vitest --run",
-    "format.fix": "prettier --write .",
-    "typecheck": "tsc --noEmit",
-    "billing:setup": "node scripts/ops/setup-razorpay-plans.mjs",
+    "dev": "npm run dev -w @algogym/web",
+    "build": "npm run build -w @algogym/web",
+    "start": "npm run start -w @algogym/web",
+    "test": "npm run test -w @algogym/web",
+    "typecheck": "npm run typecheck -w @algogym/web",
     "lint": "eslint .",
-    "design:check": "impeccable detect src/components/shell src/app/%5Fdesign src/styles"
-  },
-  "dependencies": {
-    "@fontsource/lexend": "5.3.0",
-    "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-dropdown-menu": "^2.1.1",
-    "@radix-ui/react-label": "^2.1.0",
-    "@radix-ui/react-select": "^2.1.1",
-    "@radix-ui/react-slot": "^1.1.0",
-    "@radix-ui/react-tooltip": "^1.1.4",
-    "@supabase/ssr": "0.7.0",
-    "@supabase/supabase-js": "2.118.0",
-    "@tanstack/react-query": "^5.56.2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.462.0",
-    "next": "^16.4.6",
-    "next-themes": "^0.3.0",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "react-icons": "^5.5.0",
-    "sonner": "^1.5.0",
-    "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.25.76"
+    "design:check": "impeccable detect apps/web/src/components/shell apps/web/src/app/%5Fdesign apps/web/src/styles",
+    "format.fix": "prettier --write .",
+    "billing:setup": "node scripts/ops/setup-razorpay-plans.mjs"
   },
   "devDependencies": {
-    "@types/node": "^22.5.5",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "autoprefixer": "^10.4.20",
+    "@next/env": "16.4.6",
+    "@supabase/supabase-js": "2.118.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "impeccable": "^4.11.0",
     "playwright-core": "^1.64.1",
-    "postcss": "^8.4.47",
-    "prettier": "^3.5.3",
-    "tailwindcss": "^3.4.11",
-    "typescript": "^5.5.3",
-    "vitest": "^3.1.4"
+    "prettier": "^3.5.3"
   }
 }

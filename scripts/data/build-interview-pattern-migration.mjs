@@ -49,5 +49,5 @@ insert into public.interview_category_questions(category_slug,question_id,positi
 ${rows.map((row,index)=>`('patterns',${quote(row.id)},${index})`).join(',\n')};
 `;
 writeFileSync('supabase/migrations/20261025090000_interview_patterns_180.sql',sql);
-writeFileSync('src/screens/interview-pattern-groups.json',`${JSON.stringify(groups,null,2)}\n`);
+writeFileSync('apps/web/src/screens/interview-pattern-groups.json',`${JSON.stringify(groups,null,2)}\n`);
 console.log(JSON.stringify({sourcePlacements:groups.reduce((n,group)=>n+group.ids.length,0),uniqueQuestions:rows.length,newCanonical:added.length,groups:groups.length}));
