@@ -30,7 +30,7 @@ export function SignInDialog() {
         "Sign-in could not be completed. Try again in this browser, or request a new email link.",
       );
   }, []);
-  const destination = () => { const next = new URLSearchParams(window.location.search).get("next") ?? ""; return /^\/societies\/join\/[a-f0-9]{64}$/.test(next) ? next : "/dashboard"; };
+  const destination = () => "/problems";
   useEffect(() => {
     if (user) router.replace(destination());
   }, [user, router]);

@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { channel?.close(); window.removeEventListener("focus", onFocus); window.clearInterval(interval); };
   }, [refreshSession]);
 
-  const signInWithGoogle = async (next = "/dashboard") => {
+  const signInWithGoogle = async (next = "/problems") => {
     const response = await fetch(`/api/auth/google?next=${encodeURIComponent(next)}`, { credentials: "same-origin", cache: "no-store" });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || !result.url) throw new Error(result.error || "Google sign-in could not be started.");

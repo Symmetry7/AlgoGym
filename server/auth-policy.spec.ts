@@ -15,6 +15,6 @@ describe("authentication redirects", () => {
       "/sign-in",
       "/%0aevil",
     ])
-      expect(safeNextPath(value)).toBe("/dashboard");
+      expect(safeNextPath(value)).toBe("/problems");
   });
 });

@@ -1,6 +1,6 @@
 export function safeNextPath(
   value: string | null | undefined,
-  fallback = "/dashboard",
+  fallback = "/problems",
 ) {
   if (
     !value ||

@@ -60,7 +60,7 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 - `src/components/auth/AuthGate.tsx`: strip the onboarding redirect (it lives here, not in `proxy.ts`). Sign-in lands on `/problems` instead of `/dashboard`.
 - `/settings` stays, without the coding-platform connections.
 - `/`: a holding page built from the M1 shell (headline, one paragraph, Problems / Interview prep / Sign in). No made-up numbers. The real landing page is M16.
-- The `server/` handlers those routes used (provider sync and verification, Symm AI, societies and contests, statistics, leaderboards, coin exchange, onboarding), the old landing and brand components, and their now-unused dependencies (check peer dependencies of what stays before removing a package).
+- The `server/` handlers only removed routes used (Symm AI, societies and contests, statistics, leaderboards, profile verification, public profiles, colleges, the sync cron), the old landing and brand components, and their now-unused dependencies (check peer dependencies of what stays before removing a package). Legacy endpoints that surviving pages still call stay until their replacements: account state (`/api/onboarding` GET), the `/problems` catalog and detail (`providers`, `problem`, `tracker`, `sync`, `study`, until M8/M9) and `/pricing`'s `coin-exchange` (M17).
 - `vercel.json`: drop the `/api/jobs/sync` cron (provider sync and Symm jobs).
 
 **Done when:**
