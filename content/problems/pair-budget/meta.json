@@ -1,0 +1,43 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "pair-budget",
+  "title": "Pair Budget",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "two-pointers"
+  ],
+  "patterns": [
+    "two-pointers"
+  ],
+  "similar_to": [
+    "leetcode:2824"
+  ],
+  "signature": {
+    "function": "countAffordablePairs",
+    "params": [
+      {
+        "name": "prices",
+        "type": "int[]"
+      },
+      {
+        "name": "budget",
+        "type": "int"
+      }
+    ],
+    "returns": "long"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}
