@@ -41,7 +41,7 @@ const [companies, questions, placements, categories] = await Promise.all([
   readAll("interview_category_questions", "category_slug,question_id"),
 ]);
 assert.equal(companies.length, 45);
-assert.ok(companies.every((company) => company.slug === "d-e-shaw" || existsSync(`public/company-icons/${company.slug}.png`)), "A company image is missing");
+assert.ok(companies.every((company) => company.slug === "d-e-shaw" || existsSync(`apps/web/public/company-icons/${company.slug}.png`)), "A company image is missing");
 assert.ok(questions.length >= 389);
 assert.equal(placements.length, Object.values(reference.companies).reduce((sum, company) => sum + company.questionIds.length, 0));
 const questionIds = new Set(questions.map((question) => question.id));

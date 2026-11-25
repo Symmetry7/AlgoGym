@@ -21,7 +21,7 @@ const domains = {
   cognizant: "cognizant.com", wipro: "wipro.com", hcltech: "hcl.com",
   "tech-mahindra": "techmahindra.com", capgemini: "capgemini.com",
 };
-await mkdir("public/company-icons", { recursive: true });
+await mkdir("apps/web/public/company-icons", { recursive: true });
 const entries = Object.entries(domains);
 const failed = [];
 for (let offset = 0; offset < entries.length; offset += 8) {
@@ -31,7 +31,7 @@ for (let offset = 0; offset < entries.length; offset += 8) {
       const bytes = Buffer.from(await response.arrayBuffer());
       if (!response.ok || !response.headers.get("content-type")?.startsWith("image/") || bytes.length < 50)
         throw new Error(`bad favicon response: ${response.status}`);
-      await writeFile(`public/company-icons/${slug}.png`, bytes);
+      await writeFile(`apps/web/public/company-icons/${slug}.png`, bytes);
     } catch (error) { failed.push(`${slug}: ${error.message}`); }
   }));
 }

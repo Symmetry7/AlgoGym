@@ -1,5 +1,5 @@
 ﻿import {describe,it,expect} from 'vitest';
-import {parsePublicProfile} from '../supabase/functions/profile-verification/public-profiles';
+import {parsePublicProfile} from '../../../supabase/functions/profile-verification/public-profiles';
 describe('public ownership fields',()=>{
  it('reads only AtCoder affiliation',()=>{expect(parsePublicProfile('atcoder','tourist','Contest Status <th>Affiliation</th><td>VERIFY-AC-ABC</td>','https://atcoder.jp/users/tourist').challenge).toBe('VERIFY-AC-ABC')});
  it('rejects a mismatched AtCoder page',()=>expect(()=>parsePublicProfile('atcoder','other','Contest Status','https://atcoder.jp/users/tourist')).toThrow());

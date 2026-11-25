@@ -1,10 +1,10 @@
 # Deployment
 
-`vercel.json` selects the Next.js framework, runs `npm run build`, and schedules `GET /api/jobs/sync` once daily. The route requires `Authorization: Bearer <CRON_SECRET>`. Next.js builds use the npm lockfile and the project's environment variables. The current repository has no separate CI workflow or dedicated worker deployment.
+The app lives in the npm workspace `apps/web`. Each Vercel project uses **Root Directory `apps/web`** (with "Include files outside the root directory" enabled, the default), so Vercel installs from the root `package-lock.json` and builds the app with `apps/web/vercel.json`. Environment variables come from the Vercel project settings; the root `.env*` files are for local development only. There is no cron job. Production serves `release/legacy` until the M20 cutover; `main` deploys previews. CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests, build and the design check on every PR.
 
 ## Release checklist
 
-1. Install with `npm ci`; run `npm run typecheck`, `npm test`, and `npm run build` locally or in an isolated CI environment. No lint script is currently configured.
+1. From the repo root: `npm ci`, then `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` (or rely on CI).
 2. Apply only unapplied, reviewed migrations to the target Supabase project. Preserve existing data and check the migration ledger first.
 3. Configure `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ORIGIN`, and `CRON_SECRET` as Vercel environment variables. Add `GEMINI_API_KEY` for Symm AI; `GEMINI_MODEL` is optional.
 4. Configure the Supabase Google provider and allow the production `/api/auth/callback` redirect. Match `APP_ORIGIN` to the actual HTTPS origin.

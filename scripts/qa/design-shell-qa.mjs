@@ -23,11 +23,9 @@ const check = async (name, fn) => {
 for (const width of [375, 1440]) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   const errors = [];
-  // Production prefetches nav links; these routes arrive in later milestones (docs/BUILD_GUIDE.md).
-  const notBuiltYet = ["/roadmap", "/companies", "/interview", "/arena", "/study-plans", "/credits", "/terms"];
+  // The shell links only to routes that exist, so any 404 (including a link prefetch) is a bug.
   page.on("response", (r) => {
-    const path = new URL(r.url()).pathname;
-    if (r.status() === 404 && !notBuiltYet.includes(path)) errors.push(`404 ${path}`);
+    if (r.status() === 404) errors.push(`404 ${new URL(r.url()).pathname}`);
   });
   page.on("console", (m) => m.type() === "error" && !m.text().startsWith("Failed to load resource") && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(e.message));

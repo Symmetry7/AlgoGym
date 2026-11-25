@@ -25,8 +25,9 @@ Algogym is an interview-preparation platform for students and developers in Indi
 
 ## Where code lives
 
-- `src/app/`: routes. `src/components/shell/`: design-system primitives and app/marketing shells (tokens in `src/styles/tokens.css`, prefixed `--ag-`).
-- `server/`: business logic and `/api/*` handlers. The server is authoritative for auth, Pro entitlements and judge results. Never rely on hidden UI to protect content.
+- `apps/web/`: the Next.js app (npm workspace). Run commands from the repo root; they forward to it. Local env files stay at the repo root.
+- `apps/web/src/app/`: routes. `apps/web/src/components/shell/`: design-system primitives and app/marketing shells (tokens in `apps/web/src/styles/tokens.css`, prefixed `--ag-`).
+- `apps/web/server/`: business logic and `/api/*` handlers. The server is authoritative for auth, Pro entitlements and judge results. Never rely on hidden UI to protect content.
 - `content/problems/`, `content/learn/`: problems and lessons as files (see CONTENT_GUIDE.md). Playable problems are Algogym originals only.
 - `supabase/`: migrations (source of truth) and Edge Functions. Don't infer live database state from migration files; use `supabase migration list --linked`.
 - `scripts/{qa,data,ops,lib,sql}/`: QA checks, imports, setup and helpers. `docs/`: all documentation.
