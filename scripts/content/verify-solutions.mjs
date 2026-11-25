@@ -13,7 +13,7 @@ const work = join(tmpdir(), "algogym-verify");
 rmSync(work, { recursive: true, force: true });
 mkdirSync(work, { recursive: true });
 
-const cppType = { int: "int", long: "long long", "int[]": "vector<int>", "string[]": "vector<string>", string: "string" };
+const cppType = { int: "int", long: "long long", bool: "bool", string: "string", "int[]": "vector<int>", "long[]": "vector<long long>", "string[]": "vector<string>" };
 
 // Inputs for the compiled drivers: whitespace tokens; arrays are "n v1 .. vn".
 const tokens = (args, params) => params.map((p, i) => (p.type.endsWith("[]") ? [args[i].length, ...args[i]].join(" ") : String(args[i]))).join("\n") + "\n";
@@ -23,8 +23,9 @@ const cppDriver = (sig) => {
     ? `${cppType[p.type]} ${p.name}; { int n; cin >> n; ${p.name}.resize(n); for (auto& x : ${p.name}) cin >> x; }`
     : `${cppType[p.type]} ${p.name}; cin >> ${p.name};`)).join("\n  ");
   const print = {
-    int: "cout << r;", long: "cout << r;", string: 'cout << \'"\' << r << \'"\';',
+    int: "cout << r;", long: "cout << r;", bool: 'cout << (r ? "true" : "false");', string: 'cout << \'"\' << r << \'"\';',
     "int[]": "cout << '['; for (size_t i = 0; i < r.size(); i++) { if (i) cout << ','; cout << r[i]; } cout << ']';",
+    "long[]": "cout << '['; for (size_t i = 0; i < r.size(); i++) { if (i) cout << ','; cout << r[i]; } cout << ']';",
   }[sig.returns];
   return `#include <iostream>\nint main() {\n  ios::sync_with_stdio(false); cin.tie(nullptr);\n  ${reads}\n  auto r = Solution().${sig.function}(${sig.params.map((p) => p.name).join(", ")});\n  ${print}\n  cout << endl;\n}\n`;
 };
@@ -33,13 +34,15 @@ const javaDriver = (sig) => {
   const reads = sig.params.map((p) => {
     if (p.type === "int[]") return `int[] ${p.name} = new int[Integer.parseInt(tok__[at__++])]; for (int i = 0; i < ${p.name}.length; i++) ${p.name}[i] = Integer.parseInt(tok__[at__++]);`;
     if (p.type === "string[]") return `String[] ${p.name} = new String[Integer.parseInt(tok__[at__++])]; for (int i = 0; i < ${p.name}.length; i++) ${p.name}[i] = tok__[at__++];`;
+    if (p.type === "long[]") return `long[] ${p.name} = new long[Integer.parseInt(tok__[at__++])]; for (int i = 0; i < ${p.name}.length; i++) ${p.name}[i] = Long.parseLong(tok__[at__++]);`;
     if (p.type === "int") return `int ${p.name} = Integer.parseInt(tok__[at__++]);`;
     if (p.type === "long") return `long ${p.name} = Long.parseLong(tok__[at__++]);`;
     return `String ${p.name} = tok__[at__++];`;
   }).join("\n    ");
   const print = {
-    int: "out = String.valueOf(r);", long: "out = String.valueOf(r);", string: 'out = "\\"" + r + "\\"";',
+    int: "out = String.valueOf(r);", long: "out = String.valueOf(r);", bool: "out = String.valueOf(r);", string: 'out = "\\"" + r + "\\"";',
     "int[]": 'StringBuilder sb = new StringBuilder("["); for (int i = 0; i < r.length; i++) { if (i > 0) sb.append(\',\'); sb.append(r[i]); } out = sb.append(\']\').toString();',
+    "long[]": 'StringBuilder sb = new StringBuilder("["); for (int i = 0; i < r.length; i++) { if (i > 0) sb.append(\',\'); sb.append(r[i]); } out = sb.append(\']\').toString();',
   }[sig.returns];
   return `import java.io.*;\npublic class Main {\n  public static void main(String[] a) throws IOException {\n    String[] tok__ = new String(System.in.readAllBytes()).trim().split("\\\\s+"); int at__ = 0;\n    ${reads}\n    var r = new Solution().${sig.function}(${sig.params.map((p) => p.name).join(", ")});\n    String out; ${print}\n    System.out.println(out);\n  }\n}\n`;
 };
