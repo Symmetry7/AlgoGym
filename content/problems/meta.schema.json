@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://algogym.dev/schemas/problem-meta.json",
+  "title": "Algogym problem meta.json",
+  "description": "One per problem folder. See docs/CONTENT_GUIDE.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "title", "status", "difficulty", "category", "topics", "patterns", "signature", "comparator", "limits", "is_pro", "pool", "authors", "reviewers"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Must equal the folder name. Used in /problems/<slug>." },
+    "title": { "type": "string", "minLength": 3, "maxLength": 80 },
+    "status": {
+      "enum": ["example", "draft", "review", "ready"],
+      "description": "example = format sample, never seeded. draft -> review -> ready; only ready problems are seeded."
+    },
+    "difficulty": { "enum": ["Easy", "Medium", "Hard"] },
+    "category": { "enum": ["dsa", "sql", "system-design", "hr"] },
+    "topics": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 1, "uniqueItems": true },
+    "patterns": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true },
+    "similar_to": {
+      "type": "array",
+      "description": "Metadata-only LeetCode/GFG problems this original practises, e.g. \"leetcode:485\". Shown as 'Similar Algogym problem' on their rows.",
+      "items": { "type": "string", "pattern": "^(leetcode|gfg):[A-Za-z0-9-]+$" },
+      "uniqueItems": true
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["function", "params", "returns"],
+      "properties": {
+        "function": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$", "description": "camelCase; the same name in every language." },
+        "params": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" },
+              "type": { "$ref": "#/$defs/type" }
+            }
+          }
+        },
+        "returns": { "$ref": "#/$defs/type" }
+      }
+    },
+    "comparator": {
+      "enum": ["exact", "float_tolerance", "unordered"],
+      "description": "exact: deep JSON equality. float_tolerance: numbers within 1e-6 absolute or relative. unordered: top-level array compared as a multiset."
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time_ms_per_case", "max_total_ms", "memory_mb"],
+      "properties": {
+        "time_ms_per_case": { "type": "integer", "minimum": 100, "maximum": 5000 },
+        "max_total_ms": { "type": "integer", "minimum": 1000, "maximum": 15000, "description": "Cap on time_ms_per_case x case count (docs/DECISIONS.md)." },
+        "memory_mb": { "type": "integer", "minimum": 64, "maximum": 512 }
+      }
+    },
+    "is_pro": { "type": "boolean" },
+    "pool": { "enum": ["public", "room"], "description": "room = hidden room-only pool (v1.1); never shown in public practice." },
+    "authors": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "reviewers": { "type": "array", "items": { "type": "string" }, "description": "Must name someone other than the authors before status can be ready." }
+  },
+  "$defs": {
+    "type": {
+      "enum": ["int", "long", "double", "bool", "string", "int[]", "long[]", "double[]", "bool[]", "string[]", "int[][]", "string[][]"],
+      "description": "Mapped per language by the generated harness: int=number/int/int/int, long=number/int/long long/long, etc. Values outside +/-2^53 must not appear in tests."
+    }
+  }
+}
