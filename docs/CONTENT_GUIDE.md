@@ -80,6 +80,7 @@ The starter stub and the hidden driver for each language are **generated from `m
 
 One MDX file per roadmap topic: `content/learn/<track>/<topic>.mdx`, copied from the template. The section order is fixed: The idea → Intuition → Step through it → Worked example → Code → Complexity → Common mistakes. The quiz (exactly 3 questions) and the "Practice this" list live in the frontmatter.
 
+- Quote free-text frontmatter values (`summary`, `question`, `why`) in single quotes, writing `''` for an apostrophe. An unquoted value containing `: ` is invalid YAML.
 - Aim for a 10-minute read. Cut anything that doesn't help someone solve the topic's first problem.
 - Code in all 4 languages implements the same algorithm with the same variable names as the editorials.
 - `practice` lists `ready` problem slugs, easiest first.
