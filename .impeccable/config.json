@@ -10,16 +10,6 @@
   "detector": {
     "ignoreRules": [],
     "ignoreFiles": [],
-    "ignoreValues": [
-      {
-        "rule": "gradient-text",
-        "value": "*",
-        "files": [
-          "src/styles/tokens.css"
-        ],
-        "createdAt": "2026-11-25T08:14:24.905Z",
-        "reason": "DESIGN.md 2.2: subtle white-to-muted gradient on display headings only"
-      }
-    ]
+    "ignoreValues": []
   }
 }

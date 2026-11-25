@@ -25,7 +25,7 @@ export function TabsDemo() {
     <div className="flex flex-col gap-6">
       <div>
         <SegmentedTabs label="Learning track" options={[...TRACKS]} value={track} onChange={setTrack} panelIdPrefix="track" />
-        <p id={`track-${track}`} role="tabpanel" aria-labelledby={`track-tab-${track}`} className="mt-3 font-geist text-sm text-ag-text-muted">
+        <p id={`track-${track}`} role="tabpanel" aria-labelledby={`track-tab-${track}`} className="mt-3 font-ui text-sm text-ag-text-muted">
           {COPY[track]}
         </p>
       </div>

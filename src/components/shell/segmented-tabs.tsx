@@ -60,7 +60,7 @@ export function SegmentedTabs<T extends string>({
             onClick={() => onChange(option.value)}
             onKeyDown={(e) => onKeyDown(e, i)}
             className={cn(
-              "inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 font-geist text-sm font-medium",
+              "inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 font-ui text-sm font-medium",
               "transition-colors duration-ag-hover ease-ag disabled:cursor-not-allowed disabled:opacity-60",
               focusRing,
               selected ? "bg-ag-surface-3 text-ag-text" : "text-ag-text-muted hover:text-ag-text",

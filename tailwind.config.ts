@@ -21,7 +21,7 @@ export default {
     extend: {
       fontFamily: {
         display: ["var(--font-instrument-serif)", "serif"],
-        geist: ["var(--font-geist)", "sans-serif"],
+        ui: ["var(--font-ui)", "sans-serif"],
         "geist-mono": ["var(--font-geist-mono)", "monospace"],
       },
       transitionTimingFunction: { ag: "var(--ag-ease)" },

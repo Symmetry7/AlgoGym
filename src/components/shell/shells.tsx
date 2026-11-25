@@ -27,7 +27,7 @@ function SkipLink() {
     <a
       href="#main"
       className={cn(
-        "sr-only rounded-ag-control bg-ag-accent px-4 py-2 font-geist text-sm font-semibold text-ag-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50",
+        "sr-only rounded-ag-control bg-ag-accent px-4 py-2 font-ui text-sm font-semibold text-ag-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50",
         focusRing,
       )}
     >
@@ -50,7 +50,7 @@ const authButtons = (
 /** Public pages: transparent nav over the hero, footer below. */
 export function MarketingShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-ag-bg font-geist text-ag-text antialiased">
+    <div className="flex min-h-dvh flex-col bg-ag-bg font-ui text-ag-text antialiased">
       <SkipLink />
       <ScrollHeader>
         <nav aria-label="Main" className={cn(container, "relative flex h-16 items-center justify-between gap-4")}>
@@ -71,7 +71,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
 /** Signed-in app: solid top nav, content area. `actions` holds the account control. */
 export function AppShell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-ag-bg-app font-geist text-ag-text antialiased">
+    <div className="flex min-h-dvh flex-col bg-ag-bg-app font-ui text-ag-text antialiased">
       <SkipLink />
       <header className="sticky top-0 z-40 border-b border-ag-border bg-ag-bg-app">
         <nav aria-label="Main" className="relative mx-auto flex h-14 w-full max-w-[1440px] items-center gap-6 px-4 sm:px-6">
@@ -103,11 +103,11 @@ export function Footer() {
       <div className={cn(container, "grid grid-cols-2 gap-8 py-12 sm:grid-cols-4")}>
         {FOOTER.map((column) => (
           <div key={column.title}>
-            <h2 className="font-geist text-sm font-semibold text-ag-text">{column.title}</h2>
+            <h2 className="font-ui text-sm font-semibold text-ag-text">{column.title}</h2>
             <ul className="mt-3 space-y-2">
               {column.links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className={cn("rounded-sm font-geist text-sm text-ag-text-muted hover:text-ag-text", focusRing)}>
+                  <Link href={link.href} className={cn("rounded-sm font-ui text-sm text-ag-text-muted hover:text-ag-text", focusRing)}>
                     {link.label}
                   </Link>
                 </li>
@@ -116,7 +116,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <p className={cn(container, "pb-10 font-geist text-[13px] text-ag-text-faint")}>© {new Date().getFullYear()} Algogym</p>
+      <p className={cn(container, "pb-10 font-ui text-[13px] text-ag-text-faint")}>© {new Date().getFullYear()} Algogym</p>
     </footer>
   );
 }

@@ -41,14 +41,14 @@ Related docs: [PRD.md](./PRD.md) · [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTU
 | --- | --- | --- | --- |
 | Display (hero, page titles) | Serif — **Instrument Serif** (free, Google Fonts) | 72–96 / 1.0 desktop, 44–52 mobile | 400 |
 | H2 section titles | Instrument Serif | 48–56 / 1.05 | 400 |
-| H3 / card titles | **Geist** (free, by Vercel) | 20 / 1.3 | 600 |
-| Body | Geist | 16 / 1.6 | 400 |
-| Small / captions | Geist | 13–14 / 1.5 | 400–500 |
+| H3 / card titles | **Hanken Grotesk** (free, Google Fonts, OFL) | 20 / 1.3 | 600 |
+| Body | Hanken Grotesk | 16 / 1.6 | 400 |
+| Small / captions | Hanken Grotesk | 13–14 / 1.5 | 400–500 |
 | Code | **Geist Mono** | 13–14 / 1.6 | 400 |
 
-- Not Inter, Roboto or system-ui: Impeccable's slop detector flags default fonts, and Geist pairs cleanly with the serif display face.
+- UI font choice was checked with Impeccable's detector on live pages: Geist and Instrument Sans are both flagged as overused; Hanken Grotesk passes. Geist Mono (code only) passes. Re-run the detector before changing any family.
 
-- Hero and section titles use a subtle top-to-bottom gradient: #FFFFFF → #A1A1AA (Resend-style).
+- Headings use solid `--text` (#F5F5F7). No gradient text anywhere.
 - Never more than two font weights on one screen besides code.
 
 ### 2.3 Spacing, radius, depth
@@ -89,9 +89,9 @@ Three sources, each with one job. Never mix styles inside one component, never h
 ### 4.1 Rules
 - **Self-host, don't hot-link.** Import SVGs at build time from the pinned npm packages (no `cdn.jsdelivr.net` or `cdn.simpleicons.org` at runtime, no Devicon icon font CSS). A script (`scripts/build-icons.ts`) copies only the icons we use into `public/icons/{devicon,brands}/` and writes a typed map (`iconMap.ts`).
 - **Monochrome by default.** Render as inline SVG with `fill="currentColor"`: `--text-muted` in lists, the trust strip and chips; `--text` on hover. Brand colour only in two places: the language selector in the workspace (Devicon "colored" variant) and the company page header.
-- **Variants.** Devicon: `plain` for UI (single colour), `original` only where full colour is wanted; never the `wordmark` variants inside chips. Simple Icons: icon only; the company name is always written next to it in Geist.
+- **Variants.** Devicon: `plain` for UI (single colour), `original` only where full colour is wanted; never the `wordmark` variants inside chips. Simple Icons: icon only; the company name is always written next to it in Hanken Grotesk.
 - **Sizes.** 16 px in chips and rows, 20 px in tabs and selectors, 32 px in company cards, 24 px height for trust-strip wordmark row (icon + name).
-- **Missing brands.** Some companies aren't in Simple Icons (their owners asked for removal). Use a neutral monogram tile: 1–2 letters in Geist 600 on `--surface-2`, same size and radius. Never recreate the logo.
+- **Missing brands.** Some companies aren't in Simple Icons (their owners asked for removal). Use a neutral monogram tile: 1–2 letters in Hanken Grotesk 600 on `--surface-2`, same size and radius. Never recreate the logo.
 - **Trademark use.** Logos only describe where a question was reported ("Asked at Google"), never imply partnership. Honour any removal request; keep the Credits page listing Devicon, Simple Icons and Lucide.
 - **Roadmap topic icons** are our own isometric renders (section 3.3), not icon-set glyphs.
 
@@ -156,7 +156,7 @@ Three sources, each with one job. Never mix styles inside one component, never h
 
 ### 6.4 Learn lesson (/roadmap/[track]/[topic])
 - Left rail 240 px: layer name, topic list with states, progress.
-- Content column 720 px: serif H1, reading time, sections with H2 in Geist 600; diagrams and step-through visual in glass panels; code tabs (JS/Python/C++/Java); complexity table; "Common mistakes" callout; quiz card; "Practice this" list.
+- Content column 720 px: serif H1, reading time, sections with H2 in Hanken Grotesk 600; diagrams and step-through visual in glass panels; code tabs (JS/Python/C++/Java); complexity table; "Common mistakes" callout; quiz card; "Practice this" list.
 - Right "On this page" TOC (desktop only).
 
 ### 6.5 Problems (/problems) — LeetCode layout, Algogym look
@@ -216,16 +216,16 @@ Every UI change goes through [Impeccable](https://impeccable.style) (Paul Bakaus
 
 **Do**
 - Lots of black space; one emerald action per view.
-- Serif only for big headings; Geist for everything else.
+- Serif only for big headings; Hanken Grotesk for everything else; Geist Mono for code.
 - Borders over shadows; one radius scale.
 - Real data and real copy in every mock-up (actual problem names, actual counts).
 - Icons only from Devicon, Simple Icons and Lucide, monochrome by default.
 
 **Don't (AI-slop tells)**
-- Purple/blue or rainbow gradients, gradient buttons, glowing borders everywhere.
+- Gradient text, purple/blue or rainbow gradients, gradient buttons, glowing borders everywhere.
 - Glassmorphism on every card — glass is reserved for the hero badge, bento cards and preview frames.
 - Cards nested inside cards; three identical feature cards with an emoji each.
-- Default fonts (Inter, Roboto, Arial, system-ui), or any family beyond Instrument Serif, Geist and Geist Mono.
+- Default fonts (Inter, Roboto, Arial, system-ui), or any family beyond Instrument Serif, Hanken Grotesk and Geist Mono.
 - Emoji as icons, mixed icon styles, hand-drawn brand logos.
 - Vague copy ("Unlock your potential", "Supercharge your prep", "Seamless"); every heading says something specific.
 - Fake testimonials, fake user counts, fake company endorsements.

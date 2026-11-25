@@ -19,7 +19,7 @@ const sizes: Record<Size, string> = { md: "h-11 px-5 text-[15px]", sm: "h-9 px-3
 
 export function buttonClass(variant: Variant = "primary", size: Size = "md", className?: string) {
   return cn(
-    "group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-ag-control font-geist font-semibold",
+    "group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-ag-control font-ui font-semibold",
     "transition-colors duration-ag-hover ease-ag disabled:pointer-events-none disabled:opacity-50",
     focusRing,
     variants[variant],
@@ -70,7 +70,7 @@ export function Card({ glass, className, ...props }: { glass?: boolean } & HTMLA
 
 export function Pill({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <span className={cn("ag-glass inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-geist text-[13px] text-ag-text-muted", className)}>
+    <span className={cn("ag-glass inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-ui text-[13px] text-ag-text-muted", className)}>
       {children}
     </span>
   );
@@ -78,7 +78,7 @@ export function Pill({ children, className }: { children: ReactNode; className?:
 
 export function SoonBadge() {
   return (
-    <span className="rounded-full bg-ag-accent-soft px-2 py-0.5 font-geist text-[11px] font-medium uppercase tracking-wide text-ag-accent">Soon</span>
+    <span className="rounded-full bg-ag-accent-soft px-2 py-0.5 font-ui text-[11px] font-medium uppercase tracking-wide text-ag-accent">Soon</span>
   );
 }
 
@@ -86,7 +86,7 @@ const difficultyColor = { Easy: "text-ag-easy", Medium: "text-ag-medium", Hard: 
 
 /** Difficulty is always written out, never shown by colour alone (DESIGN.md §7). */
 export function DifficultyChip({ level }: { level: keyof typeof difficultyColor }) {
-  return <span className={cn("font-geist text-[13px] font-medium", difficultyColor[level])}>{level}</span>;
+  return <span className={cn("font-ui text-[13px] font-medium", difficultyColor[level])}>{level}</span>;
 }
 
 export function Logo({ className }: { className?: string }) {

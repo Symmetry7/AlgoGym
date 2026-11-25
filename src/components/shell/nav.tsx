@@ -24,7 +24,7 @@ export function NavLinks({ items, className }: { items: NavItem[]; className?: s
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex h-9 items-center gap-2 rounded-ag-control px-3 font-geist text-sm transition-colors duration-ag-hover ease-ag",
+                "inline-flex h-9 items-center gap-2 rounded-ag-control px-3 font-ui text-sm transition-colors duration-ag-hover ease-ag",
                 focusRing,
                 active ? "text-ag-text" : "text-ag-text-muted hover:text-ag-text",
               )}
@@ -79,7 +79,7 @@ export function MobileMenu({ items, footer }: { items: NavItem[]; footer?: React
                 onClick={() => setOpen(false)}
                 aria-current={isActive(pathname, item.href) ? "page" : undefined}
                 className={cn(
-                  "flex min-h-12 items-center gap-2 rounded-ag-control px-2 font-geist text-base text-ag-text-muted aria-[current=page]:text-ag-text",
+                  "flex min-h-12 items-center gap-2 rounded-ag-control px-2 font-ui text-base text-ag-text-muted aria-[current=page]:text-ag-text",
                   focusRing,
                 )}
               >

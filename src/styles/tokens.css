@@ -31,18 +31,11 @@
   --ag-dur-reveal: 600ms;
 }
 
-/* Plain classes: Tailwind 3 only allows @layer in the file holding the @tailwind directives. */
+/* Plain class: Tailwind 3 only allows @layer in the file holding the @tailwind directives. */
 .ag-glass {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   border: 1px solid var(--ag-border);
-}
-
-.ag-heading-gradient {
-  background: linear-gradient(180deg, #ffffff 0%, var(--ag-text-muted) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

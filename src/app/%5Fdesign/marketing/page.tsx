@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { MarketingShell } from "@/components/shell/shells";
 import { ButtonLink, Pill } from "@/components/shell/ui";
+import { previewOnly } from "../preview-only";
 
 export const metadata: Metadata = { title: "Marketing shell · Algogym", robots: { index: false, follow: false } };
 
 /** Shell preview only. The real landing page is M16. */
 export default function MarketingPreview() {
+  previewOnly();
   return (
     <MarketingShell>
       <div className="mx-auto max-w-[1200px] px-4 pb-[72px] pt-16 sm:px-6 md:pb-[120px] md:pt-24">
         <Pill>New: Company prep 2026 ›</Pill>
-        <h1 className="ag-heading-gradient mt-6 font-display text-[44px] leading-none sm:text-[72px] lg:text-[96px]">
+        <h1 className="text-ag-text mt-6 font-display text-[44px] leading-none sm:text-[72px] lg:text-[96px]">
           Interview prep
           <br />
           for developers

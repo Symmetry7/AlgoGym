@@ -3,6 +3,7 @@ import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/shell/shells";
 import { Button, ButtonLink, Card, DifficultyChip, Pill, SoonBadge } from "@/components/shell/ui";
+import { previewOnly } from "./preview-only";
 import { TabsDemo } from "./tabs-demo";
 
 export const metadata: Metadata = { title: "Design system · Algogym", robots: { index: false, follow: false } };
@@ -29,7 +30,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   const id = `section-${title.toLowerCase().replace(/\W+/g, "-")}`;
   return (
     <section aria-labelledby={id} className="border-t border-ag-border py-12">
-      <h2 id={id} className="font-geist text-xl font-semibold">
+      <h2 id={id} className="font-ui text-xl font-semibold">
         {title}
       </h2>
       <div className="mt-6">{children}</div>
@@ -44,11 +45,12 @@ const accountActions = (
 );
 
 export default function DesignPage() {
+  previewOnly();
   return (
     <AppShell actions={accountActions}>
       <div className="mx-auto max-w-[1200px] px-4 pb-24 pt-12 sm:px-6">
-        <p className="font-geist text-sm text-ag-text-faint">Internal · not indexed</p>
-        <h1 className="ag-heading-gradient mt-2 font-display text-[44px] leading-none sm:text-[72px]">Design system</h1>
+        <p className="font-ui text-sm text-ag-text-faint">Internal · not indexed</p>
+        <h1 className="text-ag-text mt-2 font-display text-[44px] leading-none sm:text-[72px]">Design system</h1>
         <p className="mt-4 max-w-[640px] text-pretty text-base leading-relaxed text-ag-text-muted">
           Tokens, type and primitives from docs/DESIGN.md. Every new page is built from these.
         </p>
@@ -69,7 +71,7 @@ export default function DesignPage() {
 
         <Section title="Type">
           <div className="space-y-6">
-            <p className="ag-heading-gradient font-display text-[52px] leading-none sm:text-[96px]">Interview prep</p>
+            <p className="text-ag-text font-display text-[52px] leading-none sm:text-[96px]">Interview prep</p>
             <p className="font-display text-[40px] leading-[1.05] sm:text-[56px]">Practice by company</p>
             <p className="text-xl font-semibold leading-snug">Two Pointers · 7 problems</p>
             <p className="max-w-[640px] text-pretty text-base leading-relaxed text-ag-text-muted">
