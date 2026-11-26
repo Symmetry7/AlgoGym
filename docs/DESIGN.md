@@ -205,7 +205,7 @@ Modelled on the flux.rq3.workers.dev editor (2026-11-26, DECISIONS.md). The page
 
 ### 6.7 Companies, My Prep, Study plans
 - Companies grid: 4 columns of cards (logo 32 px, name, "214 problems", top patterns chips).
-- Company page: header with logo + counts, tabs (All time · 30 · 60 · 90 days, the last three with lock for Free), problem table with frequency bars.
+- Company page: header with logo + counts, tabs (All time · 30 days · 3 months, the last two with lock for Free; the source has no 60-day list, DECISIONS.md 2026-11-26), problem table with frequency bars.
 - My Prep: 12-column grid; continue card (full width), progress per track (rings), streak heatmap (emerald scale), recent solves, bookmarks, lists.
 - Study plans: card grid like TensorTonic (title, one line, count, tags).
 
