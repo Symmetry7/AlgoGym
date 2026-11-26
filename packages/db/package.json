@@ -1,0 +1,10 @@
+{
+  "name": "@algogym/db",
+  "private": true,
+  "type": "module",
+  "types": "./src/database.types.ts",
+  "exports": "./src/database.types.ts",
+  "scripts": {
+    "gen": "supabase gen types typescript --project-id acopccydhtkbjslvtxrl --schema public > src/database.types.ts"
+  }
+}

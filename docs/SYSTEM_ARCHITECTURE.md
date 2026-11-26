@@ -179,6 +179,8 @@ Socket.io on the engine, matchmaking queue in Redis, duel state machine `queued 
 
 ## 5. Data model (v1.0)
 
+> In the database, the `problems` entity below is the table **`catalog_problems`**: the legacy `problems` table (the LeetCode/Codeforces sync catalog) stays in place until launch (DECISIONS.md 2026-11-26). Migration: `supabase/migrations/20261126000000_v1_content_schema.sql`.
+
 ```mermaid
 erDiagram
   profiles ||--o{ submissions : makes
