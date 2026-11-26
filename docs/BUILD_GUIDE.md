@@ -146,6 +146,11 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 - [ ] The panes resize and collapse. All 4 languages load their starter code from the seeded problems.
 - [ ] The locked state renders. Mobile uses "Problem · Code · Result" tabs.
 - [ ] Monaco isn't part of the first-load bundle of other pages.
+- [ ] Floating-panel layout per DESIGN.md §6.6: 12 px gaps, 16 px-radius `--surface-1` cards with a 1 px `--border`, no edge-to-edge panes. One floating top bar with back, a breadcrumb (title in Hanken Grotesk, id in Geist Mono) and a language picker with a muted version ("Python 3.12"). Run is an off-white pill with a black play icon, Submit is the emerald primary.
+- [ ] Ctrl+Enter runs and Ctrl+Shift+Enter submits (⌘ on macOS), from the editor and anywhere on the page.
+- [ ] Three panels at ≥ 1280 px. Output · Input · Tests dock under the editor at 768–1279 px. Tabs "Problem · Code · Result" below 768 px. Checked at 375, 1024 and 1440 px.
+- [ ] Editor: a muted Geist Mono file-name label, faint line numbers, a subtle current-line highlight and no minimap. The Output · Input · Tests tabs have Lucide icons, and every empty state says what to do ("Run your code to see output. Ctrl+Enter works too.").
+- [ ] Monochrome UI: emerald only on Submit, passed cases and focus. No presence avatars or Share (Rooms, v1.1).
 
 #### M10 · Engine skeleton (1–2 sessions)
 **Goal:** `apps/engine`, an Express service with HMAC-verified `POST /v1/jobs`, BullMQ on Redis and `/v1/health`, deployed to Railway.
