@@ -8,7 +8,7 @@ Related docs: [PRD.md](./PRD.md) · [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTU
 
 ## 1. Direction
 
-**Marketing site:** Resend's look — pure black, soft light beams, large serif headlines, quiet grey text, frosted-glass product shots, a 3D glass cube in the hero. Algogym's twist: **emerald** for buttons and highlights.
+**Marketing site:** Resend's polish with elenkus.in's layout: near-black, large serif statements, off-white paper cards, quiet grey text, sticky copy beside live product demos, and a three.js 3D roadmap in the hero (§3.1, §6.1). Algogym's twist: **emerald** for the main call to action.
 
 **App:** TensorTonic's structure (roadmap path, split-pane workspace) and LeetCode's problem-list layout, in the same black + emerald system.
 
@@ -64,10 +64,11 @@ Related docs: [PRD.md](./PRD.md) · [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTU
 
 ## 3. Signature visuals
 
-### 3.1 Glass cube (hero)
-- Pre-rendered loop, made in Spline or Blender: frosted glass cube with soft refraction, a faint emerald core glow, slow 8 s rotation on a black background, light beam from the top-left.
-- Exports: `cube.webm` (VP9) + `cube.mp4` (H.264) + `cube-poster.webp`; 1080×1080; ≤ 1.5 MB per video; seamless loop.
-- `<video autoplay muted loop playsinline preload="metadata" poster=…>`; lazy on mobile; poster only when reduced motion or Save-Data.
+### 3.1 3D roadmap scene (hero)
+- A real-time **three.js** scene, replacing the pre-rendered glass cube (DECISIONS.md 2026-11-26): a short winding path of matte dark roadmap nodes. Done nodes have an emerald edge light, the current node pulses softly and locked nodes are dim. The camera drifts slowly, with a little parallax from the pointer.
+- Loaded with a dynamic `import()` only on `/`, after first paint, and only when `IntersectionObserver` sees the hero. Budget ≤ 150 KB gzipped for three.js plus the scene. Pixel ratio capped at 1.5. The render loop pauses when the hero is offscreen or the tab is hidden.
+- A static `roadmap-poster.webp` (rendered from the same scene) shows instead below 768 px, with `prefers-reduced-motion`, with Save-Data, without WebGL, and until the scene is ready. No layout shift: the poster and the canvas share one box.
+- The node meshes and lighting are reused by the M13 roadmap page, so the 3D look stays the same everywhere.
 
 ### 3.2 Light beam background
 Two large blurred radial gradients (white at 4–6% opacity) angled across the hero, plus a faint noise texture (2% opacity) to avoid banding.
@@ -120,24 +121,29 @@ Three sources, each with one job. Never mix styles inside one component, never h
 
 ## 6. Page specs
 
-### 6.1 Landing (/) — Resend layout
-1. **Nav** — logo left; Features ▾ · Companies · Pricing · Arena (Soon) centre; Log in + Get started right.
-2. **Hero** (100 vh, left-aligned at 1200 px container):
-   - Pill badge: "New: Company prep 2026 ›"
-   - Serif headline, two lines, e.g. "Interview prep / for developers"
-   - Subtext (≤ 2 lines): "Learn every topic free, practise real interview questions in your browser, and walk in ready."
-   - Buttons: **Get started** (emerald) + "Explore roadmap" (ghost)
-   - Glass cube loop on the right half, light beam across the section
-3. **Trust strip** — "Practice questions reported from interviews at" + greyscale company wordmarks in two rows.
-4. **Learn** — serif H2 "Learn", one-line subtext, segmented tabs (DSA · Patterns · SQL · HR · System Design *Soon*), below a glass panel showing a lesson preview with an animated step-through visual.
-5. **A real coding workspace** — bento of 2 large + 2 small glass cards: workspace (Run streams "Case 1 ✓ 12 ms" lines like Resend's request log), roadmap path card, hints card, companies card. Each card: icon, title, one line, "Learn more ›".
-6. **Roadmaps** — full-width preview of the winding path with 3D nodes + right topic panel.
-7. **Practice by company** — 8 company cards (logo, problem count, top 2 patterns), "See all companies ›".
-8. **Feature grid** — 3×3, each: small icon + title + 2-line description.
-9. **Testimonial** — single large quote with company logo (only real, permission-backed quotes; hide section until then).
-10. **My Prep** — tabs (Progress · Streak · Companies) with dashboard screenshot in a glass frame.
-11. **Arena teaser** — "1v1 duels are coming", Join waitlist.
-12. **Final CTA** — serif "Start preparing today" + Get started; footer in 4 columns (Product, Learn, Company, Legal incl. Credits).
+### 6.1 Landing (/): elenkus layout, Algogym brand
+Decided 2026-11-26 (DECISIONS.md). The structure follows elenkus.in: a serif statement and an off-white "paper" card up top, then sticky copy on the left beside **live product demos** on the right, built from the real app components. Resend's polish bar (§6 intro) still applies. The brand stays ours: Instrument Serif for statements, Hanken Grotesk for UI, near-black surfaces, and emerald **only** on the main CTA. No text, images or code from elenkus or Resend. Copy is original, in Indian English, written with the `design:ux-copy` skill, and every number is real and cited.
+
+1. **Nav**: logo on the left; Features ▾ · Companies · Pricing · Arena (Soon) in the centre; Log in and Get started on the right. On mobile, logo plus a menu sheet.
+2. **Hero**:
+   - A large serif statement (72–96 px desktop, 44–52 px mobile), e.g. "Walk into your interview ready."
+   - Under it, a full-width **paper card** (`#F1F0EA` background, `#0B0B0D` text, 24 px radius) with a serif line, one sentence of subtext, and **Get started** (emerald) plus "Explore the roadmap" (ghost, dark).
+   - Beside or behind the card, the **3D roadmap scene** (§3.1).
+3. **How it works**: one row per step. Copy sticks on the left (H3 in Hanken Grotesk 600 and ≤ 3 lines of body) while the demo card on the right scrolls past. Each demo is interactive and uses real components with sample data:
+   1. *Pick your target*: company, role, weeks left and hours a day, which turns into a weekly plan.
+   2. *Tick off what you already know*: a topic checklist. Unticked topics become lessons placed before you need them.
+   3. *Your roadmap is a path you unlock*: a mini roadmap of nodes with done, current and locked states and connector lines.
+   4. *Solve it in your browser*: a mini flux-style editor (§6.6) where Run streams "Case 1 · Accepted · 12 ms" lines.
+   5. *Stuck? One hint at a time*: hints that open in order, with the last one stopping short of the code.
+4. **Statement card**: a paper card with a serif H2 (e.g. "Solving isn't the same as remembering") and one line of evidence. The sticky rows that follow cite real learning-science findings (retrieval practice, spacing, worked examples), each with its source. No invented statistics; leave a claim out rather than guess.
+5. **Feature grid**: 2 columns on desktop, 1 on mobile. Each card has a small monochrome illustration panel (`--surface-2`, 16 px radius) on top, a serif title and 2 lines of copy. Cards: Roadmaps, Company prep, Hidden tests in 4 languages, Study plans, My Prep, Rooms for interviewers (Soon).
+6. **Practice by company**: 8 company cards from the M7 metadata (logo, problem count, top 2 patterns), then "See all companies ›".
+7. **Pricing teaser**: Free and Pro side by side, plus "See pricing ›".
+8. **Final CTA**: a paper card with "Start preparing today" and Get started, then the footer in 4 columns (Product, Learn, Company, Legal incl. Credits).
+
+- **Motion:** sticky rows fade and rise in once (600 ms, §2.4), and demos animate only while visible. With `prefers-reduced-motion`, everything is static, demos show their end state and the 3D scene shows its poster.
+- **Mobile (< 768 px):** every sticky row stacks as copy then demo, with no sticky behaviour. Demos stay tappable at 375 px with no horizontal scroll. Paper cards use 16 px padding and an 18 px radius.
+- **Done means:** Impeccable gate (§9), Lighthouse ≥ 90 on mobile performance and accessibility, and checks at 375, 768, 1024 and 1440 px.
 
 ### 6.2 Pricing (/pricing) — Resend layout
 - Serif "Pricing" centred, subtext "Learn free. Upgrade when you're ready."

@@ -199,13 +199,14 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 - [ ] A user can follow a study plan, see progress and streak in My Prep, and add and remove notes, bookmarks and list items. All of it is owner-only under RLS.
 
 #### M16 · Landing page (2–3 sessions)
-**Goal:** the Resend-style landing page from PRD §7.1 and DESIGN.md §6.1. Its previews (workspace, roadmap, Learn, My Prep) come from the real screens built in M9–M15.
-**Files:** `src/app/page.tsx` and `src/components/landing/*` (one file per section). Hero media: `public/media/cube.{webm,mp4}` and `cube-poster.webp`, either a placeholder poster until the render exists or the poster alone. `scripts/data/build-icons.mjs` writes `public/icons` and `iconMap.ts`.
+**Goal:** the landing page in DESIGN.md §6.1: elenkus-style sticky copy beside live demos, in the Algogym brand, with the three.js roadmap hero (§3.1). PRD §7.1 sets the content. Demos use the real components from M9–M15 with sample data.
+**Files:** `src/app/page.tsx`, `src/components/landing/*` (one file per section) and `src/components/landing/RoadmapScene.tsx` (three.js, dynamically imported). `public/media/roadmap-poster.webp`. `scripts/data/build-icons.mjs` writes `public/icons` and `iconMap.ts`.
 **Done when:**
-- [ ] All 12 sections are in order. Testimonials stay hidden. Previews are real screens or captures of them, not mock-ups.
-- [ ] Mid-range Android over 4G gets LCP < 2.5 s (Lighthouse mobile). Reduced motion shows the poster.
-- [ ] No fake numbers. Live stats come from the database or are left out.
-- [ ] Impeccable gate passes.
+- [ ] All 8 sections are in order. Each "How it works" demo is interactive and uses real components. Copy is original and written with the `design:ux-copy` skill.
+- [ ] Hero: the three.js scene loads after first paint within its 150 KB gzip budget and pauses offscreen. The poster shows below 768 px, with reduced motion, with Save-Data and without WebGL, with no layout shift.
+- [ ] Mid-range Android over 4G gets LCP < 2.5 s (Lighthouse mobile). Lighthouse mobile performance and accessibility ≥ 90.
+- [ ] No fake numbers: live stats come from the database, and research claims are cited or left out.
+- [ ] Checked at 375, 768, 1024 and 1440 px with no horizontal scroll. Impeccable gate passes.
 
 ### Week 6 — Monetization and launch
 
