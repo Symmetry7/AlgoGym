@@ -6,10 +6,10 @@ import { ButtonLink, focusRing, Logo } from "./ui";
 
 // Only routes that exist: a link to a 404 is broken UI, and Next keeps its prefetch open forever.
 // Added back by their milestones (docs/BUILD_GUIDE.md): Roadmap (M13), Companies (M12), Arena (M18);
-// Interview moves to /interview in M7.
+// Interview moved to /interview in M6 (HR and SQL); the rest of the old section stays at /interview-preparations.
 export const APP_NAV: NavItem[] = [
   { href: "/problems", label: "Problems" },
-  { href: "/interview-preparations", label: "Interview" },
+  { href: "/interview", label: "Interview" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -92,7 +92,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
 const FOOTER: { title: string; links: { href: string; label: string }[] }[] = [
   // Companies (M12), Arena (M18), Roadmap (M13), Study plans (M15), Credits and Terms (M18) join when built.
   { title: "Product", links: [{ href: "/problems", label: "Problems" }, { href: "/pricing", label: "Pricing" }] },
-  { title: "Learn", links: [{ href: "/interview-preparations", label: "Interview prep" }] },
+  { title: "Learn", links: [{ href: "/interview", label: "Interview prep" }] },
   { title: "Company", links: [{ href: "/pricing", label: "For colleges" }] },
   { title: "Legal", links: [{ href: "/privacy", label: "Privacy" }] },
 ];
