@@ -108,14 +108,15 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
   - The judge interface, plus a **local** adapter that compiles and runs trusted reference code on the dev machine or CI runner.
   - **Generators** that build the starter stub and the hidden harness for all 4 languages from `meta.json`'s signature, honouring per-language overrides. Harnesses follow the one-process, JSON-line, `not_run` contract in SYSTEM_ARCHITECTURE.md §4.2, so M11 reuses them unchanged.
 - `scripts/data/validate-problems.mjs`: checks that `meta.json` matches its schema, then runs every reference solution against every test through the judge interface, and compiles each generated (or overridden) starter + harness pair.
+- `packages/judge/src/gen.mjs` + `scripts/data/generate-tests.mjs`: seeded max-size tests from an optional `tests/gen.mjs` per problem, written as `tests/hidden/gNN.*` with outputs from the JavaScript reference.
 - `scripts/data/seed-problems.mjs`: idempotent upsert by slug into problems, problem_languages, test_cases, hints and editorials.
 - CI job: the validator, with Node, Python, g++ and a JDK on the runner.
 
 **Done when:**
-- [ ] The generators produce compiling starters and harnesses for every signature type in the schema (a test per type).
-- [ ] 3 sample problems validate in all 4 languages.
-- [ ] They seed cleanly, and a second seed run changes nothing.
-- [ ] The validator runs in CI and fails the build on a broken test or solution.
+- [x] The generators produce compiling starters and harnesses for every signature type in the schema (a test per type).
+- [x] 3 sample problems validate in all 4 languages. (All 20 C1/C2 problems and the template validate.)
+- [ ] They seed cleanly, and a second seed run changes nothing. (Waits for the M4 schema on staging.)
+- [x] The validator runs in CI and fails the build on a broken test or solution.
 
 #### M6 · Interview Prep migration (1–2 sessions)
 **Goal:** the existing HR/SQL content lives in `interview_items` and renders in the new UI at `/interview`.
