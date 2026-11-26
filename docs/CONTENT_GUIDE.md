@@ -62,6 +62,26 @@ Use only the standard library. Reference solutions are the editorial's approach,
 
 The starter stub and the hidden driver for each language are **generated from `meta.json`'s signature** (M5), following the judge contract in [SYSTEM_ARCHITECTURE.md §4.2](./SYSTEM_ARCHITECTURE.md#42-code-harness). A problem that needs something unusual can add `starter/` or `harness/` overrides. This replaces hand-writing 8 files per problem (approved, see DECISIONS.md).
 
+- Generator: `packages/judge/src/generate.mjs`. Overrides use the solution file names in `starter/` (`solution.js`, `solution.py`, `solution.cpp`, `Solution.java`) and `harness.js`, `harness.py`, `harness.cpp` and `Main.java` in `harness/`. A harness override must keep the `__AG_USER_CODE__`, `__AG_NONCE__` and `__AG_BUDGET_MS__` markers.
+- C++ code is compiled with `#include <bits/stdc++.h>` and `using namespace std;` already in place, and Python with `from typing import *`.
+
+### Generated max-size tests
+
+Large inputs can come from a seeded generator instead of hand-made files. Add `tests/gen.mjs` (see `_template/tests/gen.mjs`): it exports a `seed` and a default function that returns a list of argument lists, built with the helpers in `packages/judge/src/gen.mjs` (`int`, `arr`, `word`, `words`, `pick`, `sorted`). `npm run content:gen -- <folder>` writes them as `tests/hidden/g01.in`, `g02.in`, … with outputs from the JavaScript reference solution. Commit the generated files. The validator fails if they don't match `gen.mjs`.
+
+### Validate before review
+
+`npm run content:validate` (or `npm run content:validate -- <folder>`) checks a problem the way CI does:
+
+- `meta.json` matches the schema.
+- Statement, hints, editorial and all 4 solutions exist.
+- There are 2–3 public tests and at least 10 hidden ones.
+- Every test value fits its declared type (an `int` must fit in 32 bits).
+- Generated tests are up to date.
+- In all 4 languages, the starter compiles and the reference solution passes every test.
+
+It warns when a reference solution has less than 3× margin under `time_ms_per_case`. It needs Node, Python 3 (`py` on Windows, `python3` elsewhere, or set `AG_PYTHON`), g++ and a JDK on `PATH`.
+
 ### Tests checklist
 
 - [ ] 2–3 public tests that teach: a normal case, plus one that shows a rule from the statement
