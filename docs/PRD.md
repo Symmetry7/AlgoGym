@@ -12,7 +12,7 @@ Algogym is an interview-preparation platform for students and working developers
 
 - **Learning model:** TensorTonic-style roadmaps. Every roadmap node opens a free lesson, and every lesson leads into that topic's problems.
 - **Practice model:** a LeetCode-style problem bank and in-browser workspace, with company-wise prep.
-- **Look and feel:** Resend-style marketing site (pure black, light beams, serif headlines, glass cube) with an emerald accent.
+- **Look and feel:** marketing site with Resend's polish and elenkus.in's layout (serif statements, paper cards, live product demos, a three.js 3D roadmap hero) and an emerald accent. See DESIGN.md §6.1.
 - **Business model:** learning is free; students pay for Pro; interviewers and colleges pay monthly for Rooms (v1.1).
 
 ## 2. Problem
@@ -42,7 +42,7 @@ Interview prep in India is scattered across LeetCode, GFG, YouTube playlists, PD
 | Existing users | Production has real users: migrate accounts, archive old tables, additive migrations only |
 | Student Pro | ₹199/month or ₹1,499/year |
 | Rooms pricing | Starter ₹999/month (25 candidates), Pro ₹2,999/month (100 candidates), Colleges: custom |
-| Design | Resend-style dark site, emerald #22C55E for buttons and highlights, pre-rendered glass cube loop |
+| Design | Dark site with Resend's polish and elenkus.in's layout, emerald #22C55E for the main CTA, real-time three.js roadmap hero |
 | Hero | Pure Resend layout: badge, serif headline, subtext, two buttons, cube |
 | Architecture diagram | Eraser, plus Mermaid inside SYSTEM_ARCHITECTURE.md |
 | Icons | Devicon (languages/tech), Simple Icons (company and source logos), Lucide (UI glyphs); self-hosted, monochrome by default |
@@ -102,6 +102,7 @@ Onboarding flow, ID/college verification, external solve tracking (provider sync
 ## 7. Feature requirements
 
 ### 7.1 Marketing site
+> Superseded on 2026-11-26 by DESIGN.md §6.1 (elenkus layout, 8 sections, three.js hero; DECISIONS.md). The table below records the original plan.
 **Landing page (/)** — Resend structure, interview-prep content. Section order:
 
 | # | Section | Content |
