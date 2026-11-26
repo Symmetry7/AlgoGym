@@ -89,10 +89,10 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 **Goal:** the v1.0 tables in SYSTEM_ARCHITECTURE.md §5 exist, with RLS, without touching anything the legacy app uses.
 **Files:** additive migrations in `supabase/migrations/` covering: tracks, roadmap_layers, topics, quiz_questions, problems (new columns or a new table, reconciled with the existing `problems`), problem_languages, test_cases, hints, editorials, patterns and tags, companies and problem_companies, submissions, user_problem_status, user_topic_progress, notes, bookmarks, lists, daily_problems, study_plans, interview_items, entitlements and waitlist. Generated types in `packages/db`. New names must not collide with legacy tables (e.g. legacy `study_notes` vs new `notes`).
 **Done when:**
-- [ ] Applied cleanly on a staging or branch database. Every statement is additive: no rename, move, drop, or new constraint on an existing table.
-- [ ] The legacy app (`release/legacy`) still works against the migrated database: spot-check sign-in, Symm AI, societies and Interview Prep.
-- [ ] RLS is in place: hidden `test_cases` and `harness_code` are service-role only, `submissions` is owner-only `SELECT`, and gated tables check entitlements.
-- [ ] Vitest or SQL tests prove a user can't read hidden tests or another user's submission.
+- [x] Applied cleanly on a staging or branch database. Every statement is additive: no rename, move, drop, or new constraint on an existing table. (Staging `algogym-staging`, 2026-11-26: all 50 earlier migrations replayed without errors, then M4.)
+- [x] The legacy app (`release/legacy`) still works against the migrated database: spot-check sign-in, Symm AI, societies and Interview Prep. (Session, account state, Interview Prep, societies, Symm AI and billing APIs all return 200. An interactive Google/email sign-in still needs a person.)
+- [x] RLS is in place: hidden `test_cases` and `harness_code` are service-role only, `submissions` is owner-only `SELECT`, and gated tables check entitlements.
+- [x] Vitest or SQL tests prove a user can't read hidden tests or another user's submission. (`scripts/sql/rls-v1-content-tests.sql`, run with `node scripts/ops/staging-sql.mjs test …`.)
 
 #### M5 · Problem authoring pipeline (2–3 sessions)
 **Goal:** problems are authored as reviewable files, validated automatically and seeded idempotently.
