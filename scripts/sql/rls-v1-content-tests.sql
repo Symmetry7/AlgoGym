@@ -55,7 +55,7 @@ do $$ begin
   if exists (select 1 from public.editorials) then raise exception 'FAIL user: editorial readable without Pro'; end if;
   if exists (select 1 from public.hints where body_md = 'pro hint') then raise exception 'FAIL user: Pro problem hint readable without Pro'; end if;
   if exists (select 1 from public.problem_companies where timeframe <> 'all') then raise exception 'FAIL user: 30-day frequency readable without Pro'; end if;
-  if (select starter_code from public.problem_languages limit 1) is null then raise exception 'FAIL user: starter code not readable'; end if;
+  if (select starter_code from public.problem_languages where problem_id = '00000000-0000-4000-8000-0000000000f1') is null then raise exception 'FAIL user: starter code not readable'; end if;
 end $$;
 do $$ begin perform harness_code from public.problem_languages; raise exception 'FAIL user: harness_code readable';
 exception when insufficient_privilege then null; end $$;
@@ -105,7 +105,7 @@ reset role;
 set local role service_role;
 do $$ begin
   if (select count(*) from public.test_cases where is_hidden and problem_id::text like '00000000-0000-4000-8000-0000000000f%') <> 1 then raise exception 'FAIL service: hidden test case not readable'; end if;
-  if (select harness_code from public.problem_languages limit 1) <> 'SECRET HARNESS' then raise exception 'FAIL service: harness not readable'; end if;
+  if (select harness_code from public.problem_languages where problem_id = '00000000-0000-4000-8000-0000000000f1') <> 'SECRET HARNESS' then raise exception 'FAIL service: harness not readable'; end if;
   if (select count(*) from public.submissions where problem_id::text like '00000000-0000-4000-8000-0000000000f%') <> 2 then raise exception 'FAIL service: submissions not readable'; end if;
 end $$;
 
