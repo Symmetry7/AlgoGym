@@ -155,6 +155,8 @@ Onboarding flow, ID/college verification, external solve tracking (provider sync
 - Not included: coins, rewards, contests, friends. Acceptance % hidden until 50+ submissions.
 
 ### 7.6 Workspace (/problems/[slug]) — modelled on TensorTonic's problem page
+> Layout and visual spec: DESIGN.md §6.6, floating panels (DECISIONS.md 2026-11-26). It supersedes the split pane below. The features listed here still apply.
+
 - Top bar: problem-list drawer, prev/next, breadcrumb, source badge + "View original".
 - Resizable, collapsible split pane.
 - Left tabs: Description · Theory · Solution (Pro) · Submissions · Notes · Report.
