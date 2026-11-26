@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320" role="img" aria-labelledby="t">
+<title id="t">A row of eight cells scanned left to right; a box under the scan holds two counters, current and best.</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#22C55E"/></marker>
+<marker id="arrowMuted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#A1A1AA"/></marker></defs>
+<rect width="800" height="320" rx="16" fill="#0B0B0D"/>
+<text x="400" y="40" fill="#F5F5F7" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" text-anchor="middle">One pass: carry what you need, never re-read</text>
+<rect x="116" y="84" width="64" height="64" rx="10" fill="rgba(34,197,94,0.14)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="148" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">3</text>
+<text x="148" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">0</text>
+<rect x="188" y="84" width="64" height="64" rx="10" fill="rgba(34,197,94,0.14)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="220" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">1</text>
+<text x="220" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">1</text>
+<rect x="260" y="84" width="64" height="64" rx="10" fill="rgba(34,197,94,0.14)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="292" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">4</text>
+<text x="292" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">2</text>
+<rect x="332" y="84" width="64" height="64" rx="10" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="364" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">1</text>
+<text x="364" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">3</text>
+<rect x="404" y="84" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="436" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">5</text>
+<text x="436" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">4</text>
+<rect x="476" y="84" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="508" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">9</text>
+<text x="508" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">5</text>
+<rect x="548" y="84" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="580" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">2</text>
+<text x="580" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">6</text>
+<rect x="620" y="84" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="652" y="123" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="20" font-weight="400" text-anchor="middle">6</text>
+<text x="652" y="168" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">7</text>
+<line x1="122" y1="70" x2="390" y2="70" stroke="#22C55E" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="364" y="194" fill="#22C55E" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle">▲ scan</text>
+<rect x="250" y="214" width="300" height="70" rx="12" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)"/>
+<text x="325" y="242" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle">current</text>
+<text x="325" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="22" font-weight="400" text-anchor="middle">4</text>
+<text x="475" y="242" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle">best</text>
+<text x="475" y="270" fill="#22C55E" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="22" font-weight="400" text-anchor="middle">4</text>
+</svg>

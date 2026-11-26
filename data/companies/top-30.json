@@ -1,0 +1,340 @@
+{
+  "source": "https://github.com/liquidslr/leetcode-company-wise-problems",
+  "sourceCommit": "2b71796266751b4736a7ef180efb6847879166ee",
+  "sourceDate": "2026-10-20",
+  "license": "None stated by the source repository: company names and counts only (docs/PRD.md §8).",
+  "rankedBy": "Distinct questions in the company's 'All' list",
+  "companiesInSource": 470,
+  "top": [
+    {
+      "rank": 1,
+      "name": "Google",
+      "slug": "google",
+      "questions": {
+        "thirtyDays": 154,
+        "threeMonths": 452,
+        "sixMonths": 793,
+        "all": 2324
+      }
+    },
+    {
+      "rank": 2,
+      "name": "Amazon",
+      "slug": "amazon",
+      "questions": {
+        "thirtyDays": 114,
+        "threeMonths": 443,
+        "sixMonths": 733,
+        "all": 2015
+      }
+    },
+    {
+      "rank": 3,
+      "name": "Meta",
+      "slug": "meta",
+      "questions": {
+        "thirtyDays": 27,
+        "threeMonths": 162,
+        "sixMonths": 353,
+        "all": 1396
+      }
+    },
+    {
+      "rank": 4,
+      "name": "Microsoft",
+      "slug": "microsoft",
+      "questions": {
+        "thirtyDays": 47,
+        "threeMonths": 207,
+        "sixMonths": 382,
+        "all": 1371
+      }
+    },
+    {
+      "rank": 5,
+      "name": "Bloomberg",
+      "slug": "bloomberg",
+      "questions": {
+        "thirtyDays": 24,
+        "threeMonths": 180,
+        "sixMonths": 405,
+        "all": 1239
+      }
+    },
+    {
+      "rank": 6,
+      "name": "Uber",
+      "slug": "uber",
+      "questions": {
+        "thirtyDays": 1,
+        "threeMonths": 5,
+        "sixMonths": 33,
+        "all": 336
+      }
+    },
+    {
+      "rank": 7,
+      "name": "TikTok",
+      "slug": "tiktok",
+      "questions": {
+        "thirtyDays": 4,
+        "threeMonths": 18,
+        "sixMonths": 36,
+        "all": 317
+      }
+    },
+    {
+      "rank": 8,
+      "name": "Apple",
+      "slug": "apple",
+      "questions": {
+        "thirtyDays": 4,
+        "threeMonths": 26,
+        "sixMonths": 64,
+        "all": 282
+      }
+    },
+    {
+      "rank": 9,
+      "name": "Oracle",
+      "slug": "oracle",
+      "questions": {
+        "thirtyDays": 3,
+        "threeMonths": 10,
+        "sixMonths": 14,
+        "all": 282
+      }
+    },
+    {
+      "rank": 10,
+      "name": "tcs",
+      "slug": "tcs",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 39,
+        "sixMonths": 95,
+        "all": 264
+      }
+    },
+    {
+      "rank": 11,
+      "name": "Infosys",
+      "slug": "infosys",
+      "questions": {
+        "thirtyDays": 4,
+        "threeMonths": 77,
+        "sixMonths": 119,
+        "all": 254
+      }
+    },
+    {
+      "rank": 12,
+      "name": "Goldman Sachs",
+      "slug": "goldman-sachs",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 18,
+        "sixMonths": 35,
+        "all": 246
+      }
+    },
+    {
+      "rank": 13,
+      "name": "Salesforce",
+      "slug": "salesforce",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 11,
+        "sixMonths": 33,
+        "all": 196
+      }
+    },
+    {
+      "rank": 14,
+      "name": "LinkedIn",
+      "slug": "linkedin",
+      "questions": {
+        "thirtyDays": 6,
+        "threeMonths": 15,
+        "sixMonths": 19,
+        "all": 171
+      }
+    },
+    {
+      "rank": 15,
+      "name": "IBM",
+      "slug": "ibm",
+      "questions": {
+        "thirtyDays": 7,
+        "threeMonths": 14,
+        "sixMonths": 24,
+        "all": 166
+      }
+    },
+    {
+      "rank": 16,
+      "name": "Visa",
+      "slug": "visa",
+      "questions": {
+        "thirtyDays": 1,
+        "threeMonths": 7,
+        "sixMonths": 24,
+        "all": 150
+      }
+    },
+    {
+      "rank": 17,
+      "name": "Adobe",
+      "slug": "adobe",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 8,
+        "sixMonths": 15,
+        "all": 147
+      }
+    },
+    {
+      "rank": 18,
+      "name": "Zoho",
+      "slug": "zoho",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 3,
+        "sixMonths": 9,
+        "all": 144
+      }
+    },
+    {
+      "rank": 19,
+      "name": "Walmart Labs",
+      "slug": "walmart-labs",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 6,
+        "sixMonths": 14,
+        "all": 135
+      }
+    },
+    {
+      "rank": 20,
+      "name": "Nvidia",
+      "slug": "nvidia",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 10,
+        "sixMonths": 20,
+        "all": 131
+      }
+    },
+    {
+      "rank": 21,
+      "name": "Yandex",
+      "slug": "yandex",
+      "questions": {
+        "thirtyDays": 2,
+        "threeMonths": 11,
+        "sixMonths": 25,
+        "all": 120
+      }
+    },
+    {
+      "rank": 22,
+      "name": "DE Shaw",
+      "slug": "de-shaw",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 7,
+        "sixMonths": 15,
+        "all": 107
+      }
+    },
+    {
+      "rank": 23,
+      "name": "Accenture",
+      "slug": "accenture",
+      "questions": {
+        "thirtyDays": 1,
+        "threeMonths": 6,
+        "sixMonths": 15,
+        "all": 101
+      }
+    },
+    {
+      "rank": 24,
+      "name": "Snowflake",
+      "slug": "snowflake",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 3,
+        "sixMonths": 17,
+        "all": 100
+      }
+    },
+    {
+      "rank": 25,
+      "name": "Flipkart",
+      "slug": "flipkart",
+      "questions": {
+        "thirtyDays": 1,
+        "threeMonths": 5,
+        "sixMonths": 9,
+        "all": 93
+      }
+    },
+    {
+      "rank": 26,
+      "name": "PayPal",
+      "slug": "paypal",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 1,
+        "sixMonths": 2,
+        "all": 93
+      }
+    },
+    {
+      "rank": 27,
+      "name": "PhonePe",
+      "slug": "phonepe",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 5,
+        "sixMonths": 8,
+        "all": 92
+      }
+    },
+    {
+      "rank": 28,
+      "name": "Snap",
+      "slug": "snap",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 3,
+        "sixMonths": 6,
+        "all": 83
+      }
+    },
+    {
+      "rank": 29,
+      "name": "Cisco",
+      "slug": "cisco",
+      "questions": {
+        "thirtyDays": 0,
+        "threeMonths": 1,
+        "sixMonths": 4,
+        "all": 77
+      }
+    },
+    {
+      "rank": 30,
+      "name": "Citadel",
+      "slug": "citadel",
+      "questions": {
+        "thirtyDays": 1,
+        "threeMonths": 7,
+        "sixMonths": 7,
+        "all": 75
+      }
+    }
+  ]
+}
