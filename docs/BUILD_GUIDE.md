@@ -108,14 +108,15 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
   - The judge interface, plus a **local** adapter that compiles and runs trusted reference code on the dev machine or CI runner.
   - **Generators** that build the starter stub and the hidden harness for all 4 languages from `meta.json`'s signature, honouring per-language overrides. Harnesses follow the one-process, JSON-line, `not_run` contract in SYSTEM_ARCHITECTURE.md §4.2, so M11 reuses them unchanged.
 - `scripts/data/validate-problems.mjs`: checks that `meta.json` matches its schema, then runs every reference solution against every test through the judge interface, and compiles each generated (or overridden) starter + harness pair.
+- `packages/judge/src/gen.mjs` + `scripts/data/generate-tests.mjs`: seeded max-size tests from an optional `tests/gen.mjs` per problem, written as `tests/hidden/gNN.*` with outputs from the JavaScript reference.
 - `scripts/data/seed-problems.mjs`: idempotent upsert by slug into problems, problem_languages, test_cases, hints and editorials.
 - CI job: the validator, with Node, Python, g++ and a JDK on the runner.
 
 **Done when:**
-- [ ] The generators produce compiling starters and harnesses for every signature type in the schema (a test per type).
-- [ ] 3 sample problems validate in all 4 languages.
-- [ ] They seed cleanly, and a second seed run changes nothing.
-- [ ] The validator runs in CI and fails the build on a broken test or solution.
+- [x] The generators produce compiling starters and harnesses for every signature type in the schema (a test per type).
+- [x] 3 sample problems validate in all 4 languages. (All 20 C1/C2 problems and the template validate.)
+- [ ] They seed cleanly, and a second seed run changes nothing. (Waits for the M4 schema on staging.)
+- [x] The validator runs in CI and fails the build on a broken test or solution.
 
 #### M6 · Interview Prep migration (1–2 sessions)
 **Goal:** the existing HR/SQL content lives in `interview_items` and renders in the new UI at `/interview`.
@@ -145,6 +146,11 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 - [ ] The panes resize and collapse. All 4 languages load their starter code from the seeded problems.
 - [ ] The locked state renders. Mobile uses "Problem · Code · Result" tabs.
 - [ ] Monaco isn't part of the first-load bundle of other pages.
+- [ ] Floating-panel layout per DESIGN.md §6.6: 12 px gaps, 16 px-radius `--surface-1` cards with a 1 px `--border`, no edge-to-edge panes. One floating top bar with back, a breadcrumb (title in Hanken Grotesk, id in Geist Mono) and a language picker with a muted version ("Python 3.12"). Run is an off-white pill with a black play icon, Submit is the emerald primary.
+- [ ] Ctrl+Enter runs and Ctrl+Shift+Enter submits (⌘ on macOS), from the editor and anywhere on the page.
+- [ ] Three panels at ≥ 1280 px. Output · Input · Tests dock under the editor at 768–1279 px. Tabs "Problem · Code · Result" below 768 px. Checked at 375, 1024 and 1440 px.
+- [ ] Editor: a muted Geist Mono file-name label, faint line numbers, a subtle current-line highlight and no minimap. The Output · Input · Tests tabs have Lucide icons, and every empty state says what to do ("Run your code to see output. Ctrl+Enter works too.").
+- [ ] Monochrome UI: emerald only on Submit, passed cases and focus. No presence avatars or Share (Rooms, v1.1).
 
 #### M10 · Engine skeleton (1–2 sessions)
 **Goal:** `apps/engine`, an Express service with HMAC-verified `POST /v1/jobs`, BullMQ on Redis and `/v1/health`, deployed to Railway.

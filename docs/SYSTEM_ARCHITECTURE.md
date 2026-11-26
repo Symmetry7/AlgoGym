@@ -146,7 +146,7 @@ sequenceDiagram
 Each problem has, per language, `starter_code` (what the user sees) and `harness_code` (hidden driver). The worker concatenates user code + harness and sends **one** Judge0 submission whose stdin holds every case input.
 
 The harness, in one process:
-1. Reads all case inputs from stdin.
+1. Reads all case inputs from stdin: one JSON argument list per line (implementation: `packages/judge`, format in DECISIONS.md 2026-11-26).
 2. For each case in order: checks the remaining overall time budget; if it is used up, stops and exits cleanly. Otherwise it calls the user's function, times the call itself, and prints **one JSON line** (`{"case":3,"ms":4,"output":…}` or `{"case":3,"error":"…"}`), flushing stdout immediately.
 3. Lines carry a per-job nonce embedded in the harness source, so anything the user's code prints goes to console output instead of being read as a result.
 

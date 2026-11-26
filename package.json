@@ -15,11 +15,14 @@
     "lint": "eslint .",
     "design:check": "impeccable detect apps/web/src/components/shell apps/web/src/app/%5Fdesign apps/web/src/styles",
     "format.fix": "prettier --write .",
-    "billing:setup": "node scripts/ops/setup-razorpay-plans.mjs"
+    "billing:setup": "node scripts/ops/setup-razorpay-plans.mjs",
+    "content:validate": "node scripts/data/validate-problems.mjs",
+    "content:gen": "node scripts/data/generate-tests.mjs"
   },
   "devDependencies": {
     "@next/env": "16.4.6",
     "@supabase/supabase-js": "2.118.0",
+    "ajv": "^8.17.1",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "impeccable": "^4.11.0",
