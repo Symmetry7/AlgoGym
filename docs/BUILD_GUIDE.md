@@ -115,7 +115,7 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 **Done when:**
 - [x] The generators produce compiling starters and harnesses for every signature type in the schema (a test per type).
 - [x] 3 sample problems validate in all 4 languages. (All 20 C1/C2 problems and the template validate.)
-- [ ] They seed cleanly, and a second seed run changes nothing. (Waits for the M4 schema on staging.)
+- [x] They seed cleanly, and a second seed run changes nothing. (All 20 seeded to staging with `--include-drafts`: 501 rows, then 0 changes on the second run.)
 - [x] The validator runs in CI and fails the build on a broken test or solution.
 
 #### M6 · Interview Prep migration (1–2 sessions)

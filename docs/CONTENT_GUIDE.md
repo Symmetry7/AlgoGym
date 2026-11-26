@@ -82,6 +82,10 @@ Large inputs can come from a seeded generator instead of hand-made files. Add `t
 
 It warns when a reference solution has less than 3× margin under `time_ms_per_case`. It needs Node, Python 3 (`py` on Windows, `python3` elsewhere, or set `AG_PYTHON`), g++ and a JDK on `PATH`.
 
+### Seeding
+
+`node scripts/data/seed-problems.mjs [--env .env.staging.local] [--include-drafts] [--dry-run] [folder...]` loads problems into Postgres: `catalog_problems`, `problem_languages` (generated or overridden starter and harness), `test_cases`, `hints` (one per numbered item in `hints.md`), `editorials` (with the 4 solutions), and `tags`/`patterns` from `meta.json`. Only `ready` problems are seeded; `--include-drafts` adds `draft` and `review` problems on staging. It writes only what differs, so a second run reports 0 changes. It never deletes a problem and refuses the production project unless `--production` is passed.
+
 ### Tests checklist
 
 - [ ] 2–3 public tests that teach: a normal case, plus one that shows a rule from the statement
