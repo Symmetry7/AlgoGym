@@ -165,13 +165,37 @@ Three sources, each with one job. Never mix styles inside one component, never h
 - Right: daily calendar card (today = emerald filled circle, solved days = emerald dot), trending companies card, progress card.
 - Mobile: single column; sidebars become drawers from the top bar.
 
-### 6.6 Workspace (/problems/[slug])
-- Top bar 48 px: logo, list drawer, prev/next, breadcrumb, source badge + "View original ↗", Run (secondary) and Submit (primary) on the right.
-- Split pane 45/55, draggable gutter, each side collapsible.
-- Left: tabs with icons; statement typography 15/1.65; examples in `--surface-2` blocks; hints as accordions; interactive visual in a glass panel with a slider.
-- Right: Monaco with a custom dark theme matching tokens (background `--surface-1`, selection `--accent-soft`, cursor emerald); bottom panel 35% height with Testcase / Test Result tabs; passed case chips = emerald dot, failed = red dot.
-- Locked state: blurred statement after the first paragraph + upgrade card.
-- Mobile: tabs "Problem · Code · Result".
+### 6.6 Workspace (/problems/[slug]): floating panels
+Modelled on the flux.rq3.workers.dev editor (2026-11-26, DECISIONS.md). The page is `--bg-app` with floating cards on it, never edge-to-edge panes.
+
+- **Panels:** 12 px gap around and between every panel and the top bar. Each panel is a `--surface-1` card with a 1 px `--border` and 16 px radius, and scrolls inside itself. The 12 px gaps double as drag handles for resizing (hairline `--border-strong` on hover, `col-resize`/`row-resize` cursor, arrow keys when focused). Each panel can collapse.
+- **Top bar:** one floating rounded bar (16 px radius, 48 px tall), in this order:
+  - Back (to the problems list), then the breadcrumb: the problem title in Hanken Grotesk `--text` and the id in Geist Mono `--text-faint` (e.g. "Quiet Hours  AG 12"). Prev/next go in the back menu, not as extra buttons.
+  - On the right, the language picker shows the name plus a muted version ("Python 3.12", version in `--text-faint`). Versions come from the judge's language config, not hard-coded.
+  - **Run** is a light off-white pill (`--text` background, `--bg` text) with a black circular play icon.
+  - **Submit** is the emerald primary button.
+  - Shortcuts: Ctrl+Enter runs and Ctrl+Shift+Enter submits (⌘ on macOS). Both buttons show the shortcut in their tooltip.
+- **Layout by width:**
+  - ≥ 1280 px: three columns, Problem | Editor | Output · Input · Tests (default 34 / 41 / 25 %).
+  - 768–1279 px: two columns, Problem | Editor, with Output · Input · Tests docked under the editor at 35 % height.
+  - < 768 px: one panel with tabs "Problem · Code · Result". Run and Submit stay in the top bar.
+- **Problem panel:**
+  - Tabs with small Lucide icons (16 px, `--text-muted`, the active tab `--text` on `--surface-3`).
+  - Statement typography is 15/1.65, examples sit in `--surface-2` blocks, and hints are accordions.
+  - Locked state: the statement blurs after its first paragraph, with an upgrade card.
+- **Editor panel:**
+  - The header shows the file name in muted Geist Mono (`solution.py`, `solution.js`, `solution.cpp`, `Solution.java`).
+  - Monaco runs with a custom theme: background `--surface-1`, line numbers `--text-faint`, a subtle current-line highlight (`rgba(255,255,255,0.03)`), selection `rgba(255,255,255,0.10)` and cursor `--text`.
+  - No minimap. Geist Mono 13–14 px.
+- **Output · Input · Tests panel:** tabs with small Lucide icons (Terminal, TextCursorInput, ListChecks).
+  - A passed case shows an emerald dot and "Accepted". A failed case shows a `--hard` dot and the verdict in words.
+  - Every state has a text label; colour never carries the meaning alone.
+- **Empty states say what to do:**
+  - Output: "Run your code to see output. Ctrl+Enter works too."
+  - Tests: "Submit to check every hidden test. Ctrl+Shift+Enter works too."
+  - Input: "Edit an example below to try your own input."
+- **Colour:** the UI is monochrome. Emerald appears only on Submit, passed cases and focus rings.
+- **Not in practice mode:** presence avatars and a Share button in the top bar belong to Rooms (v1.1, M21+).
 
 ### 6.7 Companies, My Prep, Study plans
 - Companies grid: 4 columns of cards (logo 32 px, name, "214 problems", top patterns chips).
