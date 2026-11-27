@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320" role="img" aria-labelledby="t">
+<title id="t">A min-heap holding 2, 5, 3, 9, 6 and 8, drawn as a tree with 2 at the top and as the array [2, 5, 3, 9, 6, 8], where the children of index i sit at 2i + 1 and 2i + 2.</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#22C55E"/></marker>
+<marker id="arrowMuted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#A1A1AA"/></marker></defs>
+<rect width="800" height="320" rx="16" fill="#0B0B0D"/>
+<text x="400" y="36" fill="#F5F5F7" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" text-anchor="middle">A min-heap: every parent is at most its children</text>
+<line x1="400" y1="94" x2="300" y2="114" stroke="#84848D" stroke-width="1.5"/>
+<line x1="400" y1="94" x2="500" y2="114" stroke="#84848D" stroke-width="1.5"/>
+<line x1="300" y1="154" x2="250" y2="174" stroke="#84848D" stroke-width="1.5"/>
+<line x1="300" y1="154" x2="350" y2="174" stroke="#84848D" stroke-width="1.5"/>
+<line x1="500" y1="154" x2="450" y2="174" stroke="#84848D" stroke-width="1.5"/>
+<circle cx="400" cy="74" r="20" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="400" y="80" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">2</text>
+<circle cx="300" cy="134" r="20" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="300" y="140" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">5</text>
+<circle cx="500" cy="134" r="20" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="500" y="140" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">3</text>
+<circle cx="250" cy="194" r="20" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="250" y="200" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">9</text>
+<circle cx="350" cy="194" r="20" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="350" y="200" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">6</text>
+<circle cx="450" cy="194" r="20" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="450" y="200" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">8</text>
+<rect x="226" y="244" width="52" height="40" rx="8" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="252" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="16" font-weight="400" text-anchor="middle">2</text><text x="252" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="11" font-weight="400" text-anchor="middle">0</text>
+<rect x="284" y="244" width="52" height="40" rx="8" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="310" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="16" font-weight="400" text-anchor="middle">5</text><text x="310" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="11" font-weight="400" text-anchor="middle">1</text>
+<rect x="342" y="244" width="52" height="40" rx="8" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="368" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="16" font-weight="400" text-anchor="middle">3</text><text x="368" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="11" font-weight="400" text-anchor="middle">2</text>
+<rect x="400" y="244" width="52" height="40" rx="8" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="426" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="16" font-weight="400" text-anchor="middle">9</text><text x="426" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="11" font-weight="400" text-anchor="middle">3</text>
+<rect x="458" y="244" width="52" height="40" rx="8" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="484" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="16" font-weight="400" text-anchor="middle">6</text><text x="484" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="11" font-weight="400" text-anchor="middle">4</text>
+<rect x="516" y="244" width="52" height="40" rx="8" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="542" y="270" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="16" font-weight="400" text-anchor="middle">8</text><text x="542" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="11" font-weight="400" text-anchor="middle">5</text>
+<text x="212" y="270" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="end">array</text>
+<text x="680" y="150" fill="#A1A1AA" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="end">children of i: 2i + 1, 2i + 2</text>
+</svg>

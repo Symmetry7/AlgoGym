@@ -1,0 +1,40 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "cable-joining",
+  "title": "Cable Joining",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "heaps"
+  ],
+  "patterns": [
+    "heap",
+    "greedy"
+  ],
+  "similar_to": [
+    "leetcode:1167"
+  ],
+  "signature": {
+    "function": "minJoinCost",
+    "params": [
+      {
+        "name": "cables",
+        "type": "int[]"
+      }
+    ],
+    "returns": "long"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

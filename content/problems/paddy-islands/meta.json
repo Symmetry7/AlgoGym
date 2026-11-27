@@ -1,0 +1,39 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "paddy-islands",
+  "title": "Paddy Islands",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "graphs"
+  ],
+  "patterns": [
+    "flood-fill"
+  ],
+  "similar_to": [
+    "leetcode:200"
+  ],
+  "signature": {
+    "function": "countIslands",
+    "params": [
+      {
+        "name": "grid",
+        "type": "string[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

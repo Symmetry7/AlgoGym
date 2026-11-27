@@ -1,0 +1,51 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "floor-totals",
+  "title": "Floor Totals",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "trees"
+  ],
+  "patterns": [
+    "bfs"
+  ],
+  "similar_to": [
+    "leetcode:637"
+  ],
+  "signature": {
+    "function": "levelTotals",
+    "params": [
+      {
+        "name": "values",
+        "type": "int[]"
+      },
+      {
+        "name": "left",
+        "type": "int[]"
+      },
+      {
+        "name": "right",
+        "type": "int[]"
+      },
+      {
+        "name": "root",
+        "type": "int"
+      }
+    ],
+    "returns": "long[]"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

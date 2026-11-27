@@ -1,0 +1,147 @@
+---
+track: dsa
+layer: 4
+topic: trees
+title: Trees
+summary: 'A tree is nodes with children and no cycles. Most tree problems are a walk: level by level (breadth-first) or branch by branch (depth-first).'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - family-tree-depth
+  - mirror-rangoli
+  - floor-totals
+quiz:
+  - question: 'Which traversal gives you the nodes grouped by depth?'
+    options: ["Breadth-first, with a queue", "Depth-first, with recursion", "Sorting the node ids", "Any traversal"]
+    answer: 0
+    why: 'A queue finishes one level before it starts the next, so each round of the loop is exactly one level.'
+  - question: 'Why do the Algogym references walk trees with a loop instead of recursion?'
+    options: ["Loops are always faster", "A tree can be a 10^5-node chain, and recursion that deep can overflow the call stack", "Recursion can't visit every node", "Trees have no root"]
+    answer: 1
+    why: 'Recursion depth equals the tree height. A chain-shaped tree makes that height n.'
+  - question: 'To check that a tree mirrors itself, which pairs do you compare?'
+    options: ["left with left, right with right", "the outer pair (left of one, right of the other) and the inner pair", "only the two children of the root", "every node with the root"]
+    answer: 1
+    why: 'A mirror swaps sides at every level, so a.left must match b.right and a.right must match b.left.'
+---
+
+## The idea
+
+A **binary tree** is a set of nodes where each node has at most two children and every node except the root has exactly one parent. Algogym problems store one as arrays: `left[i]` and `right[i]` are node `i`'s children, with `-1` for none.
+
+Nearly every tree question is a **walk** with something carried along:
+
+- **Breadth-first (BFS):** visit the tree level by level with a queue. Use it for depths, level totals and "nearest" questions.
+- **Depth-first (DFS):** follow one branch to the bottom before backing up. Use it for path questions and subtree answers (sizes, heights, mirrors).
+
+## Intuition
+
+<Figure src="/learn/dsa/trees/levels.svg" alt="A binary tree with root 8, children 3 and 10, and grandchildren 1, 6 and 14, grouped into three dashed bands labelled level 0, level 1 and level 2." />
+
+Think of a family tree. BFS reads it generation by generation: grandparents, then all their children, then all the grandchildren. DFS follows one line of descent to the youngest member, then comes back up to try the next branch.
+
+## Step through it
+
+{/* Floor Totals on values [50000, 30000, 40000, 20000, 25000]: left..right marks the current level in BFS order. */}
+
+<StepThrough
+  array={[50000, 30000, 40000, 20000, 25000]}
+  steps={[
+    { left: 0, right: 0, note: "Level 0 is just the root: total 50,000. Queue its children, 30,000 and 40,000." },
+    { left: 1, right: 2, note: "Level 1: 30,000 + 40,000 = 70,000. Queue their children, 20,000 and 25,000." },
+    { left: 3, right: 4, note: "Level 2: 20,000 + 25,000 = 45,000. No more children, so the walk ends." },
+  ]}
+/>
+
+## Worked example
+
+*Family Tree Depth* with `left = [1, 3, -1, -1, -1]` and `right = [2, 4, -1, -1, -1]`, root `0`.
+
+Start with the level `[0]` and count 1. Its children make the level `[1, 2]`: count 2. Node 1 has children 3 and 4 and node 2 has none, so the next level is `[3, 4]`: count 3. Nodes 3 and 4 have no children, so the walk stops. The depth is **3**, the number of levels, found without a single recursive call.
+
+## Code
+
+<CodeTabs>
+
+```js
+// Values of each level, top to bottom.
+function levels(values, left, right, root) {
+  const out = [];
+  let level = [root];
+  while (level.length) {
+    out.push(level.map((v) => values[v]));
+    const next = [];
+    for (const v of level) {
+      if (left[v] !== -1) next.push(left[v]);
+      if (right[v] !== -1) next.push(right[v]);
+    }
+    level = next;
+  }
+  return out;
+}
+```
+
+```python
+def levels(values: list[int], left: list[int], right: list[int], root: int) -> list[list[int]]:
+    out, level = [], [root]
+    while level:
+        out.append([values[v] for v in level])
+        level = [c for v in level for c in (left[v], right[v]) if c != -1]
+    return out
+```
+
+```cpp
+vector<vector<int>> levels(const vector<int>& values, const vector<int>& left, const vector<int>& right, int root) {
+    vector<vector<int>> out;
+    vector<int> level = {root}, next;
+    while (!level.empty()) {
+        out.emplace_back();
+        next.clear();
+        for (int v : level) {
+            out.back().push_back(values[v]);
+            if (left[v] != -1) next.push_back(left[v]);
+            if (right[v] != -1) next.push_back(right[v]);
+        }
+        level.swap(next);
+    }
+    return out;
+}
+```
+
+```java
+List<List<Integer>> levels(int[] values, int[] left, int[] right, int root) {
+    List<List<Integer>> out = new ArrayList<>();
+    List<Integer> level = List.of(root);
+    while (!level.isEmpty()) {
+        List<Integer> row = new ArrayList<>(), next = new ArrayList<>();
+        for (int v : level) {
+            row.add(values[v]);
+            if (left[v] != -1) next.add(left[v]);
+            if (right[v] != -1) next.add(right[v]);
+        }
+        out.add(row);
+        level = next;
+    }
+    return out;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n): every node enters and leaves the walk once |
+| Space | O(width) for BFS, O(height) for DFS |
+
+## Common mistakes
+
+<Callout>
+
+- **Recursing on a deep tree.** A chain of 10^5 nodes means 10^5 nested calls. Use an explicit queue or stack.
+- **Mixing up depth and edges.** A single node has depth 1 but zero edges. Read which one the problem asks for.
+- **Comparing the wrong pairs.** For mirrors, pair `left` with `right`; for identical trees, pair `left` with `left`.
+
+</Callout>

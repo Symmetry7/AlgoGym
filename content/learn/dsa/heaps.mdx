@@ -1,0 +1,133 @@
+---
+track: dsa
+layer: 6
+topic: heaps
+title: Heaps
+summary: 'A heap keeps the smallest (or largest) item on top, so "give me the current minimum" costs O(log n) even while items keep arriving.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - leaderboard-top
+  - cable-joining
+quiz:
+  - question: 'In a min-heap stored as an array, where are the children of index i?'
+    options: ["i + 1 and i + 2", "2i + 1 and 2i + 2", "i / 2", "n − i"]
+    answer: 1
+    why: 'Level by level, each node''s two children sit at 2i + 1 and 2i + 2, and its parent at (i − 1) / 2.'
+  - question: 'To keep the k largest scores while scanning, which heap do you use?'
+    options: ["A max-heap of everything", "A min-heap of size k", "A max-heap of size k", "No heap: sort at the end"]
+    answer: 1
+    why: 'The smallest of your current top k is the one a new, bigger score replaces, and a min-heap keeps it on top.'
+  - question: 'Why does Cable Joining always join the two shortest cables?'
+    options: ["They are easiest to find", "A cable's length is paid once per join it takes part in, so short cables should take part in the most joins", "It sorts the input", "It doesn't matter which two"]
+    answer: 1
+    why: 'Joining the shortest first keeps the long cables out of the early joins, the same idea as a Huffman code.'
+---
+
+## The idea
+
+A **heap** answers one question fast: "what's the smallest item right now?" It's a binary tree stored in an array where every parent is at most its children (a **min-heap**), so the minimum is always at index 0.
+
+- `push`: add at the end, then swap upwards while smaller than the parent. O(log n).
+- `pop`: take index 0, move the last item there, then swap downwards with the smaller child. O(log n).
+
+Reach for a heap when items keep arriving and you repeatedly need the current best, as in "top k", "merge cheapest first" or "next event in time".
+
+## Intuition
+
+<Figure src="/learn/dsa/heaps/min-heap.svg" alt="A min-heap holding 2, 5, 3, 9, 6 and 8, drawn as a tree with 2 at the top and as the array [2, 5, 3, 9, 6, 8], where the children of index i sit at 2i + 1 and 2i + 2." />
+
+A hospital triage desk works like a heap. Patients arrive in any order, but the most urgent case is always seen next. Nobody sorts the whole waiting room; each new patient just finds their place relative to a few others.
+
+## Step through it
+
+{/* Leaderboard Top, k = 3, on [72, 95, 60, 88, 95, 41]: left..right marks the min-heap of the best 3. */}
+
+<StepThrough
+  array={[72, 95, 60, 88, 95, 41]}
+  steps={[
+    { left: 0, right: 2, note: "Push 72, 95, 60: the heap is full (k = 3), with 60 on top." },
+    { left: 1, right: 3, note: "88 > 60: pop 60, push 88. The heap holds 72, 88, 95; 72 is on top." },
+    { left: 1, right: 4, note: "95 > 72: pop 72, push 95. The heap holds 88, 95, 95." },
+    { left: 1, right: 4, note: "41 < 88: ignore it. Sorted high to low, the answer is 95, 95, 88." },
+  ]}
+/>
+
+## Worked example
+
+*Cable Joining* with lengths `[4, 3, 2, 6]`. Put them in a min-heap. Pop the two shortest, 2 and 3: joining costs 5, and 5 goes back in. The heap holds 4, 5, 6. Pop 4 and 5: cost 9, push 9. Pop 6 and 9: cost 15. The total is 5 + 9 + 15 = **29**. Joining in the given order (4 + 3, then + 2, then + 6) would cost 7 + 9 + 15 = 31.
+
+## Code
+
+<CodeTabs>
+
+```js
+// Minimal min-heap; JavaScript has none built in.
+class MinHeap {
+  a = [];
+  get size() { return this.a.length; }
+  peek() { return this.a[0]; }
+  push(x) {
+    const a = this.a; a.push(x);
+    for (let i = a.length - 1; i > 0;) { const p = (i - 1) >> 1; if (a[p] <= a[i]) break; [a[p], a[i]] = [a[i], a[p]]; i = p; }
+  }
+  pop() {
+    const a = this.a, top = a[0], last = a.pop();
+    if (a.length) {
+      a[0] = last;
+      for (let i = 0; ;) {
+        const l = 2 * i + 1, r = l + 1; let m = i;
+        if (l < a.length && a[l] < a[m]) m = l;
+        if (r < a.length && a[r] < a[m]) m = r;
+        if (m === i) break;
+        [a[m], a[i]] = [a[i], a[m]]; i = m;
+      }
+    }
+    return top;
+  }
+}
+```
+
+```python
+import heapq
+
+heap = []
+heapq.heappush(heap, 5)
+heapq.heappush(heap, 2)
+smallest = heapq.heappop(heap)  # 2
+```
+
+```cpp
+priority_queue<int, vector<int>, greater<int>> heap;  // min-heap
+heap.push(5);
+heap.push(2);
+int smallest = heap.top();  // 2
+heap.pop();
+```
+
+```java
+PriorityQueue<Integer> heap = new PriorityQueue<>();  // min-heap
+heap.add(5);
+heap.add(2);
+int smallest = heap.poll();  // 2
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(log n) per push and pop, O(1) to peek; building from n items is O(n) |
+| Space | O(n), or O(k) when you keep only the best k |
+
+## Common mistakes
+
+<Callout>
+
+- **Using the wrong heap.** For the k *largest*, keep a *min*-heap of size k: you're always deciding which of the top k to drop.
+- **Forgetting to push results back.** In Cable Joining, the joined cable is a new item that competes with the rest.
+- **Defaults differ by language.** Python and Java heaps are min-heaps; C++ `priority_queue` is a max-heap unless you pass `greater`.
+
+</Callout>
