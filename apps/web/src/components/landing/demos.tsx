@@ -1,14 +1,13 @@
 "use client";
 
-import { Check, Lock, Play } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Check, Lock } from "lucide-react";
+import { useMemo, useState } from "react";
 import { focusRing } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
-import { useVisible } from "./reveal";
 
 // Landing demos (DESIGN.md §6.1 "How it works"): small, real interactions with sample data.
 
-const frame = "rounded-ag-card border border-ag-border bg-ag-graphite-1 p-4 shadow-[var(--ag-inset-highlight)] sm:p-6";
+const frame = "rounded-ag-card border border-ag-border bg-ag-surface-1 p-4 shadow-[var(--ag-inset-highlight)] sm:p-6";
 const chip = (on: boolean) =>
   cn("rounded-full border px-3 py-1.5 text-[13px] transition-colors duration-ag-hover", focusRing, on ? "border-ag-text bg-ag-text text-ag-bg" : "border-ag-border-strong text-ag-text-muted hover:text-ag-text");
 
@@ -41,7 +40,7 @@ export function PlanDemo() {
       </div>
       <ol className="mt-5 max-h-52 space-y-2 overflow-y-auto pr-1" aria-label={`${company} plan`}>
         {plan.map((w) => (
-          <li key={w.week} className="flex items-baseline gap-3 rounded-ag-control bg-ag-graphite-2 px-3 py-2 text-[13px]">
+          <li key={w.week} className="flex items-baseline gap-3 rounded-ag-control bg-ag-surface-2 px-3 py-2 text-[13px]">
             <span className="w-14 shrink-0 text-ag-text-faint">Week {w.week}</span>
             <span className="flex-1 text-ag-text">{w.topics.join(" · ")}</span>
             <span className="shrink-0 tabular-nums text-ag-text-faint">{w.problems} problems</span>
@@ -61,7 +60,7 @@ export function ChecklistDemo() {
       <ul className="grid gap-2 sm:grid-cols-2">
         {TOPICS.slice(0, 8).map((t) => (
           <li key={t}>
-            <label className={cn("flex cursor-pointer items-center gap-2.5 rounded-ag-control px-2 py-1.5 text-[14px] hover:bg-ag-graphite-2", known.has(t) ? "text-ag-text-faint line-through" : "text-ag-text")}>
+            <label className={cn("flex cursor-pointer items-center gap-2.5 rounded-ag-control px-2 py-1.5 text-[14px] hover:bg-ag-surface-2", known.has(t) ? "text-ag-text-faint line-through" : "text-ag-text")}>
               <input type="checkbox" checked={known.has(t)} onChange={() => toggle(t)} className="size-4 accent-ag-accent" />
               {t}
             </label>
@@ -104,45 +103,6 @@ export function RoadmapDemo() {
   );
 }
 
-const CODE = `def two_sum(nums, target):
-    seen = {}
-    for i, x in enumerate(nums):
-        if target - x in seen:
-            return [seen[target - x], i]
-        seen[x] = i`;
-const CASES = [12, 9, 14, 11, 31, 18];
-
-export function EditorDemo() {
-  const [ref, visible] = useVisible<HTMLDivElement>();
-  const [lines, setLines] = useState<number>(0);
-  const [started, setStarted] = useState(false);
-  const running = started && lines < CASES.length;
-  useEffect(() => {
-    if (!running || !visible) return;
-    const t = setTimeout(() => setLines((n) => n + 1), 280);
-    return () => clearTimeout(t);
-  }, [running, visible, lines]);
-  const run = () => { setLines(0); setStarted(true); };
-  return (
-    <div ref={ref} className={cn(frame, "p-0 sm:p-0")}>
-      <div className="flex items-center justify-between border-b border-ag-border px-4 py-2.5">
-        <span className="font-geist-mono text-[12px] text-ag-text-faint">solution.py</span>
-        <button type="button" onClick={run} disabled={running} className={cn("flex items-center gap-1.5 rounded-full bg-ag-surface-3 px-3 py-1 text-[12px] text-ag-text disabled:opacity-60", focusRing)}>
-          <Play className="size-3" aria-hidden /> {running ? "Running…" : "Run"}
-        </button>
-      </div>
-      <pre className="overflow-x-auto px-4 py-3 font-geist-mono text-[12.5px] leading-6 text-ag-text-muted"><code>{CODE}</code></pre>
-      <div className="min-h-[148px] border-t border-ag-border px-4 py-3 font-geist-mono text-[12px]" aria-live="polite">
-        {!started && <p className="text-ag-text-faint">Press Run to check the examples and hidden tests.</p>}
-        {CASES.slice(0, lines).map((ms, i) => (
-          <p key={i} className="text-ag-text-muted"><span className="text-ag-accent">✓</span> {i < 2 ? `Example ${i + 1}` : `Hidden test ${i - 1}`} · Accepted · {ms} ms</p>
-        ))}
-        {lines === CASES.length && <p className="mt-1 font-ui text-[13px] font-semibold text-ag-accent">Accepted · 6 / 6 tests passed</p>}
-      </div>
-    </div>
-  );
-}
-
 const HINTS = [
   "For each number, which other number would complete the pair?",
   "Checking every pair is O(n²). Can you remember what you've already seen?",
@@ -155,7 +115,7 @@ export function HintsDemo() {
     <div className={frame}>
       <ol className="space-y-2">
         {HINTS.map((h, i) => (
-          <li key={i} className={cn("rounded-ag-control border px-3 py-2.5 text-[14px]", i < open ? "border-ag-border bg-ag-graphite-2 text-ag-text" : "border-dashed border-ag-border text-ag-text-faint")}>
+          <li key={i} className={cn("rounded-ag-control border px-3 py-2.5 text-[14px]", i < open ? "border-ag-border bg-ag-surface-2 text-ag-text" : "border-dashed border-ag-border text-ag-text-faint")}>
             <span className="mr-2 text-[12px] text-ag-text-faint">Hint {i + 1}</span>
             {i < open ? h : "Hidden until you ask"}
           </li>

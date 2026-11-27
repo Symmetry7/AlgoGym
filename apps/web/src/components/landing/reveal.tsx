@@ -25,16 +25,3 @@ export function Reveal({ children, className, delay = 0 }: { children: ReactNode
   );
 }
 
-/** True while the element is on screen, so demos animate only when visible. */
-export function useVisible<T extends Element>() {
-  const ref = useRef<T>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.3 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  return [ref, visible] as const;
-}

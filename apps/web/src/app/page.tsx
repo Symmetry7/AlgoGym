@@ -5,7 +5,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
-import { ChecklistDemo, EditorDemo, HintsDemo, PlanDemo, RoadmapDemo } from "@/components/landing/demos";
+import { ChecklistDemo, HintsDemo, PlanDemo, RoadmapDemo } from "@/components/landing/demos";
 import { Reveal } from "@/components/landing/reveal";
 import { Hero } from "@/components/landing/hero";
 import { MarketingShell } from "@/components/shell/shells";
@@ -21,14 +21,13 @@ export const metadata: Metadata = {
 };
 
 const container = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
-// Raised speckled-graphite statement card (.claude/skills/premium-landing).
-const slab = "ag-graphite-card rounded-[20px] p-6 text-ag-text sm:rounded-[24px] sm:p-10 lg:p-14";
+// Statement card: black with a hairline and a soft top light (.claude/skills/premium-landing).
+const slab = "rounded-[20px] border border-white/10 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%)] p-6 text-ag-text sm:rounded-[24px] sm:p-10 lg:p-14";
 
 const STEPS: { title: string; body: string; demo: ReactNode }[] = [
   { title: "Pick your target", body: "Tell us the company, the role, how many weeks you have and how many hours a day. You get a week-by-week plan that fits.", demo: <PlanDemo /> },
   { title: "Tick off what you already know", body: "Skip what you're sure of. Everything else becomes a short lesson, placed just before the problems that need it.", demo: <ChecklistDemo /> },
   { title: "Your roadmap is a path you unlock", body: "Each topic opens when you pass the one before it, so you always know what's next and why.", demo: <RoadmapDemo /> },
-  { title: "Solve it in your browser", body: "Python, JavaScript, C++ or Java. Run against the examples, then submit against hidden tests, the way real interviews grade you.", demo: <EditorDemo /> },
   { title: "Stuck? One hint at a time", body: "Hints open in order, from a nudge to the key idea. The last one still stops short of the code.", demo: <HintsDemo /> },
 ];
 
@@ -63,12 +62,12 @@ async function topCompanies() {
 export default async function HomePage() {
   const companies = await topCompanies();
   return (
-    <MarketingShell className="ag-speckle">
+    <MarketingShell>
       <Hero companies={companies} />
 
       {/* How it works */}
       <section aria-labelledby="how" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="how" className="font-display text-[40px] leading-none text-ag-text sm:text-[56px]">How it works</h2>
+        <h2 id="how" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">How it works</h2>
         <div className="mt-12 space-y-20 md:mt-16 md:space-y-32">
           {STEPS.map((s, i) => (
             <div key={s.title} className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
@@ -87,7 +86,7 @@ export default async function HomePage() {
       <section aria-labelledby="science" className={cn(container, "py-16 md:py-24")}>
         <Reveal>
           <div className={slab}>
-            <h2 id="science" className="max-w-[760px] text-balance font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
+            <h2 id="science" className="ag-text-gradient max-w-[760px] text-balance pb-1 font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
             <p className="mt-5 max-w-[560px] text-pretty text-[16px] leading-relaxed text-ag-text-muted">
               Algogym is built on three of the best-tested findings in learning research.
             </p>
@@ -96,7 +95,7 @@ export default async function HomePage() {
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {EVIDENCE.map((e, i) => (
             <Reveal key={e.title} delay={i * 80}>
-              <figure className="h-full rounded-ag-card border border-ag-border bg-ag-graphite-1 p-6">
+              <figure className="h-full rounded-ag-card border border-ag-border bg-ag-surface-1 p-6">
                 <h3 className="font-display text-[26px] leading-tight text-ag-text">{e.title}</h3>
                 <p className="mt-3 text-pretty text-[15px] leading-relaxed text-ag-text-muted">{e.body}</p>
                 <p className="mt-3 text-pretty text-[15px] leading-relaxed text-ag-text">{e.why}</p>
@@ -109,12 +108,12 @@ export default async function HomePage() {
 
       {/* Feature grid */}
       <section aria-labelledby="features" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="features" className="font-display text-[40px] leading-none text-ag-text sm:text-[56px]">Everything for the interview</h2>
+        <h2 id="features" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Everything for the interview</h2>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={(i % 2) * 80}>
-              <article className="h-full rounded-ag-card border border-ag-border bg-ag-graphite-1 p-3">
-                <div className="grid h-44 place-items-center rounded-ag-card bg-ag-graphite-2"><FeatureArt kind={f.art} /></div>
+              <article className="h-full rounded-ag-card border border-ag-border bg-ag-surface-1 p-3">
+                <div className="grid h-44 place-items-center rounded-ag-card bg-ag-surface-2"><FeatureArt kind={f.art} /></div>
                 <div className="px-3 pb-3 pt-5">
                   <h3 className="flex items-center gap-2 font-display text-[28px] leading-none text-ag-text">{f.title}{"soon" in f && <SoonBadge />}</h3>
                   <p className="mt-2 text-pretty text-[15px] leading-relaxed text-ag-text-muted">{f.body}</p>
@@ -128,13 +127,13 @@ export default async function HomePage() {
       {/* Companies */}
       <section aria-labelledby="companies" className={cn(container, "py-16 md:py-24")}>
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 id="companies" className="font-display text-[40px] leading-none text-ag-text sm:text-[56px]">Practise by company</h2>
+          <h2 id="companies" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Practise by company</h2>
           <Link href="/problems" className={cn("rounded-sm text-[15px] text-ag-text-muted hover:text-ag-text", focusRing)}>See all companies ›</Link>
         </div>
         <ul className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
           {companies.map((c) => (
             <li key={c.slug}>
-              <Link href={`/problems?company=${c.slug}`} className={cn("group flex h-full flex-col gap-4 rounded-ag-card border border-ag-border bg-ag-graphite-1 p-4 transition-colors duration-ag-hover hover:border-ag-border-strong hover:bg-ag-graphite-2 sm:p-5", focusRing)}>
+              <Link href={`/problems?company=${c.slug}`} className={cn("group flex h-full flex-col gap-4 rounded-ag-card border border-ag-border bg-ag-surface-1 p-4 transition-colors duration-ag-hover hover:border-ag-border-strong hover:bg-ag-surface-2 sm:p-5", focusRing)}>
                 <span className="grid size-11 place-items-center overflow-hidden rounded-xl bg-white">
                   <Image src={`/company-icons/${c.slug}.png`} alt="" width={30} height={30} unoptimized className="size-[30px] object-contain" />
                 </span>
@@ -150,7 +149,7 @@ export default async function HomePage() {
 
       {/* Pricing teaser */}
       <section aria-labelledby="pricing" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="pricing" className="font-display text-[40px] leading-none text-ag-text sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
+        <h2 id="pricing" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <PlanCard name="Free" price="₹0" note="Forever" items={["Every lesson and quiz", "The full roadmap", "Free problems with hidden tests", "Company problem lists (all time)"]} cta={<ButtonLink href="/sign-in" variant="secondary">Start free</ButtonLink>} />
           <PlanCard name="Pro" price="₹199" note="a month, or ₹1,499 a year" highlight items={["Everything in Free", "Pro problems, editorials and solutions", "Company lists for the last 30 and 90 days", "Pro study plans"]} cta={<ButtonLink href="/pricing">See pricing</ButtonLink>} />
@@ -161,7 +160,7 @@ export default async function HomePage() {
       <section className={cn(container, "pb-20 pt-8 md:pb-28")}>
         <Reveal>
           <div className={cn(slab, "flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between")}>
-            <p className="text-balance font-display text-[38px] leading-none sm:text-[56px]">Start preparing today.</p>
+            <p className="ag-text-gradient text-balance pb-1 font-display text-[38px] leading-none sm:text-[56px]">Start preparing today.</p>
             <ButtonLink href="/sign-in">Get started</ButtonLink>
           </div>
         </Reveal>
@@ -172,7 +171,7 @@ export default async function HomePage() {
 
 function PlanCard({ name, price, note, items, cta, highlight }: { name: string; price: string; note: string; items: string[]; cta: ReactNode; highlight?: boolean }) {
   return (
-    <div className={cn("flex flex-col rounded-ag-card border bg-ag-graphite-1 p-6 sm:p-8", highlight ? "border-ag-accent" : "border-ag-border")}>
+    <div className={cn("flex flex-col rounded-ag-card border bg-ag-surface-1 p-6 sm:p-8", highlight ? "border-ag-accent" : "border-ag-border")}>
       <p className="text-[14px] text-ag-text-muted">{name}</p>
       <p className="mt-3 font-display text-[56px] leading-none text-ag-text">{price}</p>
       <p className="mt-1 text-[13px] text-ag-text-faint">{note}</p>

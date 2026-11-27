@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { MobileMenu, NavLinks, ScrollHeader, type NavItem } from "./nav";
-import { ButtonLink, focusRing, Logo } from "./ui";
+import { focusRing, Logo } from "./ui";
 
 // Only routes that exist: a link to a 404 is broken UI, and Next keeps its prefetch open forever.
 // Added back by their milestones (docs/BUILD_GUIDE.md): Roadmap (M13), Companies (M12), Arena (M18);
@@ -35,14 +35,15 @@ function SkipLink() {
   );
 }
 
+// Resend-style: plain "Log in", glass "Get started" (.claude/skills/premium-landing).
 const authButtons = (
   <>
-    <ButtonLink href="/sign-in" variant="secondary" size="sm">
+    <Link href="/sign-in" className={cn("inline-flex h-10 items-center rounded-xl px-3 text-[14px] font-medium text-ag-text-muted transition-colors duration-ag-hover hover:text-ag-text", focusRing)}>
       Log in
-    </ButtonLink>
-    <ButtonLink href="/sign-in" size="sm">
+    </Link>
+    <Link href="/sign-in" className={cn("ag-glass-button inline-flex h-10 items-center rounded-xl px-4 text-[14px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>
       Get started
-    </ButtonLink>
+    </Link>
   </>
 );
 
