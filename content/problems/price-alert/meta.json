@@ -6,7 +6,7 @@
   "difficulty": "Medium",
   "category": "dsa",
   "topics": [
-    "stack-and-queue"
+    "stacks-and-queues"
   ],
   "patterns": [
     "monotonic-stack"

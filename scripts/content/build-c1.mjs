@@ -832,7 +832,7 @@ public:
 
 // 8 ─ Price Alert ────────────────────────────────────────────────────────────
 problems.push({
-  meta: meta("price-alert", "Price Alert", "Medium", ["stack-and-queue"], ["monotonic-stack"], ["leetcode:739"], "nextHigherPriceDay", [["prices", "int[]"]], "int[]"),
+  meta: meta("price-alert", "Price Alert", "Medium", ["stacks-and-queues"], ["monotonic-stack"], ["leetcode:739"], "nextHigherPriceDay", [["prices", "int[]"]], "int[]"),
   statement: `A price tracker records one closing price per day; \`prices[i]\` is day \`i\`. For each day, the tracker wants to know the first later day on which the price is **strictly higher**.
 
 Return an array where entry \`i\` is that day's index, or \`-1\` if the price never goes higher after day \`i\`.
@@ -946,7 +946,7 @@ class Solution {
 // 9 ─ Undo and Redo ──────────────────────────────────────────────────────────
 const actions = (n, pWord, pUndo, alpha = "abcde") => Array.from({ length: n }, () => { const r = R(); return r < pWord ? word(alpha, 1, 4) : r < pWord + pUndo ? "<" : ">"; });
 problems.push({
-  meta: meta("undo-and-redo", "Undo and Redo", "Medium", ["stack-and-queue"], ["stack"], [], "finalDocument", [["actions", "string[]"]], "string"),
+  meta: meta("undo-and-redo", "Undo and Redo", "Medium", ["stacks-and-queues"], ["stack"], [], "finalDocument", [["actions", "string[]"]], "string"),
   statement: `A tiny editor starts with an empty document. Each entry of \`actions\` is one of:
 
 - a lowercase word: append it to the end of the document;

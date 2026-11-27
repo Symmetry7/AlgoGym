@@ -135,22 +135,22 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 #### M8 · Problems list (2 sessions)
 **Goal:** `/problems` per PRD §7.5 and DESIGN.md §6.5.
 **Done when:**
-- [ ] Search, filters, sort, pagination and shuffle work.
-- [ ] Metadata rows show "View original" and "Similar Algogym problem". Original rows open the workspace.
-- [ ] Mobile is a single column with drawers.
+- [x] Search, filters, sort, pagination and shuffle work. (Plus status and list filters, the solved ring, company chips, My Lists and the daily calendar; unit-tested in `src/lib/problem-catalog.spec.ts` and checked signed in and signed out on staging.)
+- [x] Metadata rows show "View original" and "Similar Algogym problem". Original rows open the workspace. (Until M9 they open a read-only `/problems/[slug]` page with the statement and examples.)
+- [x] Mobile is a single column with drawers. (Checked at 375 and 1440 px.)
 
 #### M9 · Workspace UI (2–3 sessions)
 **Goal:** `/problems/[slug]` per PRD §7.6 and DESIGN.md §6.6, with no judge yet. Run returns a stub.
 **Files:** `@monaco-editor/react` (lazy-loaded), the split-pane component, the tabs, and draft autosave.
 **Done when:**
-- [ ] The panes resize and collapse. All 4 languages load their starter code from the seeded problems.
-- [ ] The locked state renders. Mobile uses "Problem · Code · Result" tabs.
-- [ ] Monaco isn't part of the first-load bundle of other pages.
-- [ ] Floating-panel layout per DESIGN.md §6.6: 12 px gaps, 16 px-radius `--surface-1` cards with a 1 px `--border`, no edge-to-edge panes. One floating top bar with back, a breadcrumb (title in Hanken Grotesk, id in Geist Mono) and a language picker with a muted version ("Python 3.12"). Run is an off-white pill with a black play icon, Submit is the emerald primary.
-- [ ] Ctrl+Enter runs and Ctrl+Shift+Enter submits (⌘ on macOS), from the editor and anywhere on the page.
-- [ ] Three panels at ≥ 1280 px. Output · Input · Tests dock under the editor at 768–1279 px. Tabs "Problem · Code · Result" below 768 px. Checked at 375, 1024 and 1440 px.
-- [ ] Editor: a muted Geist Mono file-name label, faint line numbers, a subtle current-line highlight and no minimap. The Output · Input · Tests tabs have Lucide icons, and every empty state says what to do ("Run your code to see output. Ctrl+Enter works too.").
-- [ ] Monochrome UI: emerald only on Submit, passed cases and focus. No presence avatars or Share (Rooms, v1.1).
+- [x] The panes resize and collapse. All 4 languages load their starter code from the seeded problems.
+- [x] The locked state renders. Mobile uses "Problem · Code · Result" tabs.
+- [x] Monaco isn't part of the first-load bundle of other pages. (`next/dynamic` with `ssr: false`, Monaco itself from a pinned CDN build.)
+- [x] Floating-panel layout per DESIGN.md §6.6: 12 px gaps, 16 px-radius `--surface-1` cards with a 1 px `--border`, no edge-to-edge panes. One floating top bar with back, a breadcrumb (title in Hanken Grotesk, id in Geist Mono) and a language picker with a muted version ("Python 3.12"). Run is an off-white pill with a black play icon, Submit is the emerald primary.
+- [x] Ctrl+Enter runs and Ctrl+Shift+Enter submits (⌘ on macOS), from the editor and anywhere on the page.
+- [x] Three panels at ≥ 1280 px. Output · Input · Tests dock under the editor at 768–1279 px. Tabs "Problem · Code · Result" below 768 px. Checked at 375, 1024 and 1440 px.
+- [x] Editor: a muted Geist Mono file-name label, faint line numbers, a subtle current-line highlight and no minimap. The Output · Input · Tests tabs have Lucide icons, and every empty state says what to do ("Run your code to see output. Ctrl+Enter works too.").
+- [x] Monochrome UI: emerald only on Submit, passed cases and focus. No presence avatars or Share (Rooms, v1.1).
 
 #### M10 · Engine skeleton (1–2 sessions)
 **Goal:** `apps/engine`, an Express service with HMAC-verified `POST /v1/jobs`, BullMQ on Redis and `/v1/health`, deployed to Railway.
