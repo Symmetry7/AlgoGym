@@ -135,9 +135,9 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 #### M8 · Problems list (2 sessions)
 **Goal:** `/problems` per PRD §7.5 and DESIGN.md §6.5.
 **Done when:**
-- [ ] Search, filters, sort, pagination and shuffle work.
-- [ ] Metadata rows show "View original" and "Similar Algogym problem". Original rows open the workspace.
-- [ ] Mobile is a single column with drawers.
+- [x] Search, filters, sort, pagination and shuffle work. (Plus status and list filters, the solved ring, company chips, My Lists and the daily calendar; unit-tested in `src/lib/problem-catalog.spec.ts` and checked signed in and signed out on staging.)
+- [x] Metadata rows show "View original" and "Similar Algogym problem". Original rows open the workspace. (Until M9 they open a read-only `/problems/[slug]` page with the statement and examples.)
+- [x] Mobile is a single column with drawers. (Checked at 375 and 1440 px.)
 
 #### M9 · Workspace UI (2–3 sessions)
 **Goal:** `/problems/[slug]` per PRD §7.6 and DESIGN.md §6.6, with no judge yet. Run returns a stub.
