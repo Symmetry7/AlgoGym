@@ -1,0 +1,150 @@
+---
+track: dsa
+layer: 4
+topic: graphs
+title: 'Graphs: BFS & DFS'
+summary: 'Turn the input into an adjacency list, then explore it: breadth-first for fewest steps, depth-first or flood fill for "what is connected", and indegrees for ordering.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - metro-hops
+  - paddy-islands
+  - semester-plan
+quiz:
+  - question: 'Every edge costs one hop. Which search finds the fewest hops from a source?'
+    options: ["Depth-first search", "Breadth-first search", "Binary search", "Sorting the edges"]
+    answer: 1
+    why: 'BFS finishes all stations at distance d before any at distance d + 1, so the first time it reaches a node is along a shortest path.'
+  - question: 'When should a BFS mark a node as visited?'
+    options: ["When it is taken out of the queue", "When it is put into the queue", "At the end", "Never"]
+    answer: 1
+    why: 'Marking on entry stops the same node being queued many times by different neighbours.'
+  - question: 'In Kahn''s algorithm, what does it mean if some courses never reach indegree 0?'
+    options: ["They are optional", "They sit on a cycle of prerequisites", "The graph is a tree", "They have no prerequisites"]
+    answer: 1
+    why: 'Each course in a cycle waits for another course in the same cycle, so none of them can ever be started.'
+---
+
+## The idea
+
+A **graph** is nodes joined by edges: metro stations and lines, grid cells and their neighbours, courses and prerequisites. First turn the input into an **adjacency list**, the neighbours of every node, so each lookup is instant. Then pick the walk that fits the question:
+
+- **BFS** with a queue: fewest steps in an unweighted graph.
+- **DFS or flood fill**: everything connected to a start, or how many separate groups there are.
+- **Topological order** (Kahn's algorithm): an order that respects every "a before b" rule, or proof that none exists.
+
+## Intuition
+
+<Figure src="/learn/dsa/graphs/bfs-rings.svg" alt="A graph of seven stations. Each is labelled with its BFS distance from S: A and B at 1, C, D and E at 2, T at 3. The route S, A, D, T is highlighted as a shortest path." />
+
+Drop a stone in a pond. The ripple reaches every point at distance 1 before any point at distance 2. BFS spreads through a graph the same way, which is why the first time it reaches a station is along a shortest route.
+
+## Step through it
+
+{/* Metro Hops BFS from 0 on the public example; left..right marks the queue section being expanded. */}
+
+<StepThrough
+  array={[0, 1, 3, 2, 4, 5]}
+  steps={[
+    { left: 0, right: 0, note: "Start at station 0, distance 0. Its neighbours 1 and 3 get distance 1." },
+    { left: 1, right: 2, note: "Expand 1 and 3: stations 2 and 4 get distance 2 (4 is marked once, by station 1)." },
+    { left: 3, right: 4, note: "Expand 2 and 4: station 5 gets distance 3. That's the target: 3 hops." },
+  ]}
+/>
+
+## Worked example
+
+*Semester Plan* with 4 courses and rules `[1, 0], [2, 0], [3, 1], [3, 2]`.
+
+Indegrees: course 0 has none, courses 1 and 2 have one each, course 3 has two. Queue course 0. Taking it lowers 1 and 2 to zero, so both join the queue. Taking 1 lowers 3 to one; taking 2 lowers it to zero, so 3 joins. All **4** courses were taken, so the plan is possible. Add the rule `[0, 3]` and course 0 never starts, because it now waits on 3, so the answer becomes `false`.
+
+## Code
+
+<CodeTabs>
+
+```js
+function bfsDistances(n, edges, source) {
+  const adj = Array.from({ length: n }, () => []);
+  for (const [a, b] of edges) { adj[a].push(b); adj[b].push(a); }
+  const dist = new Array(n).fill(-1);
+  dist[source] = 0;
+  const queue = [source];
+  for (let head = 0; head < queue.length; head++) {
+    const u = queue[head];
+    for (const v of adj[u]) if (dist[v] === -1) { dist[v] = dist[u] + 1; queue.push(v); }
+  }
+  return dist;
+}
+```
+
+```python
+from collections import deque
+
+def bfs_distances(n: int, edges: list[list[int]], source: int) -> list[int]:
+    adj = [[] for _ in range(n)]
+    for a, b in edges:
+        adj[a].append(b)
+        adj[b].append(a)
+    dist = [-1] * n
+    dist[source] = 0
+    queue = deque([source])
+    while queue:
+        u = queue.popleft()
+        for v in adj[u]:
+            if dist[v] == -1:
+                dist[v] = dist[u] + 1
+                queue.append(v)
+    return dist
+```
+
+```cpp
+vector<int> bfsDistances(int n, const vector<vector<int>>& edges, int source) {
+    vector<vector<int>> adj(n);
+    for (auto& e : edges) { adj[e[0]].push_back(e[1]); adj[e[1]].push_back(e[0]); }
+    vector<int> dist(n, -1), queue = {source};
+    dist[source] = 0;
+    for (size_t head = 0; head < queue.size(); head++)
+        for (int v : adj[queue[head]])
+            if (dist[v] == -1) { dist[v] = dist[queue[head]] + 1; queue.push_back(v); }
+    return dist;
+}
+```
+
+```java
+int[] bfsDistances(int n, int[][] edges, int source) {
+    List<List<Integer>> adj = new ArrayList<>();
+    for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+    for (int[] e : edges) { adj.get(e[0]).add(e[1]); adj.get(e[1]).add(e[0]); }
+    int[] dist = new int[n], queue = new int[n];
+    Arrays.fill(dist, -1);
+    dist[source] = 0;
+    int head = 0, tail = 0;
+    queue[tail++] = source;
+    while (head < tail) {
+        int u = queue[head++];
+        for (int v : adj.get(u)) if (dist[v] == -1) { dist[v] = dist[u] + 1; queue[tail++] = v; }
+    }
+    return dist;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(nodes + edges) for BFS, DFS and Kahn's algorithm |
+| Space | O(nodes + edges) for the adjacency list |
+
+## Common mistakes
+
+<Callout>
+
+- **DFS for shortest paths.** It finds *a* path, not the shortest one.
+- **Marking visited too late.** Mark when you queue a node, not when you take it out.
+- **Recursive flood fill on big grids.** One island of 90,000 cells is 90,000 nested calls. Use an explicit queue.
+- **Forgetting both directions.** An undirected edge `[a, b]` goes in both `a`'s and `b`'s lists.
+
+</Callout>
