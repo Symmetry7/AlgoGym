@@ -1,0 +1,144 @@
+---
+track: dsa
+layer: 3
+topic: recursion
+title: Recursion
+summary: 'Solve a problem by making one choice and handing the smaller rest of the problem to the same function, then undo the choice and try the next one.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - outfit-picks
+  - keypad-messages
+  - bracket-layouts
+quiz:
+  - question: 'How many picks does Outfit Picks return for 5 items?'
+    options: ["5", "10", "25", "32"]
+    answer: 3
+    why: 'Each item is either taken or skipped, so there are 2 × 2 × 2 × 2 × 2 = 32 picks, the empty one included.'
+  - question: 'Why does the backtracking code pop the item right after the recursive call?'
+    options: ["To save memory", "So the next branch starts from the same choices as this one did", "To sort the output", "To stop the recursion"]
+    answer: 1
+    why: 'Both branches share one working list. Undoing the choice puts it back the way the parent left it.'
+  - question: 'What must every recursive function have?'
+    options: ["A loop", "A base case that returns without recursing, and calls that move towards it", "Two recursive calls", "A global variable"]
+    answer: 1
+    why: 'Without a base case, or with calls that never get smaller, the recursion never stops.'
+---
+
+## The idea
+
+A recursive function solves a problem by **making one decision** and calling itself on what is left. It needs two parts:
+
+- a **base case**: the problem is so small that the answer is immediate (no items left, every digit used);
+- a **step**: make one choice, recurse on the smaller problem, and combine the results.
+
+When a problem asks for **every** arrangement (all picks, all messages, all bracket strings), the step tries each choice in turn. That is **backtracking**: choose, recurse, un-choose, try the next option.
+
+## Intuition
+
+<Figure src="/learn/dsa/recursion/include-exclude.svg" alt="A recursion tree for items a and b: the root splits into skip a and take a, each splits on b, and the four leaves are the picks { }, { b }, { a } and { a, b }." />
+
+Imagine a corridor of doors, one per item, each with two exits: "skip it" and "take it". Every route from the start to the far end is one complete pick. Recursion walks every route: at each door it goes through one exit, explores everything beyond it, comes back, and then goes through the other.
+
+## Step through it
+
+{/* Outfit Picks on ["ring", "scarf"]: left is the item being decided, right marks the pick so far. */}
+
+<StepThrough
+  array={["ring", "scarf"]}
+  steps={[
+    { left: 0, right: 0, note: "go(0): skip ring, then call go(1)." },
+    { left: 1, right: 1, note: "go(1): skip scarf → go(2) records [ ]. Take scarf → records [scarf]. Pop scarf." },
+    { left: 0, right: 0, note: "Back in go(0): take ring (pick is [ring]), call go(1) again." },
+    { left: 1, right: 1, note: "Skip scarf → records [ring]. Take scarf → records [ring, scarf]. Pop both on the way back." },
+  ]}
+/>
+
+## Worked example
+
+*Keypad Messages* with `digits = "29"`. Key 2 offers `a`, `b`, `c` and key 9 offers `w`, `x`, `y`, `z`.
+
+`go(0, "")` tries `a`, then calls `go(1, "a")`. That tries `w`, `x`, `y`, `z`, and each call `go(2, …)` has used every digit, so it records `aw`, `ax`, `ay`, `az`. Back at the top, the same happens for `b` and `c`. The answer has 3 × 4 = **12 messages**: `aw` … `cz`.
+
+*Bracket Layouts* uses the same shape, with rules that decide which choices are allowed at each step, so no invalid string is ever built.
+
+## Code
+
+<CodeTabs>
+
+```js
+function allPicks(items) {
+  const out = [];
+  const cur = [];
+  const go = (i) => {
+    if (i === items.length) {
+      out.push(cur.slice());
+      return;
+    }
+    go(i + 1); // skip items[i]
+    cur.push(items[i]); // take it
+    go(i + 1);
+    cur.pop(); // undo before returning
+  };
+  go(0);
+  return out;
+}
+```
+
+```python
+def all_picks(items: list[str]) -> list[list[str]]:
+    out, cur = [], []
+
+    def go(i: int) -> None:
+        if i == len(items):
+            out.append(cur[:])
+            return
+        go(i + 1)  # skip items[i]
+        cur.append(items[i])  # take it
+        go(i + 1)
+        cur.pop()  # undo before returning
+
+    go(0)
+    return out
+```
+
+```cpp
+void go(const vector<string>& items, int i, vector<string>& cur, vector<vector<string>>& out) {
+    if (i == (int)items.size()) { out.push_back(cur); return; }
+    go(items, i + 1, cur, out);        // skip items[i]
+    cur.push_back(items[i]);           // take it
+    go(items, i + 1, cur, out);
+    cur.pop_back();                    // undo before returning
+}
+```
+
+```java
+void go(String[] items, int i, List<String> cur, List<List<String>> out) {
+    if (i == items.length) { out.add(new ArrayList<>(cur)); return; }
+    go(items, i + 1, cur, out);        // skip items[i]
+    cur.add(items[i]);                 // take it
+    go(items, i + 1, cur, out);
+    cur.remove(cur.size() - 1);        // undo before returning
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | Number of results × cost to build each: O(n · 2^n) for all picks, O(n · 4^n) for keypad messages |
+| Space | O(n) for the call stack, plus the output |
+
+## Common mistakes
+
+<Callout>
+
+- **No base case, or one that is never reached.** Each call must make the problem smaller.
+- **Recording the working list instead of a copy.** After backtracking it ends up empty, and so does every recorded answer.
+- **Forgetting to undo.** Without the `pop`, a choice leaks into the sibling branch.
+- **Building everything and filtering.** Check the rules while building (as in Bracket Layouts), so invalid branches are never explored.
+
+</Callout>

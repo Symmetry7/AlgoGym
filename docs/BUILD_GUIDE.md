@@ -127,8 +127,8 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 #### M7 · Company metadata import (1 session)
 **Goal:** `scripts/data/import-companies.mjs` imports the company-wise CSVs as metadata only (problems with status `pending`).
 **Done when:**
-- [ ] The import is idempotent: a second run changes nothing. Top 30 companies are present.
-- [ ] No statement text is stored for LeetCode/GFG rows.
+- [x] The import is idempotent: a second run changes nothing. Top 30 companies are present. (Staging: 30 companies, 3,139 LeetCode rows, 14,680 links; second run 0 changes.)
+- [x] No statement text is stored for LeetCode/GFG rows. (`scripts/sql/company-import-tests.sql`; the M4 check constraint also enforces it.)
 
 ### Week 3 — Practice surfaces
 

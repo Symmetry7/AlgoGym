@@ -1,0 +1,43 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "ration-counter",
+  "title": "Ration Counter",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "binary-search"
+  ],
+  "patterns": [
+    "binary-search-on-answer"
+  ],
+  "similar_to": [
+    "leetcode:1011"
+  ],
+  "signature": {
+    "function": "minCapacity",
+    "params": [
+      {
+        "name": "bags",
+        "type": "int[]"
+      },
+      {
+        "name": "days",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

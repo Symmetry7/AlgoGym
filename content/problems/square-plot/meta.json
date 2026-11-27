@@ -1,0 +1,39 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "square-plot",
+  "title": "Square Plot",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "binary-search"
+  ],
+  "patterns": [
+    "binary-search-on-answer"
+  ],
+  "similar_to": [
+    "leetcode:69"
+  ],
+  "signature": {
+    "function": "largestSide",
+    "params": [
+      {
+        "name": "area",
+        "type": "long"
+      }
+    ],
+    "returns": "long"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

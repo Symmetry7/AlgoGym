@@ -1,0 +1,133 @@
+---
+track: dsa
+layer: 2
+topic: binary-search
+title: Binary Search
+summary: 'When the answer splits a sorted range (or a range of possible answers) into a "no" part and a "yes" part, one comparison throws away half of it.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - first-departure
+  - square-plot
+  - rotated-timetable
+  - ration-counter
+quiz:
+  - question: 'A sorted array has 1,000,000 values. About how many comparisons does binary search need in the worst case?'
+    options: ["About 20", "About 1,000", "About 500,000", "1,000,000"]
+    answer: 0
+    why: 'Each comparison halves the range, and 2^20 is just over a million.'
+  - question: 'You search for the first index with value ≥ target in [lo, hi). The middle value is smaller than the target. What do you do?'
+    options: ["hi = mid", "lo = mid + 1", "lo = mid", "Return mid"]
+    answer: 1
+    why: 'Every index up to and including mid is too small, so the answer is to the right of mid.'
+  - question: 'When can you binary search on the answer, as in Ration Counter?'
+    options: ["Only when the input is sorted", "When a check says yes for every value from some point on, and no before it", "When the answer is an index", "Never with integers"]
+    answer: 1
+    why: 'You only need a monotone yes/no check. If capacity c works, every larger capacity works too.'
+---
+
+## The idea
+
+Binary search finds a **boundary**: the first place where a yes/no question changes from "no" to "yes". Look at the middle of the range, answer the question there, and throw away the half that can't contain the boundary. Each step halves the range, so n candidates need about log₂ n steps.
+
+The question doesn't have to be "is this value in the array". It can be "is `departures[mid] ≥ arrival`?", or, without any array at all, "can the shop finish in time with capacity `c`?"
+
+## Intuition
+
+<Figure src="/learn/dsa/binary-search/halving.svg" alt="A sorted row of eight numbers searched for 26; the middle value 17 is smaller, so the left half is crossed out and the search continues between lo and hi on the right." />
+
+Finding a word in a printed dictionary works the same way. You open it in the middle, see that "mango" comes after "kettle", and never look at the first half again. A few more halvings and you're on the right page.
+
+## Step through it
+
+{/* First departure at or after minute 560, as a lower bound on [lo, hi). */}
+
+<StepThrough
+  array={[540, 555, 570, 600, 630]}
+  steps={[
+    { left: 0, right: 4, note: "lo = 0, hi = 5. mid = 2: 570 ≥ 560, so the answer is at 2 or earlier. hi = 2." },
+    { left: 0, right: 1, note: "mid = 1: 555 < 560, so index 1 and everything before it is too early. lo = 2." },
+    { left: 2, right: 2, note: "lo = hi = 2. The first catchable train is at index 2." },
+  ]}
+/>
+
+## Worked example
+
+*First Departure* asks for the first train at or after minute `560` in `[540, 555, 570, 600, 630]`.
+
+Keep `lo = 0` and `hi = 5`, so the answer is somewhere in `[lo, hi)`. The middle is index 2, time 570. That's not too early, so the answer is index 2 or before it: `hi = 2`. The middle of `[0, 2)` is index 1, time 555, which is too early, so `lo = 2`. Now `lo == hi == 2` and the range holds exactly one candidate: **index 2**. Three comparisons instead of scanning the list.
+
+*Square Plot* and *Ration Counter* use the same loop on a range of answers instead of an array. *Rotated Timetable* adds one twist: first work out which half is still sorted.
+
+## Code
+
+<CodeTabs>
+
+```js
+function lowerBound(values, target) {
+  let lo = 0;
+  let hi = values.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (values[mid] < target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+```
+
+```python
+def lower_bound(values: list[int], target: int) -> int:
+    lo, hi = 0, len(values)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if values[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+```
+
+```cpp
+int lowerBound(const vector<int>& values, int target) {
+    int lo = 0, hi = values.size();
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (values[mid] < target) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}
+```
+
+```java
+int lowerBound(int[] values, int target) {
+    int lo = 0, hi = values.length;
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (values[mid] < target) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(log n) comparisons; O(log R × cost of the check) when searching a range of R answers |
+| Space | O(1) |
+
+## Common mistakes
+
+<Callout>
+
+- **Mixing range styles.** With `[lo, hi)` use `lo < hi` and `hi = mid`. With `[lo, hi]` use `lo <= hi` and `hi = mid − 1`. Mixing them loops forever or skips the answer.
+- **`lo = mid` with `mid` rounded down.** When `hi = lo + 1`, `mid` stays at `lo` and the loop never ends. Round up, as in `(lo + hi + 1) / 2`, whenever you write `lo = mid`.
+- **Overflow.** `(lo + hi) / 2` and `mid × mid` can overflow 32-bit integers. Use `lo + (hi − lo) / 2` and 64-bit products.
+
+</Callout>

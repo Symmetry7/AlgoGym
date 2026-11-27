@@ -1,0 +1,139 @@
+---
+track: dsa
+layer: 2
+topic: stacks-and-queues
+title: Stack & Queue
+summary: 'A stack answers "what is the most recent thing still open?" and a queue answers "who has waited longest?", each in O(1).'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - bracket-log
+  - tiffin-queue
+  - warmer-day
+  - widest-banner
+quiz:
+  - question: 'You push 3, then 7, then 5 onto a stack, then pop twice. What is left?'
+    options: ["3", "5", "7", "Nothing"]
+    answer: 0
+    why: 'A stack is last in, first out: the pops remove 5 and then 7.'
+  - question: 'Why does "([)]" fail the bracket check?'
+    options: ["It has an odd length", "The counts of each kind don't match", "The ) arrives while [ is the most recent open bracket", "It starts with ("]
+    answer: 2
+    why: 'A closing bracket must match the most recent open one, which is exactly what the top of the stack holds.'
+  - question: 'In Warmer Day, why is the whole scan O(n) even though there is a loop inside a loop?'
+    options: ["The inner loop runs once", "Each index is pushed once and popped at most once", "The temperatures are sorted", "It isn't; it is O(n²)"]
+    answer: 1
+    why: 'Count work per element instead of per loop: every index enters and leaves the stack at most once, so all the inner-loop pops add up to at most n.'
+---
+
+## The idea
+
+A **stack** is a pile: you add and remove at the top, so the last thing in is the first out. Use it whenever the newest unfinished item matters most, like the innermost open bracket or the days still waiting for warmer weather.
+
+A **queue** is a line: you join at the back and leave from the front, so the first in is the first out. Use it when order of arrival matters, like students waiting for tiffins or cells waiting to be explored in breadth-first search.
+
+Both do every operation in O(1). An array with a top index makes a stack. A queue needs a head index, or a ring buffer, so that removing from the front doesn't shift every element.
+
+## Intuition
+
+<Figure src="/learn/dsa/stacks-and-queues/stack-queue.svg" alt="Left: a stack of three plates where items are pushed and popped at the top. Right: a queue of four numbers where items join at the back and leave from the front." />
+
+Plates in a mess are a stack: you take the top one, the one put there last. The ticket counter at a railway station is a queue: whoever came first is served first.
+
+A **monotonic stack** is a stack you keep in sorted order by popping everything that the new item "beats" before pushing it. Each pop is the moment a waiting item gets its answer.
+
+## Step through it
+
+{/* Warmer Day on [18, 19, 21, 16, 15, 17, 22]: left marks the index popped, right the current day. */}
+
+<StepThrough
+  array={[18, 19, 21, 16, 15, 17, 22]}
+  steps={[
+    { left: 0, right: 1, note: "19 > 18: pop day 0, its answer is 1 − 0 = 1. Push day 1." },
+    { left: 1, right: 2, note: "21 > 19: pop day 1 (answer 1). Push day 2. Stack: [2]." },
+    { left: 2, right: 4, note: "16 and 15 are colder: push both. Stack: [2, 3, 4], temperatures 21, 16, 15." },
+    { left: 3, right: 5, note: "17 beats 15 and 16: pop day 4 (answer 1) and day 3 (answer 2). Push day 5." },
+    { left: 2, right: 6, note: "22 beats 17 and 21: pop day 5 (answer 1) and day 2 (answer 4). Day 6 waits forever: 0." },
+  ]}
+/>
+
+## Worked example
+
+*Bracket Log* checks `{[()()]}`. Push `{`, `[`, `(`. The first `)` matches the top `(`: pop. Push `(` again, and the next `)` pops it. Now `]` meets `[` on top: pop. Finally `}` meets `{`: pop. Nothing failed and the stack is empty, so the log is **balanced**.
+
+For `([)]`, the `)` arrives while `[` is on top, so the check fails straight away, even though each kind appears twice.
+
+## Code
+
+<CodeTabs>
+
+```js
+function isBalanced(log) {
+  const partner = { ")": "(", "]": "[", "}": "{" };
+  const stack = [];
+  for (const c of log) {
+    if (c === "(" || c === "[" || c === "{") stack.push(c);
+    else if (stack.pop() !== partner[c]) return false;
+  }
+  return stack.length === 0;
+}
+```
+
+```python
+def is_balanced(log: str) -> bool:
+    partner = {")": "(", "]": "[", "}": "{"}
+    stack = []
+    for c in log:
+        if c in "([{":
+            stack.append(c)
+        elif not stack or stack.pop() != partner[c]:
+            return False
+    return not stack
+```
+
+```cpp
+bool isBalanced(const string& log) {
+    vector<char> stack;
+    for (char c : log) {
+        if (c == '(' || c == '[' || c == '{') { stack.push_back(c); continue; }
+        char want = c == ')' ? '(' : c == ']' ? '[' : '{';
+        if (stack.empty() || stack.back() != want) return false;
+        stack.pop_back();
+    }
+    return stack.empty();
+}
+```
+
+```java
+boolean isBalanced(String log) {
+    char[] stack = new char[log.length()];
+    int top = 0;
+    for (char c : log.toCharArray()) {
+        if (c == '(' || c == '[' || c == '{') { stack[top++] = c; continue; }
+        char want = c == ')' ? '(' : c == ']' ? '[' : '{';
+        if (top == 0 || stack[top - 1] != want) return false;
+        top--;
+    }
+    return top == 0;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(1) per push, pop, enqueue or dequeue; O(n) for a full scan, monotonic stacks included |
+| Space | O(n) in the worst case |
+
+## Common mistakes
+
+<Callout>
+
+- **Popping an empty stack.** Check before you pop: a log that starts with `)` must fail, not crash.
+- **Forgetting what is left at the end.** Items still on the stack are unmatched brackets, or days with no warmer day.
+- **Removing from the front of an array as a queue.** `shift()` in JavaScript and `list.pop(0)` in Python move every element. Keep a head index, or use `collections.deque` or `ArrayDeque`.
+
+</Callout>
