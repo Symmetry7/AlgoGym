@@ -7,7 +7,7 @@ import { Check } from "lucide-react";
 import type { ReactNode } from "react";
 import { ChecklistDemo, EditorDemo, HintsDemo, PlanDemo, RoadmapDemo } from "@/components/landing/demos";
 import { Reveal } from "@/components/landing/reveal";
-import { RoadmapArt } from "@/components/landing/roadmap-art";
+import { Hero } from "@/components/landing/hero";
 import { MarketingShell } from "@/components/shell/shells";
 import { ButtonLink, focusRing, SoonBadge } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 const container = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
-const paper = "rounded-[18px] bg-ag-paper p-4 text-ag-on-paper sm:rounded-[24px] sm:p-10 lg:p-14";
+// Raised speckled-graphite statement card (.claude/skills/premium-landing).
+const slab = "ag-graphite-card rounded-[20px] p-6 text-ag-text sm:rounded-[24px] sm:p-10 lg:p-14";
 
 const STEPS: { title: string; body: string; demo: ReactNode }[] = [
   { title: "Pick your target", body: "Tell us the company, the role, how many weeks you have and how many hours a day. You get a week-by-week plan that fits.", demo: <PlanDemo /> },
@@ -62,34 +63,8 @@ async function topCompanies() {
 export default async function HomePage() {
   const companies = await topCompanies();
   return (
-    <MarketingShell>
-      {/* Hero */}
-      <section className={cn(container, "pb-16 pt-14 md:pb-24 md:pt-24")}>
-        <Reveal>
-          <h1 className="max-w-[900px] text-balance font-display text-[46px] leading-[0.98] tracking-[-0.01em] text-ag-text sm:text-[72px] lg:text-[96px]">
-            Walk into your interview ready.
-          </h1>
-        </Reveal>
-        <Reveal delay={120} className="mt-10 md:mt-14">
-          <div className={cn(paper, "relative grid items-center gap-8 overflow-hidden lg:grid-cols-[1fr_1.05fr]")}>
-            <div className="relative z-10">
-              <p className="text-balance font-display text-[32px] leading-[1.05] sm:text-[44px]">A plan for your company, one step at a time.</p>
-              <p className="mt-4 max-w-[460px] text-pretty text-[16px] leading-relaxed text-ag-on-paper-muted">
-                Free lessons, problems with hidden tests, and a roadmap that unlocks as you learn. Built for students and developers in India.
-              </p>
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <ButtonLink href="/sign-in">Get started</ButtonLink>
-                <Link href="/problems" className={cn("rounded-ag-control px-4 py-2.5 text-[15px] font-medium text-ag-on-paper underline-offset-4 hover:underline", focusRing)}>
-                  Explore problems ›
-                </Link>
-              </div>
-            </div>
-            <div className="-mx-4 -mb-6 rounded-[18px] bg-ag-bg p-4 sm:mx-0 sm:mb-0 sm:p-6">
-              <RoadmapArt />
-            </div>
-          </div>
-        </Reveal>
-      </section>
+    <MarketingShell className="ag-speckle">
+      <Hero companies={companies} />
 
       {/* How it works */}
       <section aria-labelledby="how" className={cn(container, "py-16 md:py-24")}>
@@ -111,9 +86,9 @@ export default async function HomePage() {
       {/* Statement + evidence */}
       <section aria-labelledby="science" className={cn(container, "py-16 md:py-24")}>
         <Reveal>
-          <div className={paper}>
+          <div className={slab}>
             <h2 id="science" className="max-w-[760px] text-balance font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
-            <p className="mt-5 max-w-[560px] text-pretty text-[16px] leading-relaxed text-ag-on-paper-muted">
+            <p className="mt-5 max-w-[560px] text-pretty text-[16px] leading-relaxed text-ag-text-muted">
               Algogym is built on three of the best-tested findings in learning research.
             </p>
           </div>
@@ -121,7 +96,7 @@ export default async function HomePage() {
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {EVIDENCE.map((e, i) => (
             <Reveal key={e.title} delay={i * 80}>
-              <figure className="h-full rounded-ag-card border border-ag-border bg-ag-surface-1 p-6">
+              <figure className="h-full rounded-ag-card border border-ag-border bg-ag-graphite-1 p-6">
                 <h3 className="font-display text-[26px] leading-tight text-ag-text">{e.title}</h3>
                 <p className="mt-3 text-pretty text-[15px] leading-relaxed text-ag-text-muted">{e.body}</p>
                 <p className="mt-3 text-pretty text-[15px] leading-relaxed text-ag-text">{e.why}</p>
@@ -138,8 +113,8 @@ export default async function HomePage() {
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={(i % 2) * 80}>
-              <article className="h-full rounded-ag-card border border-ag-border bg-ag-surface-1 p-3">
-                <div className="grid h-44 place-items-center rounded-ag-card bg-ag-surface-2"><FeatureArt kind={f.art} /></div>
+              <article className="h-full rounded-ag-card border border-ag-border bg-ag-graphite-1 p-3">
+                <div className="grid h-44 place-items-center rounded-ag-card bg-ag-graphite-2"><FeatureArt kind={f.art} /></div>
                 <div className="px-3 pb-3 pt-5">
                   <h3 className="flex items-center gap-2 font-display text-[28px] leading-none text-ag-text">{f.title}{"soon" in f && <SoonBadge />}</h3>
                   <p className="mt-2 text-pretty text-[15px] leading-relaxed text-ag-text-muted">{f.body}</p>
@@ -159,7 +134,7 @@ export default async function HomePage() {
         <ul className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
           {companies.map((c) => (
             <li key={c.slug}>
-              <Link href={`/problems?company=${c.slug}`} className={cn("group flex h-full flex-col gap-4 rounded-ag-card border border-ag-border bg-ag-surface-1 p-4 transition-colors duration-ag-hover hover:border-ag-border-strong hover:bg-ag-surface-2 sm:p-5", focusRing)}>
+              <Link href={`/problems?company=${c.slug}`} className={cn("group flex h-full flex-col gap-4 rounded-ag-card border border-ag-border bg-ag-graphite-1 p-4 transition-colors duration-ag-hover hover:border-ag-border-strong hover:bg-ag-graphite-2 sm:p-5", focusRing)}>
                 <span className="grid size-11 place-items-center overflow-hidden rounded-xl bg-white">
                   <Image src={`/company-icons/${c.slug}.png`} alt="" width={30} height={30} unoptimized className="size-[30px] object-contain" />
                 </span>
@@ -185,7 +160,7 @@ export default async function HomePage() {
       {/* Final CTA */}
       <section className={cn(container, "pb-20 pt-8 md:pb-28")}>
         <Reveal>
-          <div className={cn(paper, "flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between")}>
+          <div className={cn(slab, "flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between")}>
             <p className="text-balance font-display text-[38px] leading-none sm:text-[56px]">Start preparing today.</p>
             <ButtonLink href="/sign-in">Get started</ButtonLink>
           </div>
@@ -197,7 +172,7 @@ export default async function HomePage() {
 
 function PlanCard({ name, price, note, items, cta, highlight }: { name: string; price: string; note: string; items: string[]; cta: ReactNode; highlight?: boolean }) {
   return (
-    <div className={cn("flex flex-col rounded-ag-card border bg-ag-surface-1 p-6 sm:p-8", highlight ? "border-ag-accent" : "border-ag-border")}>
+    <div className={cn("flex flex-col rounded-ag-card border bg-ag-graphite-1 p-6 sm:p-8", highlight ? "border-ag-accent" : "border-ag-border")}>
       <p className="text-[14px] text-ag-text-muted">{name}</p>
       <p className="mt-3 font-display text-[56px] leading-none text-ag-text">{price}</p>
       <p className="mt-1 text-[13px] text-ag-text-faint">{note}</p>

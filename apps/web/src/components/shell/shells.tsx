@@ -47,9 +47,9 @@ const authButtons = (
 );
 
 /** Public pages: transparent nav over the hero, footer below. */
-export function MarketingShell({ children }: { children: ReactNode }) {
+export function MarketingShell({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-ag-bg font-ui text-ag-text antialiased">
+    <div className={cn("flex min-h-dvh flex-col bg-ag-bg font-ui text-ag-text antialiased", className)}>
       <SkipLink />
       <ScrollHeader>
         <nav aria-label="Main" className={cn(container, "relative flex h-16 items-center justify-between gap-4")}>
