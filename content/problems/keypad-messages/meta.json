@@ -1,0 +1,39 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "keypad-messages",
+  "title": "Keypad Messages",
+  "status": "draft",
+  "difficulty": "Medium",
+  "category": "dsa",
+  "topics": [
+    "recursion"
+  ],
+  "patterns": [
+    "backtracking"
+  ],
+  "similar_to": [
+    "leetcode:17"
+  ],
+  "signature": {
+    "function": "keypadMessages",
+    "params": [
+      {
+        "name": "digits",
+        "type": "string"
+      }
+    ],
+    "returns": "string[]"
+  },
+  "comparator": "unordered",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "tiffin-queue",
+  "title": "Tiffin Queue",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "stacks-and-queues"
+  ],
+  "patterns": [
+    "queue-simulation"
+  ],
+  "similar_to": [
+    "leetcode:1700"
+  ],
+  "signature": {
+    "function": "unserved",
+    "params": [
+      {
+        "name": "students",
+        "type": "int[]"
+      },
+      {
+        "name": "tiffins",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

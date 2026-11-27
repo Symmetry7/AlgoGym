@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320" role="img" aria-labelledby="t">
+<title id="t">Four linked nodes 11, 22, 33, 44. Below, after three steps, 22 points back to 11 and 33 back to 22; prev is on 33 and cur is on 44, the last node still to turn around.</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#22C55E"/></marker>
+<marker id="arrowMuted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#A1A1AA"/></marker></defs>
+<rect width="800" height="320" rx="16" fill="#0B0B0D"/>
+<text x="400" y="40" fill="#F5F5F7" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Reversing a linked list: turn one link around per step</text>
+<text x="130" y="127" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="end">before</text>
+<rect x="150" y="96" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="192" y="129" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">11</text>
+<rect x="290" y="96" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="332" y="129" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">22</text>
+<rect x="430" y="96" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="472" y="129" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">33</text>
+<rect x="570" y="96" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="612" y="129" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">44</text>
+<line x1="238" y1="122" x2="284" y2="122" stroke="#A1A1AA" stroke-width="2" marker-end="url(#arrowMuted)"/>
+<line x1="378" y1="122" x2="424" y2="122" stroke="#A1A1AA" stroke-width="2" marker-end="url(#arrowMuted)"/>
+<line x1="518" y1="122" x2="564" y2="122" stroke="#A1A1AA" stroke-width="2" marker-end="url(#arrowMuted)"/>
+<text x="130" y="237" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="end">after 3 steps</text>
+<rect x="150" y="206" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="192" y="239" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">11</text>
+<rect x="290" y="206" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="332" y="239" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">22</text>
+<rect x="430" y="206" width="84" height="52" rx="10" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/><text x="472" y="239" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">33</text>
+<rect x="570" y="206" width="84" height="52" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="612" y="239" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">44</text>
+<line x1="284" y1="232" x2="238" y2="232" stroke="#22C55E" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="424" y1="232" x2="378" y2="232" stroke="#22C55E" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="472" y="284" fill="#22C55E" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">prev</text>
+<text x="612" y="284" fill="#A1A1AA" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="13" font-weight="400" text-anchor="middle">cur</text>
+</svg>

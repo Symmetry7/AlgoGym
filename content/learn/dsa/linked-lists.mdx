@@ -1,0 +1,145 @@
+---
+track: dsa
+layer: 3
+topic: linked-lists
+title: Linked Lists
+summary: 'Each node knows only the next one, so problems are solved by walking with one or two pointers and rewiring links, not by indexing.'
+status: draft
+authors: [algogym]
+reviewers: []
+practice:
+  - relay-reversal
+  - middle-coach
+  - delivery-loop
+  - drop-from-end
+quiz:
+  - question: 'While reversing a list, why must you save next[cur] before changing it?'
+    options: ["To count the nodes", "Once next[cur] points back, the rest of the list can't be reached", "To find the middle", "It isn't needed"]
+    answer: 1
+    why: 'The old link is the only way to the rest of the list. Overwrite it first and you lose everything after cur.'
+  - question: 'A slow pointer moves one step and a fast pointer two. Where is slow when fast reaches the end?'
+    options: ["At the head", "At the middle", "At the end", "One before the end"]
+    answer: 1
+    why: 'Fast has travelled twice as far, so slow has covered half the list.'
+  - question: 'How do two pointers find the k-th node from the end in one pass?'
+    options: ["Sort the list first", "Move the lead pointer k steps ahead, then move both until lead reaches the end", "Walk to the end and back", "Use binary search"]
+    answer: 1
+    why: 'The gap between the pointers stays k, so when lead is at the end, trail is k nodes behind it.'
+---
+
+## The idea
+
+In a linked list, every node holds a value and a link to the next node. There's no "jump to position i": the only way to reach a node is to walk from the head. In exchange, inserting or removing a node is O(1) once you're standing next to it: just change one link.
+
+Algogym problems store a list as arrays: `values[i]` is node `i`'s value and `next[i]` is the index of the node after it, or `-1` at the end. The techniques are the same as with node objects.
+
+Two tools cover most linked-list problems:
+
+- **Rewiring with a few pointers.** Reversal, removal and insertion keep track of `prev`, `cur` and the saved next node.
+- **Two walkers at different speeds or with a gap.** Fast/slow pointers find the middle or a loop. A gap of k finds the k-th node from the end.
+
+## Intuition
+
+<Figure src="/learn/dsa/linked-lists/reverse-links.svg" alt="Four linked nodes 11, 22, 33, 44. Below, after three steps, 22 points back to 11 and 33 back to 22; prev is on 33 and cur is on 44, the last node still to turn around." />
+
+Think of a treasure hunt where each clue says only where the next clue is. To run it backwards you don't need a new set of clues: walk forward, and at each clue cross out "go to the next" and write "go back to the previous". Save the old instruction before you cross it out, or you'll never find the next clue.
+
+## Step through it
+
+{/* Middle Coach on 101 → 102 → 103 → 104 → 105: left is slow, right is fast. */}
+
+<StepThrough
+  array={[101, 102, 103, 104, 105]}
+  steps={[
+    { left: 0, right: 0, note: "slow and fast both start at the head, 101." },
+    { left: 1, right: 2, note: "slow moves one coach to 102; fast moves two to 103." },
+    { left: 2, right: 4, note: "slow on 103, fast on 105. Fast has no coach after it, so stop." },
+    { left: 2, right: 2, note: "slow is on 103, the middle: two coaches on each side." },
+  ]}
+/>
+
+## Worked example
+
+*Relay Reversal* reverses `11 → 22 → 33 → 44`. Start with `prev = -1` and `cur` on 11.
+
+1. Save `ahead = 22`, point 11 back to `-1`, then move: `prev = 11`, `cur = 22`.
+2. Save `ahead = 33`, point 22 back to 11. Now `prev = 22`, `cur = 33`.
+3. Save `ahead = 44`, point 33 back to 22. Now `prev = 33`, `cur = 44`.
+4. Save `ahead = -1`, point 44 back to 33. Now `prev = 44`, `cur = -1`: stop.
+
+The new head is `prev`, and walking from it gives **44, 33, 22, 11**. No node was copied; four links were turned around.
+
+## Code
+
+<CodeTabs>
+
+```js
+// Reverses the list in place and returns the new head.
+function reverse(next, head) {
+  let prev = -1;
+  let cur = head;
+  while (cur !== -1) {
+    const ahead = next[cur];
+    next[cur] = prev;
+    prev = cur;
+    cur = ahead;
+  }
+  return prev;
+}
+```
+
+```python
+def reverse(next: list[int], head: int) -> int:
+    prev, cur = -1, head
+    while cur != -1:
+        ahead = next[cur]
+        next[cur] = prev
+        prev, cur = cur, ahead
+    return prev
+```
+
+```cpp
+int reverse(vector<int>& next, int head) {
+    int prev = -1, cur = head;
+    while (cur != -1) {
+        int ahead = next[cur];
+        next[cur] = prev;
+        prev = cur;
+        cur = ahead;
+    }
+    return prev;
+}
+```
+
+```java
+int reverse(int[] next, int head) {
+    int prev = -1, cur = head;
+    while (cur != -1) {
+        int ahead = next[cur];
+        next[cur] = prev;
+        prev = cur;
+        cur = ahead;
+    }
+    return prev;
+}
+```
+
+</CodeTabs>
+
+## Complexity
+
+| | |
+| --- | --- |
+| Time | O(n) for one walk; fast/slow pointers are still O(n) |
+| Space | O(1): a few pointers, no copy of the list |
+
+## Common mistakes
+
+<Callout>
+
+- **Losing the rest of the list.** Save `next[cur]` before you change it.
+- **Stepping past the end.** Before `fast = next[next[fast]]`, check that both `fast` and `next[fast]` exist.
+- **Forgetting the head.** Removing the first node has no node before it; handle that case (or add a dummy node in front).
+- **Returning the meeting point as the loop start.** Floyd's walkers meet somewhere inside the loop; a second walk from the head finds where it begins.
+
+</Callout>

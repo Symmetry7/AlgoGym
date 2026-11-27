@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320" role="img" aria-labelledby="t">
+<title id="t">Left: a stack of three plates where items are pushed and popped at the top. Right: a queue of four numbers where items join at the back and leave from the front.</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#22C55E"/></marker>
+<marker id="arrowMuted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#A1A1AA"/></marker></defs>
+<rect width="800" height="320" rx="16" fill="#0B0B0D"/>
+<text x="400" y="40" fill="#F5F5F7" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" text-anchor="middle">Stack: last in, first out. Queue: first in, first out.</text>
+<text x="235" y="76" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle">stack</text>
+<rect x="150" y="202" width="170" height="40" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="235" y="228" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">3</text>
+<rect x="150" y="154" width="170" height="40" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="235" y="180" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">7</text>
+<rect x="150" y="106" width="170" height="40" rx="10" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/><text x="235" y="132" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">5</text>
+<line x1="366" y1="126" x2="328" y2="126" stroke="#22C55E" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="372" y="131" fill="#22C55E" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="start">push / pop</text>
+<line x1="138" y1="254" x2="332" y2="254" stroke="#84848D" stroke-width="2"/>
+<text x="584" y="76" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle">queue</text>
+<rect x="440" y="150" width="64" height="64" rx="10" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/><text x="472" y="189" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">4</text>
+<rect x="512" y="150" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="544" y="189" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">9</text>
+<rect x="584" y="150" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="616" y="189" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">2</text>
+<rect x="656" y="150" width="64" height="64" rx="10" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/><text x="688" y="189" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="18" font-weight="400" text-anchor="middle">6</text>
+<line x1="432" y1="182" x2="392" y2="182" stroke="#22C55E" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="412" y="244" fill="#22C55E" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle">leave</text>
+<line x1="768" y1="182" x2="728" y2="182" stroke="#A1A1AA" stroke-width="2" marker-end="url(#arrowMuted)"/>
+<text x="748" y="244" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle">join</text>
+</svg>
