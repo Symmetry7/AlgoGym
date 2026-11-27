@@ -11,8 +11,10 @@ export const metadata: Metadata = {
   description: "Example HR answers to adapt to your own story, and SQL interview questions with a worked MySQL 8 query for each.",
 };
 
-// Content changes only with a migration; refresh hourly.
-export const revalidate = 3600;
+// Render per request: the build has no database (CI) and preview/production databases may not
+// have interview_items yet, so the page must never query Supabase at build time. error.tsx
+// covers a failed load at request time.
+export const dynamic = "force-dynamic";
 
 const accountActions = (
   <ButtonLink href="/sign-in" variant="secondary" size="sm">
