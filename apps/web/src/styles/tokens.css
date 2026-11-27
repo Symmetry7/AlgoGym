@@ -46,13 +46,6 @@
   }
 }
 
-/* Resend-style display text: white fading to half-white, top-left to bottom-right. */
-.ag-text-gradient {
-  background-image: linear-gradient(to right bottom, #ffffff 30%, rgba(255, 255, 255, 0.5));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 /* Dark glass button (marketing hero). */
 .ag-glass-button {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));

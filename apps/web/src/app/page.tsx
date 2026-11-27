@@ -4,9 +4,9 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
-import { ChecklistDemo, HintsDemo, PlanDemo, RoadmapDemo } from "@/components/landing/demos";
 import { Reveal } from "@/components/landing/reveal";
 import { Hero } from "@/components/landing/hero";
+import { HowItWorks } from "@/components/landing/how-it-works";
 import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { Testimonials } from "@/components/landing/testimonials";
 import { TESTIMONIALS, visibleTestimonials } from "@/content/testimonials";
@@ -25,13 +25,6 @@ export const metadata: Metadata = {
 const container = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
 // Statement card: black with a hairline and a soft top light (.claude/skills/premium-landing).
 const slab = "rounded-[20px] border border-white/10 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%)] p-6 text-ag-text sm:rounded-[24px] sm:p-10 lg:p-14";
-
-const STEPS: { title: string; body: string; demo: ReactNode }[] = [
-  { title: "Pick your target", body: "Tell us the company, the role, how many weeks you have and how many hours a day. You get a week-by-week plan that fits.", demo: <PlanDemo /> },
-  { title: "Tick off what you already know", body: "Skip what you're sure of. Everything else becomes a short lesson, placed just before the problems that need it.", demo: <ChecklistDemo /> },
-  { title: "Your roadmap is a path you unlock", body: "Each topic opens when you pass the one before it, so you always know what's next and why.", demo: <RoadmapDemo /> },
-  { title: "Stuck? One hint at a time", body: "Hints open in order, from a nudge to the key idea. The last one still stops short of the code.", demo: <HintsDemo /> },
-];
 
 const EVIDENCE = [
   { title: "Recalling beats rereading", body: "Students who practised recalling a passage remembered more of it a week later than students who reread it.", source: "Roediger & Karpicke, Psychological Science, 2006", why: "That's why every lesson ends with a quiz, not a summary." },
@@ -68,28 +61,13 @@ export default async function HomePage() {
       <Hero />
       <LogoMarquee companies={companies} />
 
-      {/* How it works */}
-      <section aria-labelledby="how" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="how" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">How it works</h2>
-        <div className="mt-12 space-y-20 md:mt-16 md:space-y-32">
-          {STEPS.map((s, i) => (
-            <div key={s.title} className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
-              <Reveal className="md:sticky md:top-28 md:self-start">
-                <p className="font-geist-mono text-[13px] text-ag-text-faint">0{i + 1}</p>
-                <h3 className="mt-2 text-[24px] font-semibold leading-tight text-ag-text sm:text-[28px]">{s.title}</h3>
-                <p className="mt-3 max-w-[420px] text-pretty text-[16px] leading-relaxed text-ag-text-muted">{s.body}</p>
-              </Reveal>
-              <Reveal delay={100}>{s.demo}</Reveal>
-            </div>
-          ))}
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Statement + evidence */}
       <section aria-labelledby="science" className={cn(container, "py-16 md:py-24")}>
         <Reveal>
           <div className={slab}>
-            <h2 id="science" className="ag-text-gradient max-w-[760px] text-balance pb-1 font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
+            <h2 id="science" className="text-[#f0f0f0] max-w-[760px] text-balance pb-1 font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
             <p className="mt-5 max-w-[560px] text-pretty text-[16px] leading-relaxed text-ag-text-muted">
               Algogym is built on three of the best-tested findings in learning research.
             </p>
@@ -111,7 +89,7 @@ export default async function HomePage() {
 
       {/* Feature grid */}
       <section aria-labelledby="features" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="features" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Everything for the interview</h2>
+        <h2 id="features" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">Everything for the interview</h2>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={(i % 2) * 80}>
@@ -131,7 +109,7 @@ export default async function HomePage() {
 
       {/* Pricing teaser */}
       <section aria-labelledby="pricing" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="pricing" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
+        <h2 id="pricing" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <PlanCard name="Free" price="₹0" note="Forever" items={["Every lesson and quiz", "The full roadmap", "Free problems with hidden tests", "Company problem lists (all time)"]} cta={<ButtonLink href="/sign-in" variant="secondary">Start free</ButtonLink>} />
           <PlanCard name="Pro" price="₹199" note="a month, or ₹1,499 a year" highlight items={["Everything in Free", "Pro problems, editorials and solutions", "Company lists for the last 30 and 90 days", "Pro study plans"]} cta={<ButtonLink href="/pricing">See pricing</ButtonLink>} />
@@ -142,7 +120,7 @@ export default async function HomePage() {
       <section className="relative isolate overflow-hidden px-4 pb-28 pt-24 text-center md:pb-40 md:pt-36">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[420px] bg-[radial-gradient(ellipse_50%_60%_at_50%_100%,rgba(255,255,255,0.08),transparent_70%)]" />
         <Reveal>
-          <p className="ag-text-gradient mx-auto max-w-[900px] text-balance pb-2 font-display text-[48px] leading-[0.98] sm:text-[80px] lg:text-[96px]">Your offer starts here. Start preparing today.</p>
+          <p className="text-[#f0f0f0] mx-auto max-w-[900px] text-balance pb-2 font-display text-[48px] leading-[0.98] sm:text-[80px] lg:text-[96px]">Your offer starts here. Start preparing today.</p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             <Link href="/sign-in" className={cn("ag-glass-button inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>Get started</Link>
             <Link href="/pricing" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-[#a1a4a5] transition-colors duration-ag-hover hover:text-white", focusRing)}>See pricing</Link>

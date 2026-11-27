@@ -8,7 +8,7 @@ description: Build or restyle Algogym's marketing pages (landing, pricing) at a 
 ## Look: Resend-style black (owner decision, 2026-11-27)
 - Reference: resend.com. Match its structure, rhythm and restraint only. Never use its text, logo, fonts, illustrations or the cube render.
 - Page: pure black (`--ag-bg`). The hero has a soft spotlight from the top right (radial white at 13%) and one faint diagonal light streak (blurred, rotated about -7°). Nothing else decorates the background: no grain, no speckle, no graphite.
-- Headlines: Instrument Serif, regular weight, with `.ag-text-gradient` (white at 30% fading to 50% white, towards the bottom right). Hero 96 / 80 / 56 px; section H2s 56 / 40 px.
+- Headlines: solid `#f0f0f0` (no gradient text: the Impeccable gate rejects `background-clip: text`). Hero: bold UI sans, PracHub-style, with one emerald key word and a drawn underline. Section H2s: Instrument Serif 56 / 40 px.
 - Body: 18 px, `#a1a4a5`, line-height 1.5, at most 2–3 lines in the hero.
 - Buttons: `.ag-glass-button`, a dark translucent gradient with a 1 px white/14 border and an inner top highlight, 48 px tall with a 16 px radius. The secondary button is plain grey text that turns white on hover.
 - Badge: a pill with a white/15 border and a chevron, linking somewhere real.

@@ -6,8 +6,8 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 // Hero cube (DESIGN.md §3.1): 3×3×3 dark rounded cubelets whose layers twist, slowly turning, lit from the top right.
-const TWIST_MS = 1100;
-const PAUSE_MS = 1600;
+const TWIST_MS = 1500;
+const PAUSE_MS = 2200;
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export default function CubeScene({ onFail }: { onFail?: () => void }) {
@@ -32,37 +32,47 @@ export default function CubeScene({ onFail }: { onFail?: () => void }) {
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = envMap;
-    scene.environmentIntensity = 0.55;
-    renderer.toneMappingExposure = 1.05;
+    scene.environmentIntensity = 0.32; // soft reflections only: the look is matte, not chrome
+    renderer.toneMappingExposure = 1.1;
 
-    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-    camera.position.set(0, 0, 10.5);
+    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+    camera.position.set(0, 0, 11);
 
-    // Studio lighting: a strong key from the top right, a cool rim behind, a soft fill below.
-    const key = new THREE.DirectionalLight(0xffffff, 3.2);
-    key.position.set(5, 8, 7);
-    const rim = new THREE.DirectionalLight(0xc8d2ff, 2.2);
-    rim.position.set(-7, 3, -6);
-    const fill = new THREE.DirectionalLight(0xffffff, 0.35);
-    fill.position.set(-3, -6, 4);
-    scene.add(key, rim, fill);
+    // Light from the top right and behind, so edges catch a thin highlight and faces stay dark.
+    const key = new THREE.DirectionalLight(0xffffff, 2.6);
+    key.position.set(6, 9, 4);
+    const back = new THREE.DirectionalLight(0xffffff, 3.4);
+    back.position.set(3, 5, -8);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.55);
+    fill.position.set(-7, 1, 5);
+    scene.add(key, back, fill);
 
-    const geo = new RoundedBoxGeometry(0.955, 0.955, 0.955, 6, 0.07);
-    // Perforated metal: a dot grid drawn once into a canvas, used as bump and roughness.
-    const dots = document.createElement("canvas");
-    dots.width = dots.height = 256;
-    const g = dots.getContext("2d")!;
-    g.fillStyle = "#9a9a9a";
-    g.fillRect(0, 0, 256, 256);
-    g.fillStyle = "#101010";
-    for (let y = 8; y < 256; y += 16) for (let x = (y / 16) % 2 ? 16 : 8; x < 256; x += 16) { g.beginPath(); g.arc(x, y, 3.2, 0, Math.PI * 2); g.fill(); }
-    const dotTex = new THREE.CanvasTexture(dots);
-    dotTex.wrapS = dotTex.wrapT = THREE.RepeatWrapping;
-    const gloss = new THREE.MeshPhysicalMaterial({ color: 0x050506, metalness: 0.85, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.08 });
-    const matte = new THREE.MeshPhysicalMaterial({ color: 0x121215, metalness: 0.25, roughness: 0.7, sheen: 0.4, sheenColor: new THREE.Color(0x2a2a30) });
-    const perforated = new THREE.MeshStandardMaterial({ color: 0x1b1b1f, metalness: 0.7, roughness: 0.55, bumpMap: dotTex, bumpScale: 2.2, roughnessMap: dotTex });
-    const silver = new THREE.MeshPhysicalMaterial({ color: 0x8c8c94, metalness: 1, roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.2 });
-    const materialFor = (i: number) => ([4, 13, 22].includes(i) ? silver : [1, 9, 16, 25].includes(i) ? perforated : i % 3 === 0 ? matte : gloss);
+    // Tight gaps and small bevels, like machined blocks.
+    const geo = new RoundedBoxGeometry(0.93, 0.93, 0.93, 6, 0.075);
+    const canvasTex = (draw: (g: CanvasRenderingContext2D) => void) => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 256;
+      draw(c.getContext("2d")!);
+      const t = new THREE.CanvasTexture(c);
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      return t;
+    };
+    // Fine perforated mesh and a speckled stone grain: the two face textures.
+    const meshTex = canvasTex((g) => {
+      g.fillStyle = "#8a8a8a"; g.fillRect(0, 0, 256, 256); g.fillStyle = "#0a0a0a";
+      for (let y = 4; y < 256; y += 8) for (let x = (y / 8) % 2 ? 8 : 4; x < 256; x += 8) { g.beginPath(); g.arc(x, y, 1.9, 0, Math.PI * 2); g.fill(); }
+    });
+    const grainTex = canvasTex((g) => {
+      g.fillStyle = "#2c2c2f"; g.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 9000; i++) { const v = 40 + Math.random() * 120; g.fillStyle = `rgb(${v},${v},${v + 3})`; g.fillRect(Math.random() * 256, Math.random() * 256, 1.4, 1.4); }
+    });
+    const base = new THREE.MeshStandardMaterial({ color: 0x0b0b0c, metalness: 0.55, roughness: 0.52 });
+    const mesh = new THREE.MeshStandardMaterial({ color: 0x18181a, metalness: 0.6, roughness: 0.6, bumpMap: meshTex, bumpScale: 1.6, roughnessMap: meshTex });
+    const grain = new THREE.MeshStandardMaterial({ color: 0x9a9aa0, map: grainTex, bumpMap: grainTex, bumpScale: 0.8, metalness: 0.1, roughness: 0.85 });
+    const satin = new THREE.MeshStandardMaterial({ color: 0x3c3c41, metalness: 0.4, roughness: 0.35 });
+    // Textures go on single faces of a few blocks (box groups: +x, -x, +y, -y, +z, -z), the rest stays plain.
+    const SPECIAL: Record<number, [number, THREE.Material]> = { 2: [2, mesh], 8: [4, grain], 11: [0, mesh], 17: [2, satin], 20: [4, mesh], 24: [0, grain], 26: [2, grain], 6: [4, satin] };
+    const materialFor = (i: number) => { const sp = SPECIAL[i]; if (!sp) return base; const arr: THREE.Material[] = Array(6).fill(base); arr[sp[0]] = sp[1]; return arr; };
 
     const cube = new THREE.Group();
     const cubelets: THREE.Mesh[] = [];
@@ -76,7 +86,7 @@ export default function CubeScene({ onFail }: { onFail?: () => void }) {
     const tilt = new THREE.Group(); // pointer tilt, separate from the idle spin
     tilt.add(cube);
     scene.add(tilt);
-    cube.rotation.set(0.5, -0.6, 0.12);
+    cube.rotation.set(0.62, -0.78, 0.05); // corner towards the viewer, top face visible
 
     const resize = () => {
       const { width, height } = el.getBoundingClientRect();
@@ -130,8 +140,7 @@ export default function CubeScene({ onFail }: { onFail?: () => void }) {
     const frame = (now: number) => {
       const dt = Math.min(64, now - last);
       last = now;
-      cube.rotation.y += dt * 0.00018;
-      cube.rotation.x += dt * 0.00005;
+      cube.rotation.y += dt * 0.00007;
       tilt.rotation.x += (target.x - tilt.rotation.x) * 0.05;
       tilt.rotation.y += (target.y - tilt.rotation.y) * 0.05;
       if (!twist && now >= nextAt) startTwist(now);
@@ -162,8 +171,9 @@ export default function CubeScene({ onFail }: { onFail?: () => void }) {
     function cleanup() {
       ro.disconnect();
       geo.dispose();
-      for (const mat of [gloss, matte, perforated, silver]) mat.dispose();
-      dotTex.dispose();
+      for (const mat of [base, mesh, grain, satin]) mat.dispose();
+      meshTex.dispose();
+      grainTex.dispose();
       envMap.dispose();
       pmrem.dispose();
       renderer.dispose();

@@ -10,7 +10,7 @@ function Card({ t, hidden }: { t: Testimonial; hidden?: boolean }) {
         <span>
           <span className="flex items-center gap-2 text-[15px] font-semibold text-[#f0f0f0]">
             {t.name}
-            {!t.verified && <span className="rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-medium text-[#a1a4a5]">Sample</span>}
+            {!t.verified && <span className="rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-medium text-[#a1a4a5]">Draft</span>}
           </span>
           <span className="block text-[14px] text-[#a1a4a5]">{t.role}</span>
         </span>
@@ -25,7 +25,7 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
   return (
     <section aria-labelledby="testimonials" className="py-16 md:py-28">
       <div className="mx-auto max-w-[720px] px-4 text-center">
-        <h2 id="testimonials" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Loved by learners</h2>
+        <h2 id="testimonials" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">Loved by learners</h2>
         <p className="mt-5 text-pretty text-[18px] leading-[1.5] text-[#a1a4a5]">What students and developers say after preparing with Algogym.</p>
       </div>
       <div className="ag-marquee-host ag-marquee-mask mt-14 overflow-x-auto [scrollbar-width:none]">

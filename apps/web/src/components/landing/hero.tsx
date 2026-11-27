@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { focusRing } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
-import { SystemDiagram } from "./system-diagram";
 
 gsap.registerPlugin(useGSAP);
 
@@ -40,10 +39,6 @@ export function Hero() {
     <section ref={root} className="relative isolate -mt-16 overflow-hidden">
       {/* Spotlight from the top right and a faint diagonal light streak */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_70%_at_85%_-10%,rgba(255,255,255,0.13),transparent_60%)]" />
-      {/* System-design diagram texture, faded towards the copy so the headline stays clean */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 top-20 -z-20 hidden opacity-90 md:block [mask-image:radial-gradient(ellipse_75%_70%_at_35%_50%,transparent_25%,#000_75%)]">
-        <SystemDiagram />
-      </div>
       <div aria-hidden className="pointer-events-none absolute -left-[10%] bottom-[8%] -z-10 h-28 w-[130%] -rotate-[7deg] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.07)_35%,rgba(255,255,255,0.1)_55%,transparent)] blur-2xl" />
 
       <div className="mx-auto grid min-h-dvh w-full max-w-[1200px] items-center gap-10 px-4 pb-16 pt-24 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-20">
