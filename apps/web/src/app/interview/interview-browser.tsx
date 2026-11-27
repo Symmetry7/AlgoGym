@@ -4,7 +4,7 @@ import { Check, ChevronDown, Copy, ExternalLink, Search } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { SegmentedTabs } from "@/components/shell/segmented-tabs";
 import { Button, DifficultyChip, focusRing } from "@/components/shell/ui";
-import { answerParts, filterItems, filterOptions, type InterviewFilters, type InterviewItem } from "@/lib/interview-items";
+import { ROLE_NAMES, answerParts, filterItems, filterOptions, type InterviewFilters, type InterviewItem } from "@/lib/interview-items";
 import { cn } from "@/lib/utils";
 
 const KIND_LABEL = { hr: "HR", sql: "SQL" } as const;
@@ -37,7 +37,7 @@ function FilterSelect({ label, value, onChange, options, allLabel }: {
   );
 }
 
-function Answer({ item }: { item: InterviewItem }) {
+function Answer({ item, companyNames }: { item: InterviewItem; companyNames: Record<string, string> }) {
   const [copied, setCopied] = useState<"idle" | "done" | "error">("idle");
   if (!item.answer_md) return <p className="text-sm text-ag-text-muted">This answer isn&rsquo;t available yet.</p>;
   return (
@@ -69,6 +69,15 @@ function Answer({ item }: { item: InterviewItem }) {
           ? "Replace the bracketed parts with your own true details before you use this answer."
           : "The tables and columns are illustrative. Adapt them to the schema you're given."}
       </p>
+      {item.roles.length > 0 && (
+        <p className="text-[13px] text-ag-text-muted">Useful for: {item.roles.map((r) => ROLE_NAMES[r] ?? titleCase(r)).join(", ")}</p>
+      )}
+      {item.companies.length > 0 && (
+        <p className="text-[13px] text-ag-text-muted">
+          Similar questions asked at: {item.companies.slice(0, 6).map((c) => companyNames[c] ?? titleCase(c)).join(", ")}
+          {item.companies.length > 6 && ` and ${item.companies.length - 6} more`}
+        </p>
+      )}
       {item.reference_url?.startsWith("https://") && (
         <a href={item.reference_url} target="_blank" rel="noreferrer" className={cn("inline-flex items-center gap-1 text-[13px] text-ag-text-muted underline underline-offset-4 hover:text-ag-text", focusRing)}>
           Reference <ExternalLink size={12} aria-hidden />
@@ -78,7 +87,7 @@ function Answer({ item }: { item: InterviewItem }) {
   );
 }
 
-function Row({ item }: { item: InterviewItem }) {
+function Row({ item, companyNames }: { item: InterviewItem; companyNames: Record<string, string> }) {
   const [open, setOpen] = useState(false);
   const panel = useId();
   return (
@@ -103,13 +112,13 @@ function Row({ item }: { item: InterviewItem }) {
         </button>
       </h2>
       <div id={panel} hidden={!open} className="px-4 pb-5 sm:px-5">
-        {open && <Answer item={item} />}
+        {open && <Answer item={item} companyNames={companyNames} />}
       </div>
     </li>
   );
 }
 
-export function InterviewBrowser({ items, initial }: { items: InterviewItem[]; initial: InterviewFilters }) {
+export function InterviewBrowser({ items, initial, companyNames }: { items: InterviewItem[]; initial: InterviewFilters; companyNames: Record<string, string> }) {
   const [f, setF] = useState<InterviewFilters>(initial);
   const set = (patch: Partial<InterviewFilters>) => setF((prev) => ({ ...prev, ...patch }));
 
@@ -153,10 +162,10 @@ export function InterviewBrowser({ items, initial }: { items: InterviewItem[]; i
         <FilterSelect label="Difficulty" allLabel="Any difficulty" value={f.difficulty} onChange={(d) => set({ difficulty: d as InterviewFilters["difficulty"] })} options={["Easy", "Medium", "Hard"].map((d) => ({ value: d, label: d }))} />
         {/* Company and role tags come from the source content; a filter with nothing to offer is hidden rather than shown empty. */}
         {options.companies.length > 0 && (
-          <FilterSelect label="Company" allLabel="All companies" value={f.company} onChange={(company) => set({ company })} options={options.companies.map((o) => ({ value: o.value, label: titleCase(o.value), n: o.n }))} />
+          <FilterSelect label="Similar questions asked at" allLabel="Any company" value={f.company} onChange={(company) => set({ company })} options={options.companies.map((o) => ({ value: o.value, label: companyNames[o.value] ?? titleCase(o.value), n: o.n }))} />
         )}
         {options.roles.length > 0 && (
-          <FilterSelect label="Role" allLabel="All roles" value={f.role} onChange={(role) => set({ role })} options={options.roles.map((o) => ({ value: o.value, label: titleCase(o.value), n: o.n }))} />
+          <FilterSelect label="Useful for" allLabel="Any role" value={f.role} onChange={(role) => set({ role })} options={options.roles.map((o) => ({ value: o.value, label: ROLE_NAMES[o.value] ?? titleCase(o.value), n: o.n }))} />
         )}
       </div>
 
@@ -171,7 +180,7 @@ export function InterviewBrowser({ items, initial }: { items: InterviewItem[]; i
 
       {shown.length ? (
         <ul className="mt-3 overflow-hidden rounded-ag-card border border-ag-border bg-ag-surface-1">
-          {shown.map((item) => <Row key={item.id} item={item} />)}
+          {shown.map((item) => <Row key={item.id} item={item} companyNames={companyNames} />)}
         </ul>
       ) : (
         <div className="mt-3 rounded-ag-card border border-ag-border bg-ag-surface-1 px-6 py-14 text-center">

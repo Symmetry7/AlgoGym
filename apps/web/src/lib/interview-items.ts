@@ -16,6 +16,14 @@ export interface InterviewItem {
   position: number;
 }
 
+/** Display names for the editorial "Useful for" role slugs (data/interview-tags.json). */
+export const ROLE_NAMES: Record<string, string> = {
+  "backend-developer": "Backend Developer",
+  "data-analyst": "Data Analyst",
+  "data-engineer": "Data Engineer",
+  "data-scientist": "Data Scientist",
+};
+
 export interface InterviewFilters {
   kind: InterviewKind | "all";
   topic?: string;
@@ -54,7 +62,8 @@ export function filterItems(items: InterviewItem[], f: InterviewFilters): Interv
       (f.kind === "all" || i.kind === f.kind) &&
       (!f.topic || i.tags.includes(f.topic)) &&
       (!f.company || i.companies.includes(f.company)) &&
-      (!f.role || i.roles.includes(f.role)) &&
+      // An item with no roles is general (every HR question): it stays in any role's list.
+      (!f.role || i.roles.length === 0 || i.roles.includes(f.role)) &&
       (!f.difficulty || i.difficulty === f.difficulty) &&
       (!q || i.question.toLowerCase().includes(q) || (i.answer_md ?? "").toLowerCase().includes(q)),
   );

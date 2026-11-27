@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/shell/shells";
 import { ButtonLink } from "@/components/shell/ui";
 import { parseFilters } from "@/lib/interview-items";
-import { listInterviewItems } from "../../../server/interview-items";
+import { listCompanyNames, listInterviewItems } from "../../../server/interview-items";
 import { InterviewBrowser } from "./interview-browser";
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ const accountActions = (
 );
 
 export default async function InterviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [items, params] = await Promise.all([listInterviewItems(), searchParams]);
+  const [items, params, companyNames] = await Promise.all([listInterviewItems(), searchParams, listCompanyNames()]);
   return (
     <AppShell actions={accountActions}>
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-24 pt-10 sm:px-6 md:pt-14">
@@ -31,7 +31,7 @@ export default async function InterviewPage({ searchParams }: { searchParams: Pr
           <h1 className="font-display text-[44px] leading-none text-ag-text sm:text-[56px]">Interview prep</h1>
           <p className="mt-4 text-pretty text-base leading-relaxed text-ag-text-muted">
             HR questions with an example answer to rework into your own story, and SQL questions with a worked query for
-            each. Search, or filter by topic and difficulty.
+            each. Search, or filter by topic, difficulty, role or company.
           </p>
           <p className="mt-3 text-sm text-ag-text-faint">
             Looking for company sheets, role-wise questions or playlists?{" "}
@@ -41,7 +41,7 @@ export default async function InterviewPage({ searchParams }: { searchParams: Pr
             .
           </p>
         </header>
-        <InterviewBrowser items={items} initial={parseFilters(params)} />
+        <InterviewBrowser items={items} initial={parseFilters(params)} companyNames={companyNames} />
       </div>
     </AppShell>
   );

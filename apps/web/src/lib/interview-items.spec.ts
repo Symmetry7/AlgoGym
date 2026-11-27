@@ -20,8 +20,10 @@ describe("filterItems", () => {
   it("filters by company and role", () => {
     expect(filterItems(items, { kind: "all", company: "tcs" })).toHaveLength(2);
     expect(filterItems(items, { kind: "all", company: "infosys" }).map((i) => i.question)).toEqual(["Why this company?"]);
-    expect(filterItems(items, { kind: "all", role: "data-analyst" }).map((i) => i.kind)).toEqual(["sql"]);
-    expect(filterItems(items, { kind: "hr", role: "data-analyst" })).toEqual([]);
+    expect(filterItems(items, { kind: "all", role: "data-analyst" }).map((i) => i.kind)).toEqual(["hr", "sql"]); // the general HR item stays
+    // HR items with no roles are general, so they stay in every role's list; tagged items must match.
+    expect(filterItems(items, { kind: "hr", role: "data-analyst" }).map((i) => i.question)).toEqual(["Why this company?"]);
+    expect(filterItems(items, { kind: "all", role: "frontend-developer" }).map((i) => i.question)).toEqual(["Tell me about yourself", "Why this company?"]);
   });
   it("combines topic, difficulty and search (question or answer, any case)", () => {
     expect(filterItems(items, { kind: "all", topic: "Motivation", difficulty: "Medium" })).toHaveLength(1);

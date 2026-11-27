@@ -12,3 +12,12 @@ export async function listInterviewItems(): Promise<InterviewItem[]> {
   if (error) throw new Error(`Could not load interview questions: ${error.message}`);
   return data as InterviewItem[];
 }
+
+/** Company slug -> display name, for "Similar questions asked at". */
+export async function listCompanyNames(): Promise<Record<string, string>> {
+  const { url, key } = getSupabaseEnv();
+  const db = createClient(url, key, { auth: { persistSession: false } });
+  const { data, error } = await db.from("companies").select("slug, name").limit(1000);
+  if (error) throw new Error(`Could not load companies: ${error.message}`);
+  return Object.fromEntries(data.map((c) => [c.slug, c.name]));
+}
