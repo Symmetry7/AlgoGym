@@ -8,16 +8,17 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @algogym/web",
-    "build": "npm run build -w @algogym/web",
+    "build": "npm run build -w @algogym/web && npm run build -w @algogym/engine",
     "start": "npm run start -w @algogym/web",
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck -w @algogym/web",
+    "typecheck": "npm run typecheck -w @algogym/web && npm run typecheck -w @algogym/engine",
     "lint": "eslint .",
     "design:check": "impeccable detect apps/web/src/components/shell apps/web/src/app/%5Fdesign apps/web/src/styles",
     "format.fix": "prettier --write .",
     "billing:setup": "node scripts/ops/setup-razorpay-plans.mjs",
     "content:validate": "node scripts/data/validate-problems.mjs",
-    "content:gen": "node scripts/data/generate-tests.mjs"
+    "content:gen": "node scripts/data/generate-tests.mjs",
+    "engine:dev": "npm run dev -w @algogym/engine"
   },
   "devDependencies": {
     "@next/env": "16.4.6",

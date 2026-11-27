@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "buildCommand": "npm ci && npm run build -w @algogym/engine",
+    "watchPatterns": ["apps/engine/**", "package.json", "package-lock.json"]
+  },
+  "deploy": {
+    "startCommand": "npm run start:worker -w @algogym/engine",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5
+  }
+}
