@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { focusRing } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
+import { SystemDiagram } from "./system-diagram";
 
 gsap.registerPlugin(useGSAP);
 
@@ -28,6 +29,8 @@ export function Hero() {
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.from("[data-in]", { y: 24, opacity: 0, filter: "blur(6px)", duration: 1.1, ease: "expo.out", stagger: 0.08 });
         gsap.from("[data-art]", { opacity: 0, scale: 0.92, duration: 1.8, ease: "expo.out", delay: 0.15 });
+        // The hand-drawn underline sweeps in under the key word once the headline lands.
+        gsap.fromTo("[data-underline]", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: "power3.inOut", delay: 0.75 });
       });
     },
     { scope: root },
@@ -37,6 +40,10 @@ export function Hero() {
     <section ref={root} className="relative isolate -mt-16 overflow-hidden">
       {/* Spotlight from the top right and a faint diagonal light streak */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_70%_at_85%_-10%,rgba(255,255,255,0.13),transparent_60%)]" />
+      {/* System-design diagram texture, faded towards the copy so the headline stays clean */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 top-20 -z-20 hidden opacity-90 md:block [mask-image:radial-gradient(ellipse_75%_70%_at_35%_50%,transparent_25%,#000_75%)]">
+        <SystemDiagram />
+      </div>
       <div aria-hidden className="pointer-events-none absolute -left-[10%] bottom-[8%] -z-10 h-28 w-[130%] -rotate-[7deg] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.07)_35%,rgba(255,255,255,0.1)_55%,transparent)] blur-2xl" />
 
       <div className="mx-auto grid min-h-dvh w-full max-w-[1200px] items-center gap-10 px-4 pb-16 pt-24 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-20">
@@ -45,10 +52,15 @@ export function Hero() {
             Run and Submit, now in 4 languages
             <ChevronRight className="size-4 text-ag-text-muted transition-transform duration-ag-hover group-hover:translate-x-0.5" aria-hidden />
           </Link>
-          <h1 data-in className="ag-text-gradient mt-7 pb-2 font-display text-[56px] leading-[1] tracking-[-0.01em] sm:text-[80px] lg:text-[96px]">
-            Interview prep
-            <br />
-            for developers
+          <h1 data-in className="mt-7 text-balance font-ui text-[46px] font-bold leading-[1.02] tracking-[-0.035em] text-[#f0f0f0] sm:text-[64px] lg:text-[76px]">
+            Walk into your interview{" "}
+            <span className="relative inline-block whitespace-nowrap text-ag-accent">
+              ready
+              <svg aria-hidden viewBox="0 0 200 16" preserveAspectRatio="none" className="absolute -bottom-[0.12em] left-0 h-[0.2em] w-full overflow-visible">
+                <path data-underline d="M3 11 C 50 3, 120 3, 197 9" pathLength={1} strokeDasharray="1" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="6" strokeLinecap="round" />
+              </svg>
+            </span>
+            .
           </h1>
           <p data-in className="mt-5 max-w-[470px] text-pretty text-[18px] leading-[1.5] text-[#a1a4a5]">
             The clearest way from your first array to your offer. Roadmaps, free lessons and real problems, built for your target company.

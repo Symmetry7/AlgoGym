@@ -107,7 +107,7 @@ export function ScrollHeader({ children }: { children: ReactNode }) {
     <header
       className={cn(
         "sticky top-0 z-40 border-b transition-colors duration-ag-panel ease-ag",
-        scrolled ? "border-ag-border bg-black/60 backdrop-blur-md" : "border-transparent bg-transparent",
+        scrolled ? "border-ag-border-strong bg-black" : "border-transparent bg-transparent",
       )}
     >
       {children}

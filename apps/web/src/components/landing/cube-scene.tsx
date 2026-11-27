@@ -6,8 +6,8 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 // Hero cube (DESIGN.md §3.1): 3×3×3 dark rounded cubelets whose layers twist, slowly turning, lit from the top right.
-const TWIST_MS = 900;
-const PAUSE_MS = 1300;
+const TWIST_MS = 1100;
+const PAUSE_MS = 1600;
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export default function CubeScene({ onFail }: { onFail?: () => void }) {
@@ -32,27 +32,43 @@ export default function CubeScene({ onFail }: { onFail?: () => void }) {
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = envMap;
-    scene.environmentIntensity = 0.35;
+    scene.environmentIntensity = 0.55;
+    renderer.toneMappingExposure = 1.05;
 
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-    camera.position.set(0, 0, 11.5);
+    camera.position.set(0, 0, 10.5);
 
-    const key = new THREE.DirectionalLight(0xffffff, 2.4);
-    key.position.set(6, 8, 6);
-    const rim = new THREE.DirectionalLight(0xb8b8ff, 0.6);
-    rim.position.set(-6, -2, -6);
-    scene.add(key, rim, new THREE.AmbientLight(0xffffff, 0.08));
+    // Studio lighting: a strong key from the top right, a cool rim behind, a soft fill below.
+    const key = new THREE.DirectionalLight(0xffffff, 3.2);
+    key.position.set(5, 8, 7);
+    const rim = new THREE.DirectionalLight(0xc8d2ff, 2.2);
+    rim.position.set(-7, 3, -6);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+    fill.position.set(-3, -6, 4);
+    scene.add(key, rim, fill);
 
-    const geo = new RoundedBoxGeometry(0.94, 0.94, 0.94, 4, 0.08);
-    const dark = new THREE.MeshPhysicalMaterial({ color: 0x0c0c0e, metalness: 0.5, roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.35 });
-    const light = new THREE.MeshPhysicalMaterial({ color: 0x3a3a3e, metalness: 0.3, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.15 });
-    const accentIdx = new Set([2, 6, 11, 19, 24]);
+    const geo = new RoundedBoxGeometry(0.955, 0.955, 0.955, 6, 0.07);
+    // Perforated metal: a dot grid drawn once into a canvas, used as bump and roughness.
+    const dots = document.createElement("canvas");
+    dots.width = dots.height = 256;
+    const g = dots.getContext("2d")!;
+    g.fillStyle = "#9a9a9a";
+    g.fillRect(0, 0, 256, 256);
+    g.fillStyle = "#101010";
+    for (let y = 8; y < 256; y += 16) for (let x = (y / 16) % 2 ? 16 : 8; x < 256; x += 16) { g.beginPath(); g.arc(x, y, 3.2, 0, Math.PI * 2); g.fill(); }
+    const dotTex = new THREE.CanvasTexture(dots);
+    dotTex.wrapS = dotTex.wrapT = THREE.RepeatWrapping;
+    const gloss = new THREE.MeshPhysicalMaterial({ color: 0x050506, metalness: 0.85, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.08 });
+    const matte = new THREE.MeshPhysicalMaterial({ color: 0x121215, metalness: 0.25, roughness: 0.7, sheen: 0.4, sheenColor: new THREE.Color(0x2a2a30) });
+    const perforated = new THREE.MeshStandardMaterial({ color: 0x1b1b1f, metalness: 0.7, roughness: 0.55, bumpMap: dotTex, bumpScale: 2.2, roughnessMap: dotTex });
+    const silver = new THREE.MeshPhysicalMaterial({ color: 0x8c8c94, metalness: 1, roughness: 0.32, clearcoat: 0.5, clearcoatRoughness: 0.2 });
+    const materialFor = (i: number) => ([4, 13, 22].includes(i) ? silver : [1, 9, 16, 25].includes(i) ? perforated : i % 3 === 0 ? matte : gloss);
 
     const cube = new THREE.Group();
     const cubelets: THREE.Mesh[] = [];
     let n = 0;
     for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
-      const m = new THREE.Mesh(geo, accentIdx.has(n++) ? light : dark);
+      const m = new THREE.Mesh(geo, materialFor(n++));
       m.position.set(x, y, z);
       cube.add(m);
       cubelets.push(m);
@@ -146,8 +162,8 @@ export default function CubeScene({ onFail }: { onFail?: () => void }) {
     function cleanup() {
       ro.disconnect();
       geo.dispose();
-      dark.dispose();
-      light.dispose();
+      for (const mat of [gloss, matte, perforated, silver]) mat.dispose();
+      dotTex.dispose();
       envMap.dispose();
       pmrem.dispose();
       renderer.dispose();
