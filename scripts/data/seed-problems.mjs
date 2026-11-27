@@ -4,8 +4,10 @@
 // Usage (from the repo root):
 //   node scripts/data/seed-problems.mjs [--env .env.staging.local] [--include-drafts] [--dry-run] [folder...]
 // Only `ready` problems are seeded unless --include-drafts (staging/dev). Refuses the production project unless --production.
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { LANGUAGES, SOLUTION_FILE } from "../../packages/judge/src/index.mjs";
-import { connect, makeSync, must, summary } from "../lib/db-sync.mjs";
+import { connect, makeSync, must, readAll, summary } from "../lib/db-sync.mjs";
 import { listFolders, loadProblem } from "../lib/problems.mjs";
 
 const argv = process.argv.slice(2);
@@ -27,7 +29,11 @@ if (!problems.length) { console.log("Nothing to seed (only `ready` problems are 
 // Tags (from topics) and patterns, by slug.
 const tagSlugs = [...new Set(problems.flatMap((p) => p.meta.topics))].sort();
 const patternSlugs = [...new Set(problems.flatMap((p) => p.meta.patterns))].sort();
-await sync("tags", { slug: tagSlugs }, ["slug"], tagSlugs.map((slug) => ({ slug, name: titleCase(slug) })));
+// A topic with a lesson takes the lesson title ("Arrays & Strings"); others are title-cased from the slug.
+const lessonTitles = Object.fromEntries(readdirSync("content/learn", { withFileTypes: true }).filter((d) => d.isDirectory())
+  .flatMap((d) => readdirSync(join("content/learn", d.name)).filter((f) => f.endsWith(".mdx") && !f.startsWith("_")).map((f) => readFileSync(join("content/learn", d.name, f), "utf8")))
+  .map((text) => [text.match(/^topic:\s*(\S+)/m)?.[1], text.match(/^title:\s*(.+)$/m)?.[1].trim()]).filter(([t, n]) => t && n));
+await sync("tags", { slug: tagSlugs }, ["slug"], tagSlugs.map((slug) => ({ slug, name: lessonTitles[slug] ?? titleCase(slug) })));
 await sync("patterns", { slug: patternSlugs }, ["slug"], patternSlugs.map((slug) => ({ slug, name: titleCase(slug) })));
 
 await sync("catalog_problems", { slug: problems.map((p) => p.meta.slug) }, ["slug"], problems.map(({ meta, statement }) => ({
@@ -37,6 +43,20 @@ await sync("catalog_problems", { slug: problems.map((p) => p.meta.slug) }, ["slu
 const idOf = new Map(must(await db.from("catalog_problems").select("id, slug").in("slug", problems.map((p) => p.meta.slug)), "read ids").map((r) => [r.slug, r.id]));
 const tagId = new Map(must(await db.from("tags").select("id, slug").in("slug", tagSlugs), "read tags").map((r) => [r.slug, r.id]));
 const patternId = new Map(patternSlugs.length ? must(await db.from("patterns").select("id, slug").in("slug", patternSlugs), "read patterns").map((r) => [r.slug, r.id]) : []);
+
+// "leetcode:739" -> the imported metadata row for that problem (M7), via data/leetcode/numbers.json.
+const lcSlugs = JSON.parse(readFileSync("data/leetcode/numbers.json", "utf8")).slugs;
+const refs = problems.flatMap((p) => p.meta.similar_to ?? []);
+const missingNumbers = refs.filter((r) => r.startsWith("leetcode:") && !lcSlugs[r.slice(9)]);
+if (missingNumbers.length) throw new Error(`Add these to data/leetcode/numbers.json: ${[...new Set(missingNumbers)].join(", ")}`);
+const lcRows = await readAll(db, "catalog_problems", { source: "leetcode", source_ref: [...new Set(refs.filter((r) => r.startsWith("leetcode:")).map((r) => lcSlugs[r.slice(9)]))] }, "id, source_ref", ["source_ref"]);
+const lcId = new Map(lcRows.map((r) => [r.source_ref, r.id]));
+const unlinked = new Set();
+const similarIds = (p) => [...new Set((p.meta.similar_to ?? []).flatMap((r) => {
+  const id = r.startsWith("leetcode:") ? lcId.get(lcSlugs[r.slice(9)]) : undefined;
+  if (!id) unlinked.add(r);
+  return id ? [id] : [];
+}))];
 
 for (const p of problems) {
   const problem_id = idOf.get(p.meta.slug);
@@ -55,7 +75,9 @@ for (const p of problems) {
   }]);
   await sync("problem_tags", { problem_id }, ["problem_id", "tag_id"], p.meta.topics.map((t) => ({ problem_id, tag_id: tagId.get(t) })));
   await sync("problem_patterns", { problem_id }, ["problem_id", "pattern_id"], p.meta.patterns.map((t) => ({ problem_id, pattern_id: patternId.get(t) })));
+  await sync("problem_similar", { original_id: problem_id }, ["original_id", "similar_id"], similarIds(p).map((similar_id) => ({ original_id: problem_id, similar_id })));
 }
+if (unlinked.size) console.log(`similar_to not in the catalog yet (not in the imported company lists): ${[...unlinked].join(", ")}`);
 
 const stored = must(await db.from("catalog_problems").select("slug").eq("source", "algogym"), "read catalog");
 const orphans = stored.map((r) => r.slug).filter((s) => !listFolders().includes(s));

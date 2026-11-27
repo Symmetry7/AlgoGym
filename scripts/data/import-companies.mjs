@@ -73,7 +73,9 @@ console.log(`Source ${head.slice(0, 7)}: ${top.top.length} companies, ${problems
 const { db, dryRun } = connect(argv, "importing into");
 const { sync, counts } = makeSync(db, { dryRun });
 
-await sync("companies", { slug: top.top.map((c) => c.slug) }, ["slug"], top.top.map((c) => ({ slug: c.slug, name: c.name })));
+// The source names companies by folder; a short all-lowercase name is an acronym ("tcs" -> "TCS").
+const displayName = (name) => (name === name.toLowerCase() && name.length <= 4 ? name.toUpperCase() : name);
+await sync("companies", { slug: top.top.map((c) => c.slug) }, ["slug"], top.top.map((c) => ({ slug: c.slug, name: displayName(c.name) })));
 await sync("catalog_problems", { source: "leetcode" }, ["slug"], [...problems].map(([ref, p]) => ({
   slug: `lc-${ref}`, title: p.title, difficulty: p.difficulty, category: "dsa", source: "leetcode", source_ref: ref,
   source_url: `https://leetcode.com/problems/${ref}/`, status: "pending", pool: "public", is_pro: false, comparator: "exact",
