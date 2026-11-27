@@ -20,6 +20,10 @@
   --ag-medium: #f59e0b;
   --ag-hard: #ef4444;
   --ag-pro: #eab308;
+  /* Landing "paper" cards (DESIGN.md §6.1). */
+  --ag-paper: #f1f0ea;
+  --ag-on-paper: #0b0b0d;
+  --ag-on-paper-muted: #4a4a4f;
 
   --ag-radius-control: 10px;
   --ag-radius-card: 16px;
