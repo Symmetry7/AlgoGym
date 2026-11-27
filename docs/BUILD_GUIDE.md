@@ -155,8 +155,8 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 #### M10 · Engine skeleton (1–2 sessions)
 **Goal:** `apps/engine`, an Express service with HMAC-verified `POST /v1/jobs`, BullMQ on Redis and `/v1/health`, deployed to Railway.
 **Done when:**
-- [ ] A forged or expired HMAC gets 401. The job lands in the queue. The health check is green on Railway.
-- [ ] The engine builds and tests from the root workspace scripts.
+- [ ] A forged or expired HMAC gets 401. The job lands in the queue. The health check is green on Railway. (401 and queueing are covered by `apps/engine/src/app.spec.ts`. The Railway health check waits for the project in `docs/ENGINE.md` to be created.)
+- [x] The engine builds and tests from the root workspace scripts.
 
 ### Week 4 — Judge end to end
 
