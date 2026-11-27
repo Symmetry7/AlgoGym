@@ -61,7 +61,7 @@ export function Hero() {
             The clearest way from your first array to your offer. Roadmaps, free lessons and real problems, built for your target company.
           </p>
           <div data-in className="mt-9 flex flex-wrap items-center gap-2">
-            <Link href="/sign-in" className={glassBtn}>Get started</Link>
+            <Link href="/sign-in?mode=signup" className={glassBtn}>Get started</Link>
             <Link href="/problems" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-[#a1a4a5] transition-colors duration-ag-hover hover:text-white", focusRing)}>Browse problems</Link>
           </div>
         </div>

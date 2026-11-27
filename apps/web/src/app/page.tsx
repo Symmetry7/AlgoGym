@@ -111,7 +111,7 @@ export default async function HomePage() {
       <section aria-labelledby="pricing" className={cn(container, "py-16 md:py-24")}>
         <h2 id="pricing" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
-          <PlanCard name="Free" price="₹0" note="Forever" items={["Every lesson and quiz", "The full roadmap", "Free problems with hidden tests", "Company problem lists (all time)"]} cta={<ButtonLink href="/sign-in" variant="secondary">Start free</ButtonLink>} />
+          <PlanCard name="Free" price="₹0" note="Forever" items={["Every lesson and quiz", "The full roadmap", "Free problems with hidden tests", "Company problem lists (all time)"]} cta={<ButtonLink href="/sign-in?mode=signup" variant="secondary">Start free</ButtonLink>} />
           <PlanCard name="Pro" price="₹199" note="a month, or ₹1,499 a year" highlight items={["Everything in Free", "Pro problems, editorials and solutions", "Company lists for the last 30 and 90 days", "Pro study plans"]} cta={<ButtonLink href="/pricing">See pricing</ButtonLink>} />
         </div>
       </section>
@@ -122,7 +122,7 @@ export default async function HomePage() {
         <Reveal>
           <p className="text-[#f0f0f0] mx-auto max-w-[900px] text-balance pb-2 font-display text-[48px] leading-[0.98] sm:text-[80px] lg:text-[96px]">Your offer starts here. Start preparing today.</p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            <Link href="/sign-in" className={cn("ag-glass-button inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>Get started</Link>
+            <Link href="/sign-in?mode=signup" className={cn("ag-glass-button inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>Get started</Link>
             <Link href="/pricing" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-[#a1a4a5] transition-colors duration-ag-hover hover:text-white", focusRing)}>See pricing</Link>
           </div>
         </Reveal>

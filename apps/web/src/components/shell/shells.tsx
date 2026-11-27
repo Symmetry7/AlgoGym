@@ -42,7 +42,7 @@ const authButtons = (
     <Link href="/sign-in" className={cn("inline-flex h-10 items-center rounded-xl px-3 text-[14px] font-medium text-ag-text-muted transition-colors duration-ag-hover hover:text-ag-text", focusRing)}>
       Log in
     </Link>
-    <Link href="/sign-in" className={cn("ag-glass-button inline-flex h-10 items-center rounded-xl px-4 text-[14px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>
+    <Link href="/sign-in?mode=signup" className={cn("ag-glass-button inline-flex h-10 items-center rounded-xl px-4 text-[14px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>
       Get started
     </Link>
   </>
