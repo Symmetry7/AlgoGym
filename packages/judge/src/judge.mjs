@@ -30,10 +30,28 @@ export const budgetMs = (limits, caseCount) => Math.min(limits.time_ms_per_case 
  * Returns { compileError } or { cases: [{ case, verdict, ms?, output?, error? }], console, exitCode, timedOut }.
  * Verdicts: accepted, wrong_answer, runtime_error, time_limit_exceeded, not_run.
  */
-export async function judge({ adapter, language, harness, code, cases, limits, comparator, slackMs = 0 }) {
+/** 64-bit FNV-1a over UTF-8, as hex: the same fingerprint the generated harnesses print for hidden cases. */
+export function fnv64(text) {
+  let h = 0xcbf29ce484222325n;
+  for (const b of new TextEncoder().encode(text)) h = ((h ^ BigInt(b)) * 0x100000001b3n) & 0xffffffffffffffffn;
+  return h;
+}
+export function digestOf(mode, value) {
+  const h = mode === "unordered" && Array.isArray(value)
+    ? value.reduce((acc, e) => (acc + fnv64(JSON.stringify(e))) & 0xffffffffffffffffn, fnv64("#" + value.length))
+    : fnv64(JSON.stringify(value));
+  return h.toString(16).padStart(16, "0");
+}
+
+/**
+ * digestFrom: cases numbered above it (1-based) come back as fingerprints, not outputs. Submit sets it to the number of
+ * visible cases so hidden outputs never cross the wire, and large outputs fit the runner's stdout limit.
+ * mode: the harness's digest mode (generate.mjs digestMode), so expected values are fingerprinted the same way.
+ */
+export async function judge({ adapter, language, harness, code, cases, limits, comparator, slackMs = 0, digestFrom, digestMode = "exact" }) {
   const nonce = randomUUID().replace(/-/g, "");
   const budget = budgetMs(limits, cases.length);
-  const source = combine(harness, code, { nonce, budgetMs: budget });
+  const source = combine(harness, code, { nonce, budgetMs: budget, digestFrom });
   const stdin = cases.map((c) => JSON.stringify(c.args)).join("\n") + "\n";
   const res = await adapter.run({ language, source, stdin, timeoutMs: budget + slackMs, memoryMb: limits.memory_mb });
   if (res.compileError != null) return { compileError: res.compileError };
@@ -54,12 +72,18 @@ export async function judge({ adapter, language, harness, code, cases, limits, c
     if (!rec) {
       // A clean exit means the harness stopped at the budget: nothing left was started. Otherwise the first
       // missing case was in flight when the process was killed (timeout) or crashed.
-      const inFlight = res.timedOut ? "time_limit_exceeded" : res.exitCode === 0 ? "not_run" : "runtime_error";
+      // A truncated stdout (the runner keeps 64 KB) lost the rest of the results: say why instead of guessing.
+      const inFlight = res.truncated ? "runtime_error" : res.timedOut ? "time_limit_exceeded" : res.exitCode === 0 ? "not_run" : "runtime_error";
       const verdict = missingSeen ? "not_run" : inFlight;
       missingSeen = true;
-      return { case: i + 1, verdict, ...(verdict === "runtime_error" && res.stderr ? { error: res.stderr.slice(-2000) } : {}) };
+      const error = res.truncated ? "Your program printed too much output, so the remaining results were cut off. Remove debug prints and try again." : res.stderr;
+      return { case: i + 1, verdict, ...(verdict === "runtime_error" && error ? { error: error.slice(-2000) } : {}) };
     }
     if (rec.error != null) return { case: i + 1, verdict: "runtime_error", error: rec.error };
+    if (rec.digest !== undefined) {
+      const verdict = rec.ms > limits.time_ms_per_case ? "time_limit_exceeded" : rec.digest === digestOf(digestMode, c.expected) ? "accepted" : "wrong_answer";
+      return { case: i + 1, verdict, ms: rec.ms };
+    }
     const verdict = rec.ms > limits.time_ms_per_case ? "time_limit_exceeded" : compare(comparator, rec.output, c.expected) ? "accepted" : "wrong_answer";
     return { case: i + 1, verdict, ms: rec.ms, output: rec.output };
   });

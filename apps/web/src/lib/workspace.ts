@@ -2,12 +2,12 @@
 
 export type Lang = "javascript" | "python" | "cpp" | "java";
 
-// shortcut: versions are what the local judge and CI run; M11 reads them from the Judge0 language config.
+// Versions the code runner uses (packages/judge/src/onlinecompiler.mjs RUNNER_COMPILERS).
 export const LANGS: { id: Lang; name: string; version: string; file: string; monaco: string }[] = [
-  { id: "python", name: "Python", version: "3.12", file: "solution.py", monaco: "python" },
-  { id: "javascript", name: "JavaScript", version: "Node 22", file: "solution.js", monaco: "javascript" },
+  { id: "python", name: "Python", version: "3.14", file: "solution.py", monaco: "python" },
+  { id: "javascript", name: "JavaScript", version: "Node 24", file: "solution.js", monaco: "javascript" },
   { id: "cpp", name: "C++", version: "17", file: "solution.cpp", monaco: "cpp" },
-  { id: "java", name: "Java", version: "21", file: "Solution.java", monaco: "java" },
+  { id: "java", name: "Java", version: "25", file: "Solution.java", monaco: "java" },
 ];
 
 export const draftKey = (slug: string, lang: Lang) => `algogym:draft:${slug}:${lang}`;

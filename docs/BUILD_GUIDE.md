@@ -153,26 +153,25 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 - [x] Monochrome UI: emerald only on Submit, passed cases and focus. No presence avatars or Share (Rooms, v1.1).
 
 #### M10 · Engine skeleton (1–2 sessions)
-**Goal:** `apps/engine`, an Express service with HMAC-verified `POST /v1/jobs`, BullMQ on Redis and `/v1/health`, deployed to Railway.
-**Done when:**
-- [ ] A forged or expired HMAC gets 401. The job lands in the queue. The health check is green on Railway. (401 and queueing are covered by `apps/engine/src/app.spec.ts`. The Railway health check waits for the project in `docs/ENGINE.md` to be created.)
+**Goal:** `apps/engine`, an Express service with HMAC-verified `POST /v1/jobs`, BullMQ on Redis and `/v1/health`.
+**Done when:** the code is merged (DECISIONS.md 2026-11-27: no engine deploy for v1.0, nothing on Railway).
+- [x] A forged or expired HMAC gets 401. The job lands in the queue (`apps/engine/src/app.spec.ts`).
 - [x] The engine builds and tests from the root workspace scripts.
 
 ### Week 4 — Judge end to end
 
-#### M11 · Judge0 adapter + Run/Submit (3 sessions)
-**Goal:** the judge flow in SYSTEM_ARCHITECTURE.md §4.1–4.2 works end to end.
+#### M11 · Code runner + Run/Submit (3 sessions)
+**Goal:** the judge flow in SYSTEM_ARCHITECTURE.md §4.1–4.2 works end to end, with Next.js `/api/judge` calling OnlineCompiler.io directly (no engine, no Railway).
 **Files:**
-- `packages/judge`: the Judge0 adapter (next to the local adapter from M5), the output parser and the comparators.
-- `/api/judge`, the engine worker, the Realtime subscription, the polling fallback, and the rate limits.
-- The validator gains a `--judge0` mode.
+- `packages/judge`: the OnlineCompiler.io adapter (next to the local adapter from M5) and hidden-case fingerprints in the harnesses.
+- `/api/judge` (POST) and `/api/judge/[id]` (poll), the Realtime subscription, and the Postgres rate limits (`judge_take_slot`).
 
 **Done when:**
-- [ ] Run and Submit work in the workspace for every seeded problem.
-- [ ] One Judge0 call per Run and per Submit (verified in logs).
+- [ ] Run and Submit work in the workspace for every seeded problem (needs `CODE_RUNNER_KEY`, `docs/ENGINE.md`).
+- [ ] One runner call per Run and per Submit (verified in logs).
 - [ ] An infinite loop yields TLE for that case and `not_run` for the rest. Earlier results are kept.
 - [ ] Results for hidden cases contain only case, verdict and runtime (there's a test for this). User prints can't forge results.
-- [ ] Rate limits return a clear message. A Judge0 outage keeps the user's code.
+- [ ] Rate limits return a clear message. A runner outage keeps the user's code.
 - [ ] The validator passes in `--judge0` mode for all seeded problems.
 
 #### M12 · Companies pages (1–2 sessions)
@@ -257,8 +256,8 @@ Every playable problem is an Algogym original (see [DECISIONS.md](./DECISIONS.md
 | C1 | 1 | Authoring template + style guide; first **10 problems** | Template has every file M5 expects. The 10 problems are drafted and peer-reviewed, and they validate as soon as M5 lands in week 2. |
 | C2 | 2 | **20 problems**, **4 lessons**, top-30 company list | 20 problems pass the validator in all 4 languages and are seeded. 4 lessons merged. Company list agreed for M7. |
 | C3 | 3 | **35 problems**, **8 lessons** | 35 validated and seeded. 8 lessons merged, each with a quiz. |
-| C4 | 4 | **45 problems**, **12 lessons** | 45 validated, and they also pass in `--judge0` mode once M11 lands. 12 lessons merged. |
+| C4 | 4 | **45 problems**, **12 lessons** | 45 validated (hidden cases fingerprinted, as on Submit). 12 lessons merged. |
 | C5 | 5 | **55 problems**, all DSA topic lessons + 16 pattern lessons | 55 validated. Every roadmap node in M13 has a lesson. |
-| C6 | 6 | **60 problems** reviewed in 4 languages | 60 pass the validator in Judge0 mode, with second-person review, editorials and hints complete. This is the launch-gate content. |
+| C6 | 6 | **60 problems** reviewed in 4 languages | 60 pass the validator with hidden cases fingerprinted, with second-person review, editorials and hints complete. This is the launch-gate content. |
 
 Rule from the PRD: if content falls behind, launch with fewer problems rather than slip.

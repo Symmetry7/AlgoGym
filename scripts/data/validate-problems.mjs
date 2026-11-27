@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { availableParallelism } from "node:os";
 import { join } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
-import { LANGUAGES, generateInputs, judge, localAdapter } from "../../packages/judge/src/index.mjs";
+import { LANGUAGES, digestMode, generateInputs, judge, localAdapter } from "../../packages/judge/src/index.mjs";
 import { genFileName, importGen, listFolders, loadProblem, problemsDir } from "../lib/problems.mjs";
 
 const validateMeta = new Ajv2020({ allErrors: true }).compile(JSON.parse(readFileSync(join(problemsDir, "meta.schema.json"), "utf8")));
@@ -59,7 +59,8 @@ async function validate(folder) {
   const cases = p.cases.map((c) => ({ args: c.args, expected: c.expected }));
   const slowest = {};
   await Promise.all(LANGUAGES.map(async (language) => {
-    const run = (code, cs) => judge({ adapter: localAdapter, language, harness: p.harnesses[language], code, cases: cs, limits: meta.limits, comparator: meta.comparator, slackMs: SLACK_MS });
+    // Hidden cases come back as fingerprints, exactly as on Submit (public cases print their output).
+    const run = (code, cs) => judge({ adapter: localAdapter, language, harness: p.harnesses[language], code, cases: cs, limits: meta.limits, comparator: meta.comparator, slackMs: SLACK_MS, digestFrom: pub.length, digestMode: digestMode(meta.signature, meta.comparator) });
 
     const st = await run(p.starters[language], cases.slice(0, 1));
     if (st.compileError) errors.push(`${language} starter does not compile:\n${st.compileError}`);

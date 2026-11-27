@@ -1,5 +1,16 @@
 # Engine runbook (`apps/engine`)
 
+> **Not deployed for v1.0** (DECISIONS.md 2026-11-27). Run and Submit are judged by the Next.js `/api/judge` route calling OnlineCompiler.io directly. Don't create the Railway project below; this runbook stays for Rooms/Arena realtime in v1.1+.
+
+## Judge setup for v1.0 (one-time, by the account owner)
+
+1. Sign in at https://api.onlinecompiler.io (Google sign-in) and create a **REST API key**. The Free plan is enough to start: 100,000 runs a month, 60 a minute, 4 at once, no card. When busy it answers `429` at once and the user sees "the code runner is busy", with their code kept.
+2. Add it as `CODE_RUNNER_KEY` in Vercel (Preview only until launch) and in `.env.staging.local` at the repo root. Never paste it into chat, code or a commit.
+3. Optional `CODE_RUNNER_URL` overrides `https://api.onlinecompiler.io` (for a self-hosted runner with the same API).
+4. Check: sign in on a preview, open any problem, press Run. The `submissions` row on staging should go `queued → running → done`.
+
+Compilers used: `nodejs-24`, `python-3.14`, `g++-15` (C++17), `openjdk-25` (`packages/judge/src/onlinecompiler.mjs`).
+
 The engine is the judge service from [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) §4 and §6. It has two processes built from one package:
 
 | Process | Start | Does |

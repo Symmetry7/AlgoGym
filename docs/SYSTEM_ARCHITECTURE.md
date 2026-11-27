@@ -9,18 +9,17 @@ Diagram (Eraser): https://app.eraser.io/workspace/egpUpJy9fAPA3ACbDQGI
 
 ## 1. Summary
 
-Algogym runs as **one Next.js app on Vercel**, **Supabase** for Postgres/Auth/Realtime/Storage, and **one Express "engine" service on Railway** that queues and judges code through **Judge0**.
+Algogym runs as **one Next.js app on Vercel** and **Supabase** for Postgres/Auth/Realtime/Storage. Code runs on **OnlineCompiler.io**, called directly from the Next.js `/api/judge` route handler: one call per Run or Submit (DECISIONS.md 2026-11-27). There is no separate engine service for v1.0; `apps/engine` stays in the repo, unused, for Rooms and Arena later.
 
-- Everything simple (pages, lessons, problems, progress, billing) lives in Next.js.
-- Everything long-running (judge queue now; Arena and Rooms realtime later) lives in the engine.
-- The browser never talks to Judge0, never sees hidden tests, and never decides what it is allowed to see.
+- Everything (pages, lessons, problems, progress, billing, judging) lives in Next.js.
+- The browser never talks to the code runner, never sees hidden tests or expected outputs, and never decides what it is allowed to see.
 
 ### Principles
-1. **Two deployables, not ten.** Next.js app + engine. No more services until a real bottleneck appears.
+1. **One deployable.** The Next.js app. No more services until a real bottleneck appears (Rooms realtime in v1.1 is the first candidate).
 2. **Server decides access.** Pro and Rooms entitlements are checked on the server; RLS backs it up.
 3. **Content is fast and indexable.** Landing, Learn and problem statements are server-rendered and cached.
 4. **Additive data changes.** Production has real users and, until launch, the legacy app shares the database: new tables and columns only. Old tables move to a `legacy` schema at the launch cutover (BUILD_GUIDE M20), never before.
-5. **Swappable judge.** Judge0 sits behind one interface so hosted RapidAPI can become self-hosted Judge0 later.
+5. **Swappable judge.** The code runner sits behind one adapter interface (`packages/judge`: `run({ language, source, stdin, timeoutMs, memoryMb })`), so OnlineCompiler.io can be replaced by self-hosted Judge0 or another runner without touching the harnesses or the judge.
 
 ## 2. Architecture diagram
 
@@ -32,7 +31,7 @@ flowchart LR
   subgraph Vercel["Next.js app (Vercel)"]
     CDN[Edge CDN<br/>assets, cube loop, ISR pages]
     P[Server Components pages<br/>Landing, Pricing, Roadmap, Learn,<br/>Problems, Companies, My Prep]
-    API[Route handlers /api<br/>progress, notes, lists,<br/>run/submit proxy, webhooks]
+    API[Route handlers /api<br/>progress, notes, lists,<br/>run/submit judge, webhooks]
   end
   subgraph Supabase
     AUTH[Auth<br/>Google, email]
@@ -40,13 +39,8 @@ flowchart LR
     RT[Realtime]
     ST[Storage]
   end
-  subgraph Railway["Engine (Express on Railway)"]
-    EAPI[Engine API<br/>POST /v1/jobs]
-    R[(Redis<br/>BullMQ + rate limits)]
-    W[Judge worker]
-    LATER[Later: Arena/Rooms<br/>Socket.io]:::later
-  end
-  J0[Judge0 RapidAPI]
+  LATER[Later: Rooms/Arena realtime<br/>apps/engine, not deployed in v1.0]:::later
+  J0[OnlineCompiler.io]
   RZ[Razorpay]
   RS[Resend email]
   MON[Sentry + PostHog]
@@ -57,10 +51,8 @@ flowchart LR
   P --> PG
   P --> ST
   API --> PG
-  API -- HMAC --> EAPI
-  EAPI --> R --> W
-  W -- service role --> PG
-  W --> J0
+  API -- service role --> PG
+  API -- one call per Run/Submit --> J0
   PG --> RT --> B
   B --> RZ
   RZ -- signed webhook --> API
@@ -79,10 +71,9 @@ flowchart LR
 | Auth | Supabase Auth | Supabase | Google + email; existing accounts kept |
 | Realtime | Supabase Realtime | Supabase | Pushes submission status changes to the browser (no WebSocket server needed on Vercel) |
 | File storage | Supabase Storage | Supabase | Lesson images, company logos, topic icons |
-| Engine API | Node.js + Express, TypeScript | Railway | Accepts judge jobs (HMAC-signed), rate limits, health checks |
-| Queue | BullMQ on Redis | Railway Redis | Judge jobs, retries, per-user rate-limit counters |
-| Judge worker | Node.js (same repo as engine, separate process) | Railway | Builds one Judge0 submission per job (user code + harness, all cases), polls the result, compares outputs, maps verdicts, writes results |
-| Code execution | Judge0 | RapidAPI (hosted) | Runs untrusted code in sandboxes with time/memory limits |
+| Judge | `/api/judge` route handler + `packages/judge` | Vercel (Node runtime, 60 s limit) | Checks the session and rate limit (Postgres `judge_take_slot`), records the submission, then (after responding) builds one runner call (user code + harness, all cases), compares outputs, maps verdicts, writes results |
+| Code execution | OnlineCompiler.io (`/api/run-code-sync/`) | SaaS | Runs untrusted code in sandboxes with time/memory limits |
+| Engine (unused in v1.0) | Node.js + Express, BullMQ | not deployed | Kept for Rooms/Arena realtime in v1.1+ (`docs/ENGINE.md`) |
 | Payments | Razorpay Subscriptions | Razorpay | Pro and Rooms plans, UPI and cards |
 | Email | Resend | Resend | Receipts, magic links (if not using Supabase's), Rooms invites |
 | Monitoring | Sentry, PostHog | SaaS | Errors in both services, product analytics and funnels |
@@ -95,7 +86,7 @@ algogym/
 │  └─ engine/         # Express API + BullMQ worker
 ├─ packages/
 │  ├─ db/             # Generated Supabase types, query helpers (no migrations)
-│  ├─ judge/          # Judge interface + Judge0 adapter + harnesses + verdict mapping
+│  ├─ judge/          # Judge interface + local + OnlineCompiler.io adapters + harnesses + verdict mapping
 │  └─ shared/         # zod schemas, constants (languages, limits, plans)
 ├─ supabase/          # Stays at the repo root: migrations/ (source of truth), functions/
 ├─ content/learn/     # MDX lessons
@@ -111,50 +102,44 @@ algogym/
 sequenceDiagram
   participant B as Browser
   participant N as Next.js /api/judge
-  participant E as Engine API
-  participant Q as Redis (BullMQ)
-  participant W as Judge worker
   participant DB as Postgres
-  participant J as Judge0
+  participant J as OnlineCompiler.io
   participant RT as Realtime
 
-  B->>N: POST {problemId, lang, code, mode: run|submit, customCases?}
-  N->>N: check session, Pro gate for locked problem
+  B->>N: POST {slug, lang, code, mode: run|submit, custom?}
+  N->>N: check session, code ≤ 64 KB, Pro gate
+  N->>DB: judge_take_slot(user, mode) (30 runs / 5 min, 10 submits / min)
   N->>DB: insert submission (status=queued)
-  N->>E: POST /v1/jobs (HMAC-signed, submissionId)
-  E->>E: rate limit by userId (Redis)
-  E->>Q: enqueue job
-  E-->>N: 202 {jobId}
-  N-->>B: 202 {submissionId}
-  B->>RT: subscribe submissions:id=submissionId
-  Q->>W: job
-  W->>DB: load code + tests (public for run, public+hidden for submit)
-  W->>J: POST /submissions (user code + harness, all case inputs in stdin)
-  W->>J: poll one token
-  W->>W: parse per-case JSON lines, compare with expected outputs
-  W->>DB: update submission (verdict, per-case results, runtime, memory)
+  N-->>B: 202 {id, token}
+  B->>RT: subscribe submissions id=eq.id (user's access token)
+  N->>DB: (after response) load harness + tests (public for run, public+hidden for submit)
+  N->>J: POST /api/run-code-sync/ (user code + harness, all case inputs in stdin)
+  N->>N: parse per-case JSON lines, compare outputs / fingerprints
+  N->>DB: update submission (verdict, per-case results, runtime)
   DB-->>RT: row change (owner-only, via RLS)
   RT-->>B: verdict + results
+  B->>N: GET /api/judge/:id every 2 s (fallback until done)
 ```
-- **One Judge0 submission per Run or Submit**, never one per test case. Judge0 is billed and rate-limited per submission.
-- **Run** uses public examples + the user's custom cases; results are stored for 24 h only.
-- **Submit** uses public + hidden tests. For hidden cases the worker writes **only case number, verdict and runtime** to `submissions.results` — never the input, expected output or actual output. Public cases may include all three. Only "Case 7 failed: wrong answer" is shown for a hidden case.
-- **Realtime relies on RLS:** `submissions` has an owner-only `SELECT` policy (`user_id = auth.uid()`), so a Realtime subscription can only ever receive the subscriber's own rows.
-- Timeout: if no result after 20 s, the worker marks `status=error` and the UI offers "Try again" while keeping the code.
+- **One runner call per Run or Submit**, never one per test case. The runner is billed and rate-limited per run.
+- **Run** uses public examples + up to 5 custom inputs. **Submit** uses public + hidden tests.
+- **Hidden outputs never leave the sandbox.** For cases above the visible ones the harness prints a 64-bit FNV-1a fingerprint of the output's canonical JSON (`"digest"`) instead of the output, and the server compares it with the fingerprint of the expected value (`unordered` sums element fingerprints; `float_tolerance` and `double` returns print full output). This also keeps large outputs under the runner's 64 KB stdout limit. Expected outputs are never sent to the runner.
+- For hidden cases the server writes **only case number, verdict and runtime** to `submissions.results` — never the input, expected output or actual output (unit-tested in `judge-results.spec.ts`). Public cases may include all three.
+- **Realtime relies on RLS:** `submissions` has an owner-only `SELECT` policy (`user_id = auth.uid()`), so a Realtime subscription can only ever receive the subscriber's own rows. Session cookies are httpOnly, so `/api/judge` returns the caller's own access token for the subscription.
+- **Time limits:** the function has 60 s (`maxDuration`); judging runs in `after()`. The runner call times out at 40 s, the harness stops itself at its own budget first (≤ 30 s). The client gives up after 90 s. Every failure (timeout, runner busy `429`, monthly quota, outage) writes `status=error` with a message; the code stays in the editor and in localStorage.
 
 ### 4.2 Code harness
-Each problem has, per language, `starter_code` (what the user sees) and `harness_code` (hidden driver). The worker concatenates user code + harness and sends **one** Judge0 submission whose stdin holds every case input.
+Each problem has, per language, `starter_code` (what the user sees) and `harness_code` (hidden driver). `/api/judge` concatenates user code + harness and sends **one** runner call whose stdin holds every case input.
 
 The harness, in one process:
 1. Reads all case inputs from stdin: one JSON argument list per line (implementation: `packages/judge`, format in DECISIONS.md 2026-11-26).
 2. For each case in order: checks the remaining overall time budget; if it is used up, stops and exits cleanly. Otherwise it calls the user's function, times the call itself, and prints **one JSON line** (`{"case":3,"ms":4,"output":…}` or `{"case":3,"error":"…"}`), flushing stdout immediately.
 3. Lines carry a per-job nonce embedded in the harness source, so anything the user's code prints goes to console output instead of being read as a result.
 
-The worker parses whatever lines arrived and compares each `output` with the expected output using the problem's comparator (`exact`, `float_tolerance`, `unordered`). **Expected outputs never leave the worker** — they are not sent to Judge0.
+The server parses whatever lines arrived and compares each `output` with the expected output using the problem's comparator (`exact`, `float_tolerance`, `unordered`). **Expected outputs never leave the server** — they are not sent to the runner; hidden cases come back as fingerprints (§4.1).
 
-- **Time limits:** overall limit = per-case limit × case count, capped per problem (`problem_languages.max_total_ms`) and never above the Judge0 plan's maximum wall time.
-- **Cases not run are reported as `not_run`, not lost.** If the budget runs out, or one case hangs and Judge0 kills the process, every printed case keeps its result. The case in flight when the process was killed gets `time_limit_exceeded`, and the rest get `not_run`.
-- Runtime is measured per case by the harness. Memory is the peak for the whole run, as reported by Judge0.
+- **Time limits:** overall limit = per-case limit × case count, capped per problem (`problem_languages.max_total_ms`) and never above the runner's 30 s maximum.
+- **Cases not run are reported as `not_run`, not lost.** If the budget runs out, or one case hangs and the runner kills the process, every printed case keeps its result. The case in flight when the process was killed gets `time_limit_exceeded`, and the rest get `not_run`.
+- Runtime is measured per case by the harness. Memory is the peak for the whole run, as reported by the runner.
 
 ### 4.3 Pro entitlement
 - Razorpay → `POST /api/webhooks/razorpay` → verify signature → upsert `subscriptions` → recompute `entitlements` for the user.
@@ -241,8 +226,8 @@ erDiagram
 ### Next.js route handlers (`apps/web/app/api`)
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | /api/judge | Create run/submit, forward to engine |
-| GET | /api/submissions/:id | Fallback polling if Realtime unavailable |
+| POST | /api/judge | Create run/submit (rate-limited), judge it after responding |
+| GET | /api/judge/:id | Fallback polling if Realtime unavailable (visitor session, RLS) |
 | POST/DELETE | /api/bookmarks, /api/notes, /api/lists, /api/lists/:id/items | User data |
 | POST | /api/progress/lesson, /api/progress/quiz | Learn progress |
 | POST | /api/waitlist | Arena waitlist |
@@ -263,14 +248,15 @@ Reads for pages happen directly in Server Components (Supabase server client), n
 
 | Threat | Control |
 | --- | --- |
-| Running untrusted code | Only inside Judge0 sandboxes; engine never executes user code |
-| Leaking hidden tests | `test_cases.is_hidden` rows and `harness_code` readable only by service role; never selected in client queries; worker writes only case number + verdict + runtime for hidden cases; expected outputs never sent to Judge0 |
+| Running untrusted code | Only inside the runner's sandboxes; our servers never execute user code |
+| Leaking hidden tests | `test_cases.is_hidden` rows and `harness_code` readable only by service role; never selected in client queries; hidden cases print fingerprints, not outputs; the server writes only case number + verdict + runtime for hidden cases; expected outputs never sent to the runner |
+| Forged results from user prints | Result lines carry a per-run 128-bit nonce; user stdout is redirected inside the harness |
 | Reading others' submissions | Owner-only `SELECT` RLS policy on `submissions`; Realtime subscriptions depend on it |
 | Bypassing Pro | Server-side `can()` checks + RLS on gated tables; no client flags |
 | Forged engine calls | HMAC with timestamp; engine not publicly documented; Railway private networking for Redis |
-| Judge abuse / cost | Per-user limits in Redis (30 runs / 5 min, 10 submits / min), max code size 64 KB, max custom cases 5 |
+| Judge abuse / cost | Per-user limits in Postgres (`judge_rate_events` + `judge_take_slot`, service role only: 30 runs / 5 min, 10 submits / min), max code size 64 KB, max custom cases 5 |
 | Payment fraud | Razorpay signature verification; idempotent webhook handling by event id |
-| Secrets | Judge0 key and Supabase service key only on the engine/server; Vercel and Railway env vars |
+| Secrets | `CODE_RUNNER_KEY` and the Supabase service key only on the server (Vercel env vars, `.env.staging.local` locally) |
 | XSS in lessons/statements | MDX from repo only; statements sanitized Markdown; strict CSP |
 
 ## 8. Performance and caching
@@ -294,7 +280,7 @@ Reads for pages happen directly in Server Components (Supabase server client), n
 ## 10. Observability
 - Sentry in web and engine (errors, slow transactions).
 - PostHog events: signup, lesson_read, quiz_passed, run, submit, solved, upgrade_clicked, checkout_success, waitlist_joined.
-- Engine metrics: queue depth, job duration, Judge0 error rate; alert if Judge0 errors > 5% for 5 minutes.
+- Judge logs: `judge.failed` and `judge.create_failed` JSON lines in Vercel logs; alert if runner errors exceed 5% for 5 minutes.
 
 ## 11. Migration from the current app
 1. Production keeps serving the legacy app from `release/legacy` (Vercel Production Branch). New work merges to `main`, which deploys previews only.
@@ -305,14 +291,14 @@ Reads for pages happen directly in Server Components (Supabase server client), n
 6. Monitor; drop nothing until 30 days after launch, and only with sign-off.
 
 ## 12. Cost (to confirm)
-Vercel, Supabase and Railway have paid plans that fit this scale; Judge0 RapidAPI pricing depends on request volume. Check current prices for each before launch and set a monthly budget (open question in the PRD).
+Vercel, Supabase and Railway have paid plans that fit this scale; OnlineCompiler.io is free up to 100,000 runs a month (Starter $10 for 150k, Pro $49 for 1M). Check current prices for each before launch and set a monthly budget (open question in the PRD).
 
 ## 13. Decisions and alternatives
 
 | Decision | Chosen | Alternatives considered | Why |
 | --- | --- | --- | --- |
 | Backend shape | Next.js + one Express engine | Next.js only; full Express API | Vercel can't run queues/WebSockets; full API adds ~2 weeks with no mobile app planned |
-| Judge | Hosted Judge0 | Self-hosted Judge0, Piston | Fastest to ship, sandboxing handled; swappable interface |
+| Judge | OnlineCompiler.io, called from Next.js | Hosted Judge0 (RapidAPI), self-hosted Judge0, Piston, an engine service | Owner choice; free tier covers launch, sandboxing handled, one deployable; swappable adapter |
 | Judge calls | One submission per Run/Submit, all cases in one harness process | One submission per test case (batch) | Per-case batches cost 12+ billed calls per Submit; see [DECISIONS.md](./DECISIONS.md) |
 | Monorepo tooling | npm workspaces, `supabase/` at root | pnpm, migrations in `packages/db` | Keeps the lockfile and the Supabase CLI's migration ledger working |
 | Result delivery | Supabase Realtime | Polling, Socket.io | No extra server for v1.0; polling fallback exists |

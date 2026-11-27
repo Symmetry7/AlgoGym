@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LANGUAGES, TYPES, compare, harness, judge, localAdapter, starter, typeName, helpers } from "./index.mjs";
+import { LANGUAGES, TYPES, compare, digestMode, harness, judge, localAdapter, starter, typeName, helpers } from "./index.mjs";
 
 // Needs node, Python 3, g++ and a JDK on PATH (as in CI).
 const limits = { time_ms_per_case: 2000, max_total_ms: 10000, memory_mb: 256 };
@@ -37,6 +37,15 @@ describe.concurrent("generated harness round-trips every signature type", () => 
         const res = await judge({ adapter: localAdapter, language, harness: harness(sig, language), code: echo(language, type), cases, limits, comparator, slackMs: 15000 });
         expect(res.compileError, `${language} ${type}`).toBeUndefined();
         expect(res.cases!.map((c) => c.verdict), `${language} ${type} ${JSON.stringify(res)}`).toEqual(cases.map(() => "accepted"));
+
+        // Hidden cases: every language must print the same fingerprint as digestOf() computes for the expected value.
+        for (const comparator of type.endsWith("[]") && !type.startsWith("double") ? ["exact", "unordered"] : ["exact"]) {
+          const sigMode = digestMode(sig, comparator);
+          if (sigMode === "none") continue;
+          const shuffled = comparator === "unordered" ? cases.map((c) => ({ ...c, expected: Array.isArray(c.expected) ? [...c.expected].reverse() : c.expected })) : cases;
+          const d = await judge({ adapter: localAdapter, language, harness: harness(sig, language, comparator), code: echo(language, type), cases: shuffled, limits, comparator, slackMs: 15000, digestFrom: 0, digestMode: sigMode });
+          expect(d.cases!.map((c) => [c.verdict, "output" in c]), `${language} ${type} ${comparator} digest`).toEqual(cases.map(() => ["accepted", false]));
+        }
 
         // The starter must compile and run with the same harness.
         const st = await judge({ adapter: localAdapter, language, harness: harness(sig, language), code: starter(sig, language), cases: cases.slice(0, 1), limits, comparator, slackMs: 15000 });

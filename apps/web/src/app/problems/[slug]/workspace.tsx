@@ -10,6 +10,8 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExtern
 import { ButtonLink, DifficultyChip, focusRing } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
 import { LANGS, clampSplit, draftKey, formatInput, parseInput, type Lang } from "@/lib/workspace";
+import { OutputView, TestsView } from "./results";
+import { useJudge } from "./use-judge";
 
 // Monaco stays out of every other page's bundle (BUILD_GUIDE M9).
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false, loading: () => <p className="p-4 text-sm text-ag-text-faint">Loading editor…</p> });
@@ -139,7 +141,8 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
   }, [storedSplit]);
   const [dock, setDock] = useState(0.35);
   const [collapsed, setCollapsed] = useState({ problem: false, result: false });
-  const [output, setOutput] = useState<{ kind: "idle" | "run" | "submit"; at?: string }>({ kind: "idle" });
+  const { state: judgeState, start: startJudge } = useJudge(data.slug);
+  const [useCustom, setUseCustom] = useState(false);
   const [input, setInput] = useState(data.examples[0] ? formatInput(data.params, data.examples[0].input) : "");
   const [openHint, setOpenHint] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -164,20 +167,23 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
     return () => clearTimeout(t);
   }, [code, lang, data.slug, data.starters]);
 
+  const busy = judgeState.phase === "running";
   const run = useCallback(() => {
-    if (data.locked) return;
-    setOutput({ kind: "run", at: new Date().toLocaleTimeString("en-IN") });
+    if (data.locked || busy) return;
+    // Run checks the examples, plus the custom input when the Input tab has a valid one switched on.
+    const custom = useCustom && "args" in parsed ? [parsed.args] : undefined;
+    void startJudge("run", lang, current, custom);
     setResultTab("output");
     setCollapsed((c) => ({ ...c, result: false }));
     setMobileTab("result");
-  }, [data.locked]);
+  }, [data.locked, busy, useCustom, parsed, startJudge, lang, current]);
   const submit = useCallback(() => {
-    if (data.locked) return;
-    setOutput({ kind: "submit", at: new Date().toLocaleTimeString("en-IN") });
+    if (data.locked || busy) return;
+    void startJudge("submit", lang, current);
     setResultTab("tests");
     setCollapsed((c) => ({ ...c, result: false }));
     setMobileTab("result");
-  }, [data.locked]);
+  }, [data.locked, busy, startJudge, lang, current]);
 
   // Ctrl+Enter runs and Ctrl+Shift+Enter submits from anywhere on the page (Monaco handles its own focus).
   useEffect(() => {
@@ -325,13 +331,7 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
         )}
       </div>
       <div className={cn("min-h-0 flex-1 overflow-y-auto border-t border-ag-border p-4 text-[13px]", scroll)} aria-live="polite">
-        {resultTab === "output" && (output.kind === "idle"
-          ? <p className="text-pretty text-ag-text-faint">Run your code to see output. Ctrl+Enter works too.</p>
-          : <div className="space-y-2 text-ag-text-muted">
-              <p className="text-ag-text">{output.kind === "run" ? "Run" : "Submit"} · {output.at}</p>
-              <p>Running code isn&rsquo;t switched on yet: the judge arrives in the next update. Your code is saved in this browser, so nothing is lost.</p>
-              {output.kind === "run" && ("error" in parsed ? <p className="text-ag-hard">Input: {parsed.error}</p> : <p>Input is valid and ready: {data.params.map((p) => p.name).join(", ")}.</p>)}
-            </div>)}
+        {resultTab === "output" && <OutputView state={judgeState} params={data.params.map((p) => p.name)} />}
         {resultTab === "input" && (
           <div>
             <label htmlFor={`${langId}-input`} className="block text-[13px] text-ag-text-muted">Custom input, one <span className="font-geist-mono">name = value</span> per line</label>
@@ -340,6 +340,10 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
             <p className={cn("mt-2 text-[13px]", "error" in parsed ? "text-ag-hard" : "text-ag-text-faint")}>
               {"error" in parsed ? parsed.error : "Edit an example above to try your own input."}
             </p>
+            <label className="mt-3 flex items-center gap-2 text-[13px] text-ag-text-muted">
+              <input type="checkbox" checked={useCustom} onChange={(e) => setUseCustom(e.target.checked)} disabled={"error" in parsed} className="size-4 accent-ag-accent" />
+              Include this input when I press Run
+            </label>
             {data.examples.length > 1 && (
               <div className="mt-3 flex flex-wrap gap-2 font-ui">
                 {data.examples.map((e, i) => (
@@ -349,18 +353,7 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
             )}
           </div>
         )}
-        {resultTab === "tests" && (
-          <div className="font-ui">
-            <p className="text-pretty text-[13px] text-ag-text-faint">{output.kind === "submit" ? "Submitting checks every hidden test once the judge is on." : "Submit to check every hidden test. Ctrl+Shift+Enter works too."}</p>
-            <ul className="mt-3 space-y-2">
-              {data.examples.map((e, i) => (
-                <li key={i} className="flex items-center gap-2 text-[13px] text-ag-text-muted">
-                  <span className="size-2 rounded-full bg-ag-surface-3" aria-hidden /> Example {i + 1} <span className="text-ag-text-faint">· not run</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {resultTab === "tests" && <TestsView state={judgeState} examples={data.examples.length} />}
       </div>
     </section>
   );
@@ -385,13 +378,13 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
             </select>
           </span>
         )}
-        <button type="button" onClick={run} disabled={data.locked} title="Run (Ctrl+Enter)"
+        <button type="button" onClick={run} disabled={data.locked || busy} aria-busy={busy && judgeState.mode === "run"} title="Run (Ctrl+Enter)"
           className={cn("inline-flex h-9 items-center gap-2 rounded-full bg-ag-text pl-4 pr-1 text-sm font-semibold text-ag-bg transition-opacity hover:opacity-90 disabled:opacity-40", focusRing)}>
           Run <span className="flex size-7 items-center justify-center rounded-full bg-ag-bg"><Play size={12} className="fill-ag-text text-ag-text" aria-hidden /></span>
         </button>
-        <button type="button" onClick={submit} disabled={data.locked} title="Submit (Ctrl+Shift+Enter)"
+        <button type="button" onClick={submit} disabled={data.locked || busy} aria-busy={busy && judgeState.mode === "submit"} title="Submit (Ctrl+Shift+Enter)"
           className={cn("inline-flex h-9 items-center rounded-full bg-ag-accent px-4 text-sm font-semibold text-ag-on-accent hover:bg-ag-accent-hover disabled:opacity-40", focusRing)}>
-          Submit
+          {busy && judgeState.mode === "submit" ? "Submitting…" : "Submit"}
         </button>
       </div>
     </header>
