@@ -39,7 +39,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 // Legacy layout, kept for the pages that survive M2 until the new app shell replaces them.
 const primary = [["/problems", "Problems", Compass]] as const;
-const learning = [["/interview-preparations", "Interview Preparations", GraduationCap]] as const;
+const learning = [["/interview", "Interview prep", GraduationCap]] as const;
 const headerMetric = "inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-1 rounded-lg border border-border bg-card px-1.5 text-[11px] font-semibold tabular-nums text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 sm:rounded-full sm:px-2.5 sm:text-xs";
 export function Layout({
   children,

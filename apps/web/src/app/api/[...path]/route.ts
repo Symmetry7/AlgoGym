@@ -15,7 +15,6 @@ const routes: Record<string, () => Promise<RouteModule>> = {
   "auth/signout": () => import("@/../server/next-api/auth/signout"),
   billing: () => import("@/../server/next-api/billing"),
   "billing/webhook": () => import("@/../server/next-api/billing-webhook"),
-  interview: () => import("@/../server/next-api/interview"),
   // Legacy endpoints still used by surviving pages until their milestones replace them:
   // account state (onboarding GET) and /pricing's coin exchange (M17). The /problems catalog and detail
   // endpoints (problem, providers, study, sync, tracker) were removed in M9 with the old problem pages.

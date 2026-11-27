@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AppShell } from "@/components/shell/shells";
 import { ButtonLink } from "@/components/shell/ui";
 import { parseFilters } from "@/lib/interview-items";
@@ -32,13 +31,6 @@ export default async function InterviewPage({ searchParams }: { searchParams: Pr
           <p className="mt-4 text-pretty text-base leading-relaxed text-ag-text-muted">
             HR questions with an example answer to rework into your own story, and SQL questions with a worked query for
             each. Search, or filter by topic and difficulty.
-          </p>
-          <p className="mt-3 text-sm text-ag-text-faint">
-            Looking for company sheets, role-wise questions or playlists?{" "}
-            <Link href="/interview-preparations" className="text-ag-text-muted underline underline-offset-4 hover:text-ag-text">
-              They&rsquo;re still in the previous Interview Prep section
-            </Link>
-            .
           </p>
         </header>
         <InterviewBrowser items={items} initial={parseFilters(params)} />

@@ -9,7 +9,7 @@ const removed = [
   "/sheets", "/resources", "/workspace", "/notes", "/statistics", "/leaderboards", "/contests", "/societies",
   "/societies/some-club/manage", "/admin", "/profile", "/profile/card", "/u/someone",
 ];
-const kept = ["/", "/sign-in", "/pricing", "/privacy", "/problems", "/interview-preparations", "/settings"];
+const kept = ["/", "/sign-in", "/pricing", "/privacy", "/problems", "/interview", "/settings"];
 const results = [];
 const check = async (name, fn) => {
   try {

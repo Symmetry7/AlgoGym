@@ -44,9 +44,11 @@ const nextConfig: NextConfig = {
   turbopack: { root: repoRoot },
   redirects: async () => [
     ...removedRoutes.map((source) => ({ source, destination: "/problems", permanent: false })),
-    // M6: HR and SQL moved to /interview. Other /interview-preparations sections stay until they have a new home.
+    // M6: HR and SQL moved to /interview. The rest of the old section (Hynts-derived content) was removed, so every
+    // other /interview-preparations URL lands on /interview. More specific rules first.
     { source: "/interview-preparations/hr-questions/:path*", destination: "/interview?kind=hr", permanent: true },
     { source: "/interview-preparations/sql/:path*", destination: "/interview?kind=sql", permanent: true },
+    { source: "/interview-preparations/:path*", destination: "/interview", permanent: true },
   ],
 };
 export default nextConfig;
