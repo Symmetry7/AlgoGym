@@ -42,6 +42,11 @@ const nextConfig: NextConfig = {
   agentRules: false,
   images: { qualities: [75, 90] },
   turbopack: { root: repoRoot },
-  redirects: async () => removedRoutes.map((source) => ({ source, destination: "/problems", permanent: false })),
+  redirects: async () => [
+    ...removedRoutes.map((source) => ({ source, destination: "/problems", permanent: false })),
+    // M6: HR and SQL moved to /interview. Other /interview-preparations sections stay until they have a new home.
+    { source: "/interview-preparations/hr-questions/:path*", destination: "/interview?kind=hr", permanent: true },
+    { source: "/interview-preparations/sql/:path*", destination: "/interview?kind=sql", permanent: true },
+  ],
 };
 export default nextConfig;

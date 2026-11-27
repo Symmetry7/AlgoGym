@@ -121,8 +121,8 @@ Judge Run/Submit lands by the end of week 4 (M11). Landing and Pricing come afte
 #### M6 · Interview Prep migration (1–2 sessions)
 **Goal:** the existing HR/SQL content lives in `interview_items` and renders in the new UI at `/interview`.
 **Done when:**
-- [ ] Item counts match the source tables. Filters by company and role work.
-- [ ] The old interview URLs redirect.
+- [x] Item counts match the source tables. Filters by company and role work. (Staging: 100 HR + 110 SQL, equal to the legacy `hr-questions` and `sql` categories, checked by `scripts/sql/interview-items-tests.sql`. Company and role filters are built and unit-tested, but no legacy HR or SQL row has a company or role, so they stay hidden until items carry those tags.)
+- [x] The old interview URLs redirect. (`/interview-preparations/hr-questions` and `/sql` → `/interview?kind=…`, 308. The rest of `/interview-preparations` stays until its content has a new home.)
 
 #### M7 · Company metadata import (1 session)
 **Goal:** `scripts/data/import-companies.mjs` imports the company-wise CSVs as metadata only (problems with status `pending`).

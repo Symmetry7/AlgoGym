@@ -16,6 +16,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     path === "/pricing" ||
     path.startsWith("/_design") ||
     path.startsWith("/problems") ||
+    path === "/interview" ||
     path.startsWith("/interview-preparations");
   const setupPage = path === "/account/reset-password";
   const account = useAccount(!publicPage && !setupPage);
