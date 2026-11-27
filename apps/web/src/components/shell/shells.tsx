@@ -8,6 +8,7 @@ import { focusRing, Logo } from "./ui";
 // Added back by their milestones (docs/BUILD_GUIDE.md): Roadmap (M13), Companies (M12), Arena (M18);
 // Interview moved to /interview in M6 (HR and SQL); the rest of the old section stays at /interview-preparations.
 export const APP_NAV: NavItem[] = [
+  { href: "/my-prep", label: "My Prep" },
   { href: "/problems", label: "Problems" },
   { href: "/interview", label: "Interview" },
   { href: "/pricing", label: "Pricing" },

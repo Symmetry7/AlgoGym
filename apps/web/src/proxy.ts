@@ -1,10 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+const PRIVATE = ["/my-prep"];
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key || !request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-"))) return response;
+  const hasSession = request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-"));
+  // Signed-in-only pages: no session cookie means a real redirect before rendering (the page still verifies the user).
+  if (!hasSession && PRIVATE.some((p) => request.nextUrl.pathname === p || request.nextUrl.pathname.startsWith(`${p}/`))) {
+    const to = new URL("/sign-in", request.url);
+    to.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(to);
+  }
+  if (!url || !key || !hasSession) return response;
   const supabase = createServerClient(url, key, { cookieOptions: { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" }, cookies: {
     getAll: () => request.cookies.getAll(),
     setAll(cookies) { cookies.forEach(({ name, value }) => request.cookies.set(name, value)); response = NextResponse.next({ request }); cookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options)); response.headers.set("Cache-Control", "private, no-store"); },

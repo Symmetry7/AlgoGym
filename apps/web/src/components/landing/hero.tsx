@@ -44,7 +44,7 @@ export function Hero() {
       <div className="mx-auto grid min-h-dvh w-full max-w-[1200px] items-center gap-10 px-4 pb-16 pt-24 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-20">
         <div>
           <Link data-in href="/problems" className={cn("group inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] py-1.5 pl-3.5 pr-2.5 text-[14px] text-ag-text transition-colors duration-ag-hover hover:bg-white/[0.07]", focusRing)}>
-            Run and Submit, now in 4 languages
+            Placement season 2026: company-wise prep is live
             <ChevronRight className="size-4 text-ag-text-muted transition-transform duration-ag-hover group-hover:translate-x-0.5" aria-hidden />
           </Link>
           <h1 data-in className="mt-7 text-balance font-ui text-[46px] font-bold leading-[1.02] tracking-[-0.035em] text-[#f0f0f0] sm:text-[64px] lg:text-[76px]">

@@ -84,7 +84,7 @@ export default async function handler(
           });
       return response
         .status(200)
-        .json({ authenticated: true, next: safeNextPath(next) });
+        .json({ authenticated: true, next: safeNextPath(next, "/my-prep") });
     }
     if (action === "signup") {
       const { data, error } = await client.auth.signUp({
@@ -92,7 +92,7 @@ export default async function handler(
         password: password!,
         options: {
           data: { full_name: fullName },
-          emailRedirectTo: `${originFromRequest(request)}/api/auth/callback?next=${encodeURIComponent(safeNextPath(next, "/onboarding"))}`,
+          emailRedirectTo: `${originFromRequest(request)}/api/auth/callback?next=${encodeURIComponent(safeNextPath(next, "/my-prep"))}`,
         },
       });
       if (error)

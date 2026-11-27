@@ -18,7 +18,7 @@ export default async function handler(
     const { data, error } = await client.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${originFromRequest(request)}/api/auth/callback?next=${encodeURIComponent(safeNextPath(new URL(request.url ?? "/", "http://localhost").searchParams.get("next")))}`,
+        redirectTo: `${originFromRequest(request)}/api/auth/callback?next=${encodeURIComponent(safeNextPath(new URL(request.url ?? "/", "http://localhost").searchParams.get("next"), "/my-prep"))}`,
         skipBrowserRedirect: true,
       },
     });
