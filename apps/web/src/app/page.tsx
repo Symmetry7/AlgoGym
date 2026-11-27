@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -8,6 +7,9 @@ import type { ReactNode } from "react";
 import { ChecklistDemo, HintsDemo, PlanDemo, RoadmapDemo } from "@/components/landing/demos";
 import { Reveal } from "@/components/landing/reveal";
 import { Hero } from "@/components/landing/hero";
+import { LogoMarquee } from "@/components/landing/logo-marquee";
+import { Testimonials } from "@/components/landing/testimonials";
+import { TESTIMONIALS, visibleTestimonials } from "@/content/testimonials";
 import { MarketingShell } from "@/components/shell/shells";
 import { ButtonLink, focusRing, SoonBadge } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
@@ -53,7 +55,7 @@ async function topCompanies() {
   try {
     const { companies } = await getCatalog();
     const withLogo = companies.filter((c) => c.problems > 0 && existsSync(join(process.cwd(), "public", "company-icons", `${c.slug}.png`)));
-    return withLogo.length >= 4 ? withLogo.slice(0, 8) : FALLBACK_COMPANIES;
+    return withLogo.length >= 4 ? withLogo.slice(0, 40) : FALLBACK_COMPANIES;
   } catch {
     return FALLBACK_COMPANIES;
   }
@@ -63,7 +65,8 @@ export default async function HomePage() {
   const companies = await topCompanies();
   return (
     <MarketingShell>
-      <Hero companies={companies} />
+      <Hero />
+      <LogoMarquee companies={companies} />
 
       {/* How it works */}
       <section aria-labelledby="how" className={cn(container, "py-16 md:py-24")}>
@@ -124,28 +127,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Companies */}
-      <section aria-labelledby="companies" className={cn(container, "py-16 md:py-24")}>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 id="companies" className="ag-text-gradient pb-1 font-display text-[40px] leading-none sm:text-[56px]">Practise by company</h2>
-          <Link href="/problems" className={cn("rounded-sm text-[15px] text-ag-text-muted hover:text-ag-text", focusRing)}>See all companies ›</Link>
-        </div>
-        <ul className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {companies.map((c) => (
-            <li key={c.slug}>
-              <Link href={`/problems?company=${c.slug}`} className={cn("group flex h-full flex-col gap-4 rounded-ag-card border border-ag-border bg-ag-surface-1 p-4 transition-colors duration-ag-hover hover:border-ag-border-strong hover:bg-ag-surface-2 sm:p-5", focusRing)}>
-                <span className="grid size-11 place-items-center overflow-hidden rounded-xl bg-white">
-                  <Image src={`/company-icons/${c.slug}.png`} alt="" width={30} height={30} unoptimized className="size-[30px] object-contain" />
-                </span>
-                <span>
-                  <span className="block text-[16px] font-semibold text-ag-text">{c.name}</span>
-                  <span className="mt-0.5 block text-[13px] tabular-nums text-ag-text-faint">{c.problems ? `${c.problems.toLocaleString("en-IN")} problems` : "Problems by frequency"}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <Testimonials items={visibleTestimonials(TESTIMONIALS, process.env.NODE_ENV)} />
 
       {/* Pricing teaser */}
       <section aria-labelledby="pricing" className={cn(container, "py-16 md:py-24")}>
@@ -156,12 +138,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className={cn(container, "pb-20 pt-8 md:pb-28")}>
+      {/* Final CTA: a large two-line serif statement */}
+      <section className="relative isolate overflow-hidden px-4 pb-28 pt-24 text-center md:pb-40 md:pt-36">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[420px] bg-[radial-gradient(ellipse_50%_60%_at_50%_100%,rgba(255,255,255,0.08),transparent_70%)]" />
         <Reveal>
-          <div className={cn(slab, "flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between")}>
-            <p className="ag-text-gradient text-balance pb-1 font-display text-[38px] leading-none sm:text-[56px]">Start preparing today.</p>
-            <ButtonLink href="/sign-in">Get started</ButtonLink>
+          <p className="ag-text-gradient mx-auto max-w-[900px] text-balance pb-2 font-display text-[48px] leading-[0.98] sm:text-[80px] lg:text-[96px]">Your offer starts here. Start preparing today.</p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+            <Link href="/sign-in" className={cn("ag-glass-button inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>Get started</Link>
+            <Link href="/pricing" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-[#a1a4a5] transition-colors duration-ag-hover hover:text-white", focusRing)}>See pricing</Link>
           </div>
         </Reveal>
       </section>

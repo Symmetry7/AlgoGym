@@ -59,3 +59,11 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.4);
 }
+
+/* Endless horizontal scroll (logo marquee, testimonials). The track holds the list twice. */
+@keyframes ag-marquee { to { transform: translateX(-50%); } }
+.ag-marquee { display: flex; width: max-content; animation: ag-marquee var(--ag-marquee-duration, 40s) linear infinite; }
+.ag-marquee-reverse { animation-direction: reverse; }
+.ag-marquee-host:hover .ag-marquee, .ag-marquee-host:focus-within .ag-marquee { animation-play-state: paused; }
+.ag-marquee-mask { mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+@media (prefers-reduced-motion: reduce) { .ag-marquee { animation: none; } }

@@ -3,33 +3,31 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ChevronRight } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { focusRing } from "@/components/shell/ui";
 import { cn } from "@/lib/utils";
 
 gsap.registerPlugin(useGSAP);
 
+// three.js loads only here, after first paint.
+const CubeScene = dynamic(() => import("./cube-scene"), { ssr: false });
+
 const glassBtn = cn("ag-glass-button inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing);
 
-export function Hero({ companies }: { companies: { slug: string; name: string }[] }) {
+export function Hero() {
   const root = useRef<HTMLElement>(null);
-  const art = useRef<HTMLDivElement>(null);
+  const [webgl, setWebgl] = useState(true);
+  const onFail = useCallback(() => setWebgl(false), []);
 
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.from("[data-in]", { y: 24, opacity: 0, filter: "blur(6px)", duration: 1.1, ease: "expo.out", stagger: 0.08 });
-        gsap.from(art.current, { opacity: 0, scale: 0.94, duration: 1.6, ease: "expo.out", delay: 0.2 });
-        // Slow float, plus a gentle tilt towards the pointer (fine pointers only).
-        gsap.to("[data-float]", { y: -14, rotate: 1.5, duration: 4, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        const rx = gsap.quickTo(art.current, "rotationY", { duration: 1.2, ease: "power3.out" });
-        const ry = gsap.quickTo(art.current, "rotationX", { duration: 1.2, ease: "power3.out" });
-        const move = (e: PointerEvent) => { rx((e.clientX / innerWidth - 0.5) * 14); ry((e.clientY / innerHeight - 0.5) * -10); };
-        if (matchMedia("(pointer: fine)").matches) addEventListener("pointermove", move);
-        return () => removeEventListener("pointermove", move);
+        gsap.from("[data-art]", { opacity: 0, scale: 0.92, duration: 1.8, ease: "expo.out", delay: 0.15 });
       });
     },
     { scope: root },
@@ -61,30 +59,11 @@ export function Hero({ companies }: { companies: { slug: string; name: string }[
           </div>
         </div>
 
-        <div className="relative [perspective:1200px]">
-          <div ref={art} className="mx-auto w-full max-w-[520px] [transform-style:preserve-3d]">
-            <div data-float>
-              <Image src="/hero/algogym-cubes-poster.webp" alt="" width={1200} height={1200} priority className="h-auto w-full select-none drop-shadow-[0_40px_80px_rgba(0,0,0,0.8)] [filter:saturate(0.55)_brightness(0.8)]" />
-            </div>
-          </div>
+        <div data-art className="relative mx-auto aspect-square w-full max-w-[600px]">
+          {webgl ? <CubeScene onFail={onFail} /> : <Image src="/hero/algogym-cubes-poster.webp" alt="" fill sizes="600px" className="object-contain [filter:saturate(0.55)_brightness(0.8)]" />}
         </div>
       </div>
 
-      {companies.length > 0 && (
-        <div className="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6">
-          <p className="text-center text-[14px] text-ag-text-faint">Practise the problems asked at</p>
-          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-            {companies.map((c) => (
-              <li key={c.slug}>
-                <Link href={`/problems?company=${c.slug}`} className={cn("group flex items-center gap-2.5 rounded-sm opacity-60 transition-opacity duration-ag-hover hover:opacity-100", focusRing)}>
-                  <Image src={`/company-icons/${c.slug}.png`} alt="" width={22} height={22} unoptimized className="size-[22px] rounded-[5px] object-contain grayscale" />
-                  <span className="text-[17px] font-semibold tracking-[-0.01em] text-white">{c.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </section>
   );
 }
