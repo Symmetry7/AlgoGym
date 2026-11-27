@@ -12,6 +12,16 @@ export const HARNESS_FILE = { javascript: "harness.js", python: "harness.py", cp
 export const USER_CODE = "__AG_USER_CODE__";
 const NONCE = "__AG_NONCE__";
 const BUDGET = "__AG_BUDGET_MS__";
+// Cases numbered above this print a fingerprint of their output instead of the output (hidden cases on Submit).
+const DIGEST_FROM = "__AG_DIGEST_FROM__";
+const NEVER = 2147483647;
+
+// How a hidden case's output is fingerprinted: "exact" hashes its JSON, "unordered" sums its elements' hashes,
+// "none" (float tolerance or doubles) always prints the full output. 64-bit FNV-1a over the UTF-8 JSON text.
+export function digestMode(sig, comparator = "exact") {
+  if (comparator === "float_tolerance" || sig.returns.startsWith("double")) return "none";
+  return comparator === "unordered" && sig.returns.endsWith("[]") ? "unordered" : "exact";
+}
 
 const depth = (t) => (t.endsWith("[][]") ? 2 : t.endsWith("[]") ? 1 : 0);
 const base = (t) => t.replace(/\[\]/g, "");
@@ -60,14 +70,21 @@ export function starter(sig, language) {
 // Java/C++ reader and writer helper names per type, e.g. "int[][]" -> "IntAA".
 const helper = (t) => base(t)[0].toUpperCase() + base(t).slice(1) + "A".repeat(depth(t));
 
-export function harness(sig, language) {
+export function harness(sig, language, comparator = "exact") {
   assertSignature(sig);
   const { function: fn, params, returns } = sig;
+  const mode = digestMode(sig, comparator);
+  const digested = (k) => (mode === "none" ? "false" : `${k} > ${DIGEST_FROM}`);
   switch (language) {
     case "javascript":
       return `${USER_CODE}
 ;(() => {
   const fs__ = require("fs");
+  const enc__ = new TextEncoder();
+  const fnv__ = (s) => { let h = 0xcbf29ce484222325n; for (const b of enc__.encode(s)) h = ((h ^ BigInt(b)) * 0x100000001b3n) & 0xffffffffffffffffn; return h; };
+  const digest__ = (v) => (${mode === "unordered" ? "Array.isArray(v)" : "false"}
+    ? v.reduce((acc, e) => (acc + fnv__(JSON.stringify(e))) & 0xffffffffffffffffn, fnv__("#" + v.length))
+    : fnv__(JSON.stringify(v))).toString(16).padStart(16, "0");
   const lines__ = fs__.readFileSync(0, "utf8").split("\\n").filter((l) => l.trim());
   const t0__ = performance.now();
   for (let k__ = 0; k__ < lines__.length; k__++) {
@@ -77,7 +94,11 @@ export function harness(sig, language) {
     try {
       const c__ = performance.now();
       const r__ = ${fn}(...args__);
-      rec__ = { n: "${NONCE}", case: k__ + 1, ms: performance.now() - c__, output: r__ === undefined ? null : r__ };
+      const ms__ = performance.now() - c__;
+      const out__ = r__ === undefined ? null : r__;
+      rec__ = ${digested("k__ + 1")}
+        ? { n: "${NONCE}", case: k__ + 1, ms: ms__, digest: digest__(out__) }
+        : { n: "${NONCE}", case: k__ + 1, ms: ms__, output: out__ };
     } catch (e__) {
       rec__ = { n: "${NONCE}", case: k__ + 1, error: String(e__ && e__.stack ? e__.stack : e__) };
     }
@@ -91,6 +112,23 @@ from typing import *
 ${USER_CODE}
 
 
+def __ag_fnv(s):
+    h = 0xCBF29CE484222325
+    for b in s.encode("utf-8"):
+        h = ((h ^ b) * 0x100000001B3) & 0xFFFFFFFFFFFFFFFF
+    return h
+
+
+def __ag_digest(v):
+    dump = lambda x: json.dumps(x, separators=(",", ":"), ensure_ascii=False)
+    if ${mode === "unordered" ? "True" : "False"} and isinstance(v, (list, tuple)):
+        h = __ag_fnv("#" + str(len(v)))
+        for e in v:
+            h = (h + __ag_fnv(dump(e))) & 0xFFFFFFFFFFFFFFFF
+        return format(h, "016x")
+    return format(__ag_fnv(dump(v)), "016x")
+
+
 def __ag_main():
     lines = [l for l in sys.stdin.read().split("\\n") if l.strip()]
     t0 = time.perf_counter()
@@ -101,7 +139,11 @@ def __ag_main():
         try:
             c = time.perf_counter()
             r = Solution().${fn}(*args)
-            rec = json.dumps({"n": "${NONCE}", "case": k, "ms": (time.perf_counter() - c) * 1000, "output": r}, separators=(",", ":"))
+            ms = (time.perf_counter() - c) * 1000
+            if ${mode === "none" ? "False" : `k > ${DIGEST_FROM}`}:
+                rec = json.dumps({"n": "${NONCE}", "case": k, "ms": ms, "digest": __ag_digest(r)}, separators=(",", ":"))
+            else:
+                rec = json.dumps({"n": "${NONCE}", "case": k, "ms": ms, "output": r}, separators=(",", ":"))
         except BaseException as e:
             rec = json.dumps({"n": "${NONCE}", "case": k, "error": type(e).__name__ + ": " + str(e)}, separators=(",", ":"))
         sys.stdout.write("\\n" + rec + "\\n")
@@ -165,6 +207,8 @@ inline void wr(ostream& o, const string& v) {
     o << '"';
     for (unsigned char c : v) {
         if (c == '"' || c == '\\\\') o << '\\\\' << c;
+        else if (c == '\\n') o << "\\\\n"; else if (c == '\\t') o << "\\\\t"; else if (c == '\\r') o << "\\\\r";
+        else if (c == '\\b') o << "\\\\b"; else if (c == '\\f') o << "\\\\f";
         else if (c < 0x20) { char b[8]; snprintf(b, sizeof b, "\\\\u%04x", c); o << b; }
         else o << c;
     }
@@ -174,6 +218,15 @@ template <class T> void wr(ostream& o, const vector<T>& v) {
     o << '[';
     for (size_t i = 0; i < v.size(); i++) { if (i) o << ','; wr(o, (T)v[i]); }
     o << ']';
+}
+inline unsigned long long fnv(const string& s) { unsigned long long h = 14695981039346656037ULL; for (unsigned char c : s) { h ^= c; h *= 1099511628211ULL; } return h; }
+template <class T> string json(const T& v) { ostringstream s; wr(s, v); return s.str(); }
+inline string hex(unsigned long long h) { char b[17]; snprintf(b, sizeof b, "%016llx", h); return b; }
+template <class T> string digest(const T& v) { return hex(fnv(json(v))); }
+template <class T> string digestUnordered(const vector<T>& v) {
+    unsigned long long h = fnv("#" + to_string(v.size()));
+    for (size_t i = 0; i < v.size(); i++) h += fnv(json((T)v[i]));
+    return hex(h);
 }
 inline double since(chrono::steady_clock::time_point t) { return chrono::duration<double, milli>(chrono::steady_clock::now() - t).count(); }
 }
@@ -195,7 +248,8 @@ int main() {
             auto c = chrono::steady_clock::now();
             ${typeName.cpp(returns)} r = Solution().${fn}(${params.map((p) => "a_" + p.name).join(", ")});
             double ms = ag::since(c);
-            o << "\\"ms\\":" << ms << ",\\"output\\":"; ag::wr(o, r);
+            if (${mode === "none" ? "false" : `(long long)k + 1 > ${DIGEST_FROM}LL`}) o << "\\"ms\\":" << ms << ",\\"digest\\":\\"" << ag::${mode === "unordered" ? "digestUnordered" : "digest"}(r) << '"';
+            else { o << "\\"ms\\":" << ms << ",\\"output\\":"; ag::wr(o, r); }
         } catch (const exception& e) {
             o << "\\"error\\":"; ag::wr(o, string(e.what()));
         } catch (...) {
@@ -268,6 +322,8 @@ public class Main {
         for (int i = 0; i < v.length(); i++) {
             char c = v.charAt(i);
             if (c == '"' || c == '\\\\') o.append('\\\\').append(c);
+            else if (c == '\\n') o.append("\\\\n"); else if (c == '\\t') o.append("\\\\t"); else if (c == '\\r') o.append("\\\\r");
+            else if (c == '\\b') o.append("\\\\b"); else if (c == '\\f') o.append("\\\\f");
             else if (c < 0x20) o.append(String.format("\\\\u%04x", (int) c));
             else o.append(c);
         }
@@ -280,6 +336,9 @@ public class Main {
     static void wStringA(StringBuilder o, String[] v) { if (v == null) { o.append("null"); return; } o.append('['); for (int i = 0; i < v.length; i++) { if (i > 0) o.append(','); wString(o, v[i]); } o.append(']'); }
     static void wIntAA(StringBuilder o, int[][] v) { if (v == null) { o.append("null"); return; } o.append('['); for (int i = 0; i < v.length; i++) { if (i > 0) o.append(','); wIntA(o, v[i]); } o.append(']'); }
     static void wStringAA(StringBuilder o, String[][] v) { if (v == null) { o.append("null"); return; } o.append('['); for (int i = 0; i < v.length; i++) { if (i > 0) o.append(','); wStringA(o, v[i]); } o.append(']'); }
+
+    static long fnv(String s) { long h = 0xcbf29ce484222325L; for (byte b : s.getBytes(StandardCharsets.UTF_8)) { h ^= (b & 0xff); h *= 0x100000001b3L; } return h; }
+    static String hex(long h) { return String.format("%016x", h); }
 
     static void run() throws IOException {
         PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), true, "UTF-8");
@@ -300,8 +359,19 @@ public class Main {
                 long c = System.nanoTime();
                 ${typeName.java(returns)} r = new Solution().${fn}(${params.map((p) => "a_" + p.name).join(", ")});
                 double ms = (System.nanoTime() - c) / 1e6;
-                o.append("\\"ms\\":").append(ms).append(",\\"output\\":");
-                w${helper(returns)}(o, r);
+                o.append("\\"ms\\":").append(ms);
+                if (${mode === "none" ? "false" : `k > ${DIGEST_FROM}`}) {
+                    ${mode === "unordered"
+                      ? `long h;
+                    if (r == null) { StringBuilder s = new StringBuilder(); w${helper(returns)}(s, r); h = fnv(s.toString()); }
+                    else { h = fnv("#" + r.length); for (var e : r) { StringBuilder s = new StringBuilder(); w${helper(returns.slice(0, -2))}(s, e); h += fnv(s.toString()); } }`
+                      : `StringBuilder s = new StringBuilder(); w${helper(returns)}(s, r);
+                    long h = fnv(s.toString());`}
+                    o.append(",\\"digest\\":\\"").append(hex(h)).append('"');
+                } else {
+                    o.append(",\\"output\\":");
+                    w${helper(returns)}(o, r);
+                }
             } catch (Throwable e) {
                 o.setLength(0);
                 o.append("\\n{\\"n\\":\\"${NONCE}\\",\\"case\\":").append(k).append(",\\"error\\":");
@@ -327,7 +397,8 @@ public class Main {
 }
 
 // Fill a harness for one job. The nonce marks result lines so anything user code prints is console output, not a result.
-export function combine(harnessCode, userCode, { nonce, budgetMs }) {
+export function combine(harnessCode, userCode, { nonce, budgetMs, digestFrom = NEVER }) {
   if (!harnessCode.includes(USER_CODE)) throw new Error(`Harness has no ${USER_CODE} marker`);
-  return harnessCode.split(NONCE).join(nonce).split(BUDGET).join(String(budgetMs)).replace(USER_CODE, () => userCode);
+  const from = String(Math.min(NEVER, Math.max(0, Math.floor(digestFrom))));
+  return harnessCode.split(NONCE).join(nonce).split(BUDGET).join(String(budgetMs)).split(DIGEST_FROM).join(from).replace(USER_CODE, () => userCode);
 }

@@ -37,7 +37,7 @@ export function loadProblem(folder) {
     solutions: perLanguage((l) => optional(dir, "solutions", SOLUTION_FILE[l])),
     // Per-language overrides win over the generated code.
     starters: perLanguage((l) => optional(dir, "starter", SOLUTION_FILE[l]) ?? starter(meta.signature, l)),
-    harnesses: perLanguage((l) => optional(dir, "harness", HARNESS_FILE[l]) ?? harness(meta.signature, l)),
+    harnesses: perLanguage((l) => optional(dir, "harness", HARNESS_FILE[l]) ?? harness(meta.signature, l, meta.comparator)),
     genPath: existsSync(join(dir, "tests", "gen.mjs")) ? join(dir, "tests", "gen.mjs") : null,
   };
 }
