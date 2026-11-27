@@ -1,0 +1,47 @@
+{
+  "$schema": "../meta.schema.json",
+  "slug": "family-tree-depth",
+  "title": "Family Tree Depth",
+  "status": "draft",
+  "difficulty": "Easy",
+  "category": "dsa",
+  "topics": [
+    "trees"
+  ],
+  "patterns": [
+    "tree-traversal"
+  ],
+  "similar_to": [
+    "leetcode:104"
+  ],
+  "signature": {
+    "function": "treeDepth",
+    "params": [
+      {
+        "name": "left",
+        "type": "int[]"
+      },
+      {
+        "name": "right",
+        "type": "int[]"
+      },
+      {
+        "name": "root",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "comparator": "exact",
+  "limits": {
+    "time_ms_per_case": 1000,
+    "max_total_ms": 10000,
+    "memory_mb": 256
+  },
+  "is_pro": false,
+  "pool": "public",
+  "authors": [
+    "algogym"
+  ],
+  "reviewers": []
+}

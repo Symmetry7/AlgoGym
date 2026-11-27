@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320" role="img" aria-labelledby="t">
+<title id="t">A graph of seven stations. Each is labelled with its BFS distance from S: A and B at 1, C, D and E at 2, T at 3. The route S, A, D, T is highlighted as a shortest path.</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#22C55E"/></marker>
+<marker id="arrowMuted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#A1A1AA"/></marker></defs>
+<rect width="800" height="320" rx="16" fill="#0B0B0D"/>
+<text x="400" y="36" fill="#F5F5F7" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" text-anchor="middle">BFS reaches every station in order of distance</text>
+<line x1="140" y1="165" x2="290" y2="95" stroke="#22C55E" stroke-width="1.5"/>
+<line x1="140" y1="165" x2="290" y2="235" stroke="#84848D" stroke-width="1.5"/>
+<line x1="290" y1="95" x2="450" y2="70" stroke="#84848D" stroke-width="1.5"/>
+<line x1="290" y1="95" x2="450" y2="165" stroke="#22C55E" stroke-width="1.5"/>
+<line x1="290" y1="235" x2="450" y2="165" stroke="#84848D" stroke-width="1.5"/>
+<line x1="290" y1="235" x2="450" y2="260" stroke="#84848D" stroke-width="1.5"/>
+<line x1="450" y1="165" x2="620" y2="165" stroke="#22C55E" stroke-width="1.5"/>
+<line x1="450" y1="260" x2="620" y2="165" stroke="#84848D" stroke-width="1.5"/>
+<circle cx="140" cy="165" r="22" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="140" y="171" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">S</text>
+<circle cx="290" cy="95" r="22" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="290" y="101" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">A</text>
+<circle cx="290" cy="235" r="22" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="290" y="241" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">B</text>
+<circle cx="450" cy="70" r="22" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="450" y="76" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">C</text>
+<circle cx="450" cy="165" r="22" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="450" y="171" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">D</text>
+<circle cx="450" cy="260" r="22" fill="#1A1A1D" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+<text x="450" y="266" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">E</text>
+<circle cx="620" cy="165" r="22" fill="rgba(34,197,94,0.14)" stroke="#22C55E" stroke-width="1.5"/>
+<text x="620" y="171" fill="#F5F5F7" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="15" font-weight="400" text-anchor="middle">T</text>
+<text x="140" y="207" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=0</text>
+<text x="290" y="137" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=1</text>
+<text x="290" y="277" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=1</text>
+<text x="450" y="112" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=2</text>
+<text x="450" y="207" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=2</text>
+<text x="450" y="302" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=2</text>
+<text x="620" y="207" fill="#84848D" font-family="Geist Mono, ui-monospace, Consolas, Menlo, monospace" font-size="12" font-weight="400" text-anchor="middle">d=3</text>
+<text x="400" y="306" fill="#A1A1AA" font-family="Hanken Grotesk, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" font-weight="400" text-anchor="middle">Highlighted: a shortest route S → A → D → T, three hops</text>
+</svg>
