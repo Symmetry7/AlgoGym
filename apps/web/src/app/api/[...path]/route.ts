@@ -17,17 +17,10 @@ const routes: Record<string, () => Promise<RouteModule>> = {
   "billing/webhook": () => import("@/../server/next-api/billing-webhook"),
   interview: () => import("@/../server/next-api/interview"),
   // Legacy endpoints still used by surviving pages until their milestones replace them:
-  // account state (onboarding GET), /problems catalog and detail (providers, problem, tracker, sync, study),
-  // and /pricing's coin exchange (M17).
+  // account state (onboarding GET) and /pricing's coin exchange (M17). The /problems catalog and detail
+  // endpoints (problem, providers, study, sync, tracker) were removed in M9 with the old problem pages.
   "coin-exchange": () => import("@/../server/next-api/coin-exchange"),
   onboarding: () => import("@/../server/next-api/onboarding"),
-  problem: () => import("@/../server/next-api/problem"),
-  "providers/codeforces": () => import("@/../server/next-api/providers/codeforces"),
-  "providers/leetcode/problems": () =>
-    import("@/../server/next-api/providers/leetcode/problems"),
-  study: () => import("@/../server/next-api/study"),
-  sync: () => import("@/../server/next-api/sync"),
-  tracker: () => import("@/../server/next-api/tracker"),
 };
 
 export const dynamic = "force-dynamic";
