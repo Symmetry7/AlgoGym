@@ -9,9 +9,11 @@ export interface Personal {
   solvedDays: Set<string>; // YYYY-MM-DD (IST) with at least one solve
   favorites: Set<string>; // bookmarked problem ids
   lists: { id: string; name: string; items: string[] }[];
+  recent: { problemId: string; at: string }[]; // latest solves first, at most 5
+  account: { name: string; email: string; avatarUrl?: string } | null; // for the header account menu
 }
 
-export const EMPTY: Personal = { signedIn: false, solved: new Set(), solvedDays: new Set(), favorites: new Set(), lists: [] };
+export const EMPTY: Personal = { signedIn: false, solved: new Set(), solvedDays: new Set(), favorites: new Set(), lists: [], recent: [], account: null };
 
 // India Standard Time date for streaks and the daily problem.
 export const istDate = (d: Date) => new Date(d.getTime() + 330 * 60_000).toISOString().slice(0, 10);
@@ -29,9 +31,15 @@ export async function getPersonal(): Promise<Personal> {
   for (const r of [status, bookmarks, lists, items]) if (r.error) throw new Error(`Could not load your progress: ${r.error.message}`);
   return {
     signedIn: true,
+    account: {
+      name: (user.user_metadata?.full_name as string | undefined) || user.email?.split("@")[0] || "there",
+      email: user.email ?? "",
+      avatarUrl: user.user_metadata?.avatar_url as string | undefined,
+    },
     solved: new Set(status.data!.map((r) => r.problem_id)),
     solvedDays: new Set(status.data!.filter((r) => r.solved_at).map((r) => istDate(new Date(r.solved_at!)))),
     favorites: new Set(bookmarks.data!.map((r) => r.problem_id)),
+    recent: status.data!.filter((r) => r.solved_at).sort((a, b) => b.solved_at!.localeCompare(a.solved_at!)).slice(0, 5).map((r) => ({ problemId: r.problem_id, at: r.solved_at! })),
     lists: lists.data!.map((l) => ({ id: l.id, name: l.name, items: items.data!.filter((i) => i.list_id === l.id).map((i) => i.problem_id) })),
   };
 }

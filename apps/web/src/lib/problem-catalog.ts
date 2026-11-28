@@ -124,3 +124,39 @@ export function dailyPick<T>(date: string, pool: T[]): T | null {
   for (const c of date) h = Math.imul(h ^ c.charCodeAt(0), 0x01000193) >>> 0;
   return pool[h % pool.length];
 }
+
+/** How often a problem is asked: at the chosen company, else its highest all-time frequency anywhere (0-100). */
+export function askedFrequency(p: CatalogProblem, company?: string) {
+  if (company) return p.frequency[company] ?? 0;
+  return Object.values(p.frequency).reduce((m, f) => Math.max(m, f), 0);
+}
+
+/** Company slugs for a row: by the given rank (e.g. the best-known companies first), else most frequent first. */
+export const topCompanies = (p: CatalogProblem, rank?: Map<string, number>) =>
+  Object.entries(p.frequency)
+    .sort((a, b) => (rank ? (rank.get(a[0]) ?? Infinity) - (rank.get(b[0]) ?? Infinity) : 0) || b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([slug]) => slug);
+
+/** Solved / total of the problems you can solve here, overall and per difficulty. */
+export function solveProgress(all: CatalogProblem[], solved: Set<string>) {
+  const by = { Easy: { solved: 0, total: 0 }, Medium: { solved: 0, total: 0 }, Hard: { solved: 0, total: 0 } };
+  for (const p of all) {
+    if (p.source !== "algogym") continue;
+    by[p.difficulty].total++;
+    if (solved.has(p.id)) by[p.difficulty].solved++;
+  }
+  const solvedAll = by.Easy.solved + by.Medium.solved + by.Hard.solved;
+  return { solved: solvedAll, total: by.Easy.total + by.Medium.total + by.Hard.total, by };
+}
+
+const rtf = new Intl.RelativeTimeFormat("en-IN", { numeric: "auto" });
+/** "just now", "5 minutes ago", "yesterday", "3 days ago"; older than a month falls back to the date. */
+export function timeAgo(iso: string, now: Date) {
+  const s = Math.round((Date.parse(iso) - now.getTime()) / 1000);
+  if (s > -60) return "just now";
+  for (const [unit, size] of [["minute", 60], ["hour", 3600], ["day", 86400]] as const) {
+    const next = unit === "day" ? 31 * 86400 : unit === "hour" ? 86400 : 3600;
+    if (-s < next) return rtf.format(Math.round(s / size), unit);
+  }
+  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
+}
