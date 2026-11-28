@@ -57,7 +57,7 @@ export function MascotLoader({ label = "Loading", className }: { label?: string;
   return (
     <div role="status" aria-live="polite" className={cn("flex flex-col items-center justify-center gap-4", className)}>
       <Mascot animated className="size-24" />
-      <p className="flex items-center gap-1 text-[14px] text-[#a1a4a5]">
+      <p className="flex items-center gap-1 text-[14px] text-ag-text-muted">
         {label}
         <span aria-hidden className="ag-mascot-dots inline-flex gap-0.5"><span>.</span><span>.</span><span>.</span></span>
       </p>
