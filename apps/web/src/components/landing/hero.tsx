@@ -38,8 +38,7 @@ export function Hero() {
   return (
     <section ref={root} className="relative isolate -mt-16 overflow-hidden">
       {/* Spotlight from the top right and a faint diagonal light streak */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_70%_at_85%_-10%,rgba(255,255,255,0.13),transparent_60%)]" />
-      <div aria-hidden className="pointer-events-none absolute -left-[10%] bottom-[8%] -z-10 h-28 w-[130%] -rotate-[7deg] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.07)_35%,rgba(255,255,255,0.1)_55%,transparent)] blur-2xl" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_70%_at_85%_-10%,var(--ag-light-4),transparent_60%)]" />
 
       <div className="mx-auto grid min-h-dvh w-full max-w-[1200px] items-center gap-10 px-4 pb-16 pt-24 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-20">
         <div>
@@ -47,7 +46,7 @@ export function Hero() {
             Placement season 2026: company-wise prep is live
             <ChevronRight className="size-4 text-ag-text-muted transition-transform duration-ag-hover group-hover:translate-x-0.5" aria-hidden />
           </Link>
-          <h1 data-in className="mt-7 text-balance font-ui text-[46px] font-bold leading-[1.02] tracking-[-0.035em] text-[#f0f0f0] sm:text-[64px] lg:text-[76px]">
+          <h1 data-in className="mt-7 text-balance font-ui text-[46px] font-bold leading-[1.02] tracking-[-0.035em] text-ag-text sm:text-[64px] lg:text-[76px]">
             Walk into your interview{" "}
             <span className="relative inline-block whitespace-nowrap text-ag-accent">
               ready
@@ -57,12 +56,12 @@ export function Hero() {
             </span>
             .
           </h1>
-          <p data-in className="mt-5 max-w-[470px] text-pretty text-[18px] leading-[1.5] text-[#a1a4a5]">
-            The clearest way from your first array to your offer. Roadmaps, free lessons and real problems, built for your target company.
+          <p data-in className="mt-5 max-w-[470px] text-pretty text-[18px] leading-[1.5] text-ag-text-muted">
+            Roadmaps, lessons and real problems, built for the company you want.
           </p>
           <div data-in className="mt-9 flex flex-wrap items-center gap-2">
             <Link href="/sign-in?mode=signup" className={glassBtn}>Get started</Link>
-            <Link href="/problems" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-[#a1a4a5] transition-colors duration-ag-hover hover:text-white", focusRing)}>Browse problems</Link>
+            <Link href="/problems" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-ag-text-muted transition-colors duration-ag-hover hover:text-white", focusRing)}>Browse problems</Link>
           </div>
         </div>
 

@@ -47,6 +47,7 @@ export default {
           medium: "var(--ag-medium)",
           hard: "var(--ag-hard)",
           pro: "var(--ag-pro)",
+          "auth-step": "var(--ag-auth-step)",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

@@ -47,8 +47,8 @@ export function HowItWorks() {
   return (
     <section ref={root} aria-labelledby="how" className="mx-auto w-full max-w-[1200px] px-4 py-20 sm:px-6 md:py-32">
       <div className="mx-auto max-w-[640px] text-center">
-        <h2 id="how" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">How it works</h2>
-        <p className="mt-5 text-pretty text-[18px] leading-[1.5] text-[#a1a4a5]">From a blank plan to a confident interview, in four steps that adapt to you.</p>
+        <h2 id="how" className="text-ag-text pb-1 font-display text-[40px] leading-none sm:text-[56px]">How it works</h2>
+        <p className="mt-5 text-pretty text-[18px] leading-[1.5] text-ag-text-muted">From a blank plan to a confident interview, in four steps that adapt to you.</p>
       </div>
 
       {/* Desktop: steps on the left, pinned visual on the right */}
@@ -59,16 +59,16 @@ export function HowItWorks() {
           {STEPS.map((s, i) => (
             <li key={s.title} data-step className="flex min-h-[62vh] flex-col justify-center">
               <div className={cn("transition-[opacity,transform] duration-500 ease-ag motion-reduce:transition-none", active === i ? "opacity-100" : "translate-x-[-4px] opacity-35")}>
-                <p className="font-geist-mono text-[13px] text-[#a1a4a5]">0{i + 1}</p>
-                <h3 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.02em] text-[#f0f0f0]">{s.title}</h3>
-                <p className="mt-4 max-w-[400px] text-pretty text-[17px] leading-[1.6] text-[#a1a4a5]">{s.body}</p>
+                <p className="font-geist-mono text-[13px] text-ag-text-muted">0{i + 1}</p>
+                <h3 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.02em] text-ag-text">{s.title}</h3>
+                <p className="mt-4 max-w-[400px] text-pretty text-[17px] leading-[1.6] text-ag-text-muted">{s.body}</p>
               </div>
             </li>
           ))}
         </ol>
         <div className="relative">
           <div ref={panel} className="sticky top-[18vh] h-[64vh] min-h-[460px]">
-            <div aria-hidden className="absolute -inset-10 rounded-[40px] bg-[radial-gradient(ellipse_60%_55%_at_60%_40%,rgba(255,255,255,0.07),transparent_70%)]" />
+            <div aria-hidden className="absolute -inset-10 rounded-[40px] bg-[radial-gradient(ellipse_60%_55%_at_60%_40%,var(--ag-light-2),transparent_70%)]" />
             {STEPS.map((s, i) => (
               <div
                 key={s.title}
@@ -88,9 +88,9 @@ export function HowItWorks() {
       <ol className="mt-14 space-y-16 lg:hidden">
         {STEPS.map((s, i) => (
           <li key={s.title}>
-            <p className="font-geist-mono text-[13px] text-[#a1a4a5]">0{i + 1}</p>
-            <h3 className="mt-2 text-[24px] font-semibold leading-tight tracking-[-0.02em] text-[#f0f0f0]">{s.title}</h3>
-            <p className="mt-3 text-pretty text-[16px] leading-[1.6] text-[#a1a4a5]">{s.body}</p>
+            <p className="font-geist-mono text-[13px] text-ag-text-muted">0{i + 1}</p>
+            <h3 className="mt-2 text-[24px] font-semibold leading-tight tracking-[-0.02em] text-ag-text">{s.title}</h3>
+            <p className="mt-3 text-pretty text-[16px] leading-[1.6] text-ag-text-muted">{s.body}</p>
             <div className="mt-6">{s.demo}</div>
           </li>
         ))}

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 const container = "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
 // Statement card: black with a hairline and a soft top light (.claude/skills/premium-landing).
-const slab = "rounded-[20px] border border-white/10 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%)] p-6 text-ag-text sm:rounded-[24px] sm:p-10 lg:p-14";
+const slab = "rounded-[20px] border border-white/10 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,var(--ag-light-2),transparent_70%)] p-6 text-ag-text sm:rounded-[24px] sm:p-10 lg:p-14";
 
 const EVIDENCE = [
   { title: "Recalling beats rereading", body: "Students who practised recalling a passage remembered more of it a week later than students who reread it.", source: "Roediger & Karpicke, Psychological Science, 2006", why: "That's why every lesson ends with a quiz, not a summary." },
@@ -67,7 +67,7 @@ export default async function HomePage() {
       <section aria-labelledby="science" className={cn(container, "py-16 md:py-24")}>
         <Reveal>
           <div className={slab}>
-            <h2 id="science" className="text-[#f0f0f0] max-w-[760px] text-balance pb-1 font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
+            <h2 id="science" className="text-ag-text max-w-[760px] text-balance pb-1 font-display text-[38px] leading-[1.02] sm:text-[60px]">Solving a problem isn&rsquo;t the same as remembering how.</h2>
             <p className="mt-5 max-w-[560px] text-pretty text-[16px] leading-relaxed text-ag-text-muted">
               Algogym is built on three of the best-tested findings in learning research.
             </p>
@@ -89,13 +89,13 @@ export default async function HomePage() {
 
       {/* Feature grid */}
       <section aria-labelledby="features" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="features" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">Everything for the interview</h2>
+        <h2 id="features" className="text-ag-text pb-1 font-display text-[40px] leading-none sm:text-[56px]">Everything for the interview</h2>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={(i % 2) * 80}>
-              <article className="h-full rounded-ag-card border border-ag-border bg-ag-surface-1 p-3">
+              <article className="h-full">
                 <div className="grid h-44 place-items-center rounded-ag-card bg-ag-surface-2"><FeatureArt kind={f.art} /></div>
-                <div className="px-3 pb-3 pt-5">
+                <div className="pt-5">
                   <h3 className="flex items-center gap-2 font-display text-[28px] leading-none text-ag-text">{f.title}{"soon" in f && <SoonBadge />}</h3>
                   <p className="mt-2 text-pretty text-[15px] leading-relaxed text-ag-text-muted">{f.body}</p>
                 </div>
@@ -109,7 +109,7 @@ export default async function HomePage() {
 
       {/* Pricing teaser */}
       <section aria-labelledby="pricing" className={cn(container, "py-16 md:py-24")}>
-        <h2 id="pricing" className="text-[#f0f0f0] pb-1 font-display text-[40px] leading-none sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
+        <h2 id="pricing" className="text-ag-text pb-1 font-display text-[40px] leading-none sm:text-[56px]">Learn free. Upgrade when you&rsquo;re ready.</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <PlanCard name="Free" price="₹0" note="Forever" items={["Every lesson and quiz", "The full roadmap", "Free problems with hidden tests", "Company problem lists (all time)"]} cta={<ButtonLink href="/sign-in?mode=signup" variant="secondary">Start free</ButtonLink>} />
           <PlanCard name="Pro" price="₹199" note="a month, or ₹1,499 a year" highlight items={["Everything in Free", "Pro problems, editorials and solutions", "Company lists for the last 30 and 90 days", "Pro study plans"]} cta={<ButtonLink href="/pricing">See pricing</ButtonLink>} />
@@ -118,12 +118,12 @@ export default async function HomePage() {
 
       {/* Final CTA: a large two-line serif statement */}
       <section className="relative isolate overflow-hidden px-4 pb-28 pt-24 text-center md:pb-40 md:pt-36">
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[420px] bg-[radial-gradient(ellipse_50%_60%_at_50%_100%,rgba(255,255,255,0.08),transparent_70%)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[420px] bg-[radial-gradient(ellipse_50%_60%_at_50%_100%,var(--ag-light-3),transparent_70%)]" />
         <Reveal>
-          <p className="text-[#f0f0f0] mx-auto max-w-[900px] text-balance pb-2 font-display text-[48px] leading-[0.98] sm:text-[80px] lg:text-[96px]">Your offer starts here. Start preparing today.</p>
+          <p className="text-ag-text mx-auto max-w-[900px] text-balance pb-2 font-display text-[48px] leading-[0.98] sm:text-[80px] lg:text-[96px]">Your offer starts here. Start preparing today.</p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             <Link href="/sign-in?mode=signup" className={cn("ag-glass-button inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-white transition-[filter] duration-ag-hover hover:brightness-125", focusRing)}>Get started</Link>
-            <Link href="/pricing" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-[#a1a4a5] transition-colors duration-ag-hover hover:text-white", focusRing)}>See pricing</Link>
+            <Link href="/pricing" className={cn("inline-flex h-12 items-center rounded-2xl px-5 text-[16px] font-semibold text-ag-text-muted transition-colors duration-ag-hover hover:text-white", focusRing)}>See pricing</Link>
           </div>
         </Reveal>
       </section>

@@ -40,16 +40,16 @@ export function AccountMenu({ name, email, avatarUrl }: { name: string; email: s
         <span className="sr-only">Account menu</span>
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-11 z-50 w-64 rounded-xl border border-white/12 bg-[#0b0b0d] p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
+        <div role="menu" className="absolute right-0 top-11 z-50 w-64 rounded-xl border border-white/12 bg-ag-surface-1 p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
           <div className="px-3 py-2.5">
-            <p className="truncate text-[14px] font-medium text-[#f0f0f0]">{name}</p>
-            <p className="truncate text-[13px] text-[#a1a4a5]">{email}</p>
+            <p className="truncate text-[14px] font-medium text-ag-text">{name}</p>
+            <p className="truncate text-[13px] text-ag-text-muted">{email}</p>
           </div>
           <div className="my-1 h-px bg-white/10" />
-          <Link role="menuitem" href="/my-prep" onClick={() => setOpen(false)} className={cn("flex items-center gap-2.5 rounded-lg px-3 py-2 text-[14px] text-[#d4d4d8] hover:bg-white/[0.06] hover:text-white", focusRing)}>
+          <Link role="menuitem" href="/my-prep" onClick={() => setOpen(false)} className={cn("flex items-center gap-2.5 rounded-lg px-3 py-2 text-[14px] text-ag-text hover:bg-white/[0.06] hover:text-white", focusRing)}>
             <User className="size-4" aria-hidden /> My Prep
           </Link>
-          <button role="menuitem" type="button" onClick={signOut} className={cn("flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[14px] text-[#d4d4d8] hover:bg-white/[0.06] hover:text-white", focusRing)}>
+          <button role="menuitem" type="button" onClick={signOut} className={cn("flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[14px] text-ag-text hover:bg-white/[0.06] hover:text-white", focusRing)}>
             <LogOut className="size-4" aria-hidden /> Sign out
           </button>
           {error && <p role="alert" className="px-3 pb-2 pt-1 text-[12px] text-ag-hard">{error}</p>}

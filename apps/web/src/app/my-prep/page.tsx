@@ -23,7 +23,7 @@ const VERDICT: Record<string, [string, string]> = {
   compile_error: ["Compile error", "text-ag-hard"],
 };
 const LANG: Record<string, string> = { javascript: "JavaScript", python: "Python", cpp: "C++", java: "Java" };
-const card = "rounded-2xl border border-white/10 bg-[#0a0a0b]";
+const card = "rounded-2xl border border-white/10 bg-ag-surface-1";
 
 function ago(iso: string) {
   const s = (Date.now() - Date.parse(iso)) / 1000;
@@ -78,8 +78,8 @@ export default async function MyPrepPage() {
       <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 md:py-14">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[14px] text-[#a1a4a5]">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" })}</p>
-            <h1 className="mt-1 text-[32px] font-semibold tracking-[-0.025em] text-[#f0f0f0] sm:text-[40px]">{greeting()}, {first}</h1>
+            <p className="text-[14px] text-ag-text-muted">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Kolkata" })}</p>
+            <h1 className="mt-1 text-[32px] font-semibold tracking-[-0.025em] text-ag-text sm:text-[40px]">{greeting()}, {first}</h1>
           </div>
           <Link href="/problems" className={cn("ag-glass-button inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[14px] font-semibold text-white hover:brightness-125", focusRing)}>
             Browse problems <ArrowRight className="size-4" aria-hidden />
@@ -89,29 +89,29 @@ export default async function MyPrepPage() {
         {/* Stats */}
         <section aria-label="Your progress" className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <div className={cn(card, "col-span-2 p-5")}>
-            <p className="text-[13px] text-[#a1a4a5]">Problems solved</p>
-            <p className="mt-2 text-[36px] font-semibold tabular-nums tracking-[-0.02em] text-[#f0f0f0]">{solved.length}<span className="ml-1.5 text-[16px] font-normal text-[#86888a]">/ {pool.length}</span></p>
+            <p className="text-[13px] text-ag-text-muted">Problems solved</p>
+            <p className="mt-2 text-[36px] font-semibold tabular-nums tracking-[-0.02em] text-ag-text">{solved.length}<span className="ml-1.5 text-[16px] font-normal text-ag-text-faint">/ {pool.length}</span></p>
             <div className="mt-4 space-y-2.5">
               {(["Easy", "Medium", "Hard"] as const).map((d) => (
                 <div key={d} className="flex items-center gap-3 text-[13px]">
-                  <span className="w-16 text-[#a1a4a5]">{d}</span>
+                  <span className="w-16 text-ag-text-muted">{d}</span>
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
                     <div className={cn("h-full rounded-full", d === "Easy" ? "bg-ag-easy" : d === "Medium" ? "bg-ag-medium" : "bg-ag-hard")} style={{ width: `${totals[d] ? (count(d) / totals[d]) * 100 : 0}%` }} />
                   </div>
-                  <span className="w-14 text-right tabular-nums text-[#a1a4a5]">{count(d)} / {totals[d]}</span>
+                  <span className="w-14 text-right tabular-nums text-ag-text-muted">{count(d)} / {totals[d]}</span>
                 </div>
               ))}
             </div>
           </div>
           <div className={cn(card, "p-5")}>
-            <p className="flex items-center gap-2 text-[13px] text-[#a1a4a5]"><Flame className="size-4 text-ag-medium" aria-hidden /> Current streak</p>
-            <p className="mt-2 text-[36px] font-semibold tabular-nums tracking-[-0.02em] text-[#f0f0f0]">{streak}<span className="ml-1.5 text-[16px] font-normal text-[#86888a]">{streak === 1 ? "day" : "days"}</span></p>
-            <p className="mt-2 text-[13px] text-[#86888a]">{days.has(today) ? "You've solved today. Nice." : streak ? "Solve one today to keep it going." : "Solve a problem to start one."}</p>
+            <p className="flex items-center gap-2 text-[13px] text-ag-text-muted"><Flame className="size-4 text-ag-medium" aria-hidden /> Current streak</p>
+            <p className="mt-2 text-[36px] font-semibold tabular-nums tracking-[-0.02em] text-ag-text">{streak}<span className="ml-1.5 text-[16px] font-normal text-ag-text-faint">{streak === 1 ? "day" : "days"}</span></p>
+            <p className="mt-2 text-[13px] text-ag-text-faint">{days.has(today) ? "You've solved today. Nice." : streak ? "Solve one today to keep it going." : "Solve a problem to start one."}</p>
           </div>
           <div className={cn(card, "p-5")}>
-            <p className="flex items-center gap-2 text-[13px] text-[#a1a4a5]"><Trophy className="size-4 text-ag-pro" aria-hidden /> Longest streak</p>
-            <p className="mt-2 text-[36px] font-semibold tabular-nums tracking-[-0.02em] text-[#f0f0f0]">{best}<span className="ml-1.5 text-[16px] font-normal text-[#86888a]">{best === 1 ? "day" : "days"}</span></p>
-            <p className="mt-2 text-[13px] text-[#86888a]">{attempted.length ? `${attempted.length} in progress` : "Nothing half-finished"}</p>
+            <p className="flex items-center gap-2 text-[13px] text-ag-text-muted"><Trophy className="size-4 text-ag-pro" aria-hidden /> Longest streak</p>
+            <p className="mt-2 text-[36px] font-semibold tabular-nums tracking-[-0.02em] text-ag-text">{best}<span className="ml-1.5 text-[16px] font-normal text-ag-text-faint">{best === 1 ? "day" : "days"}</span></p>
+            <p className="mt-2 text-[13px] text-ag-text-faint">{attempted.length ? `${attempted.length} in progress` : "Nothing half-finished"}</p>
           </div>
         </section>
 
@@ -120,13 +120,13 @@ export default async function MyPrepPage() {
             {/* Today's problem */}
             {todays && (
               <section aria-labelledby="today" className={cn(card, "relative overflow-hidden p-6")}>
-                <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_0%,rgba(34,197,94,0.08),transparent_60%)]" />
-                <p id="today" className="text-[13px] text-[#a1a4a5]">Today&rsquo;s problem</p>
+                <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_0%,var(--ag-accent-glow),transparent_60%)]" />
+                <p id="today" className="text-[13px] text-ag-text-muted">Today&rsquo;s problem</p>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <h2 className="text-[22px] font-semibold tracking-[-0.015em] text-[#f0f0f0]">{todays.title}</h2>
+                  <h2 className="text-[22px] font-semibold tracking-[-0.015em] text-ag-text">{todays.title}</h2>
                   <DifficultyChip level={todays.difficulty} />
                 </div>
-                <p className="mt-1.5 text-[14px] text-[#a1a4a5]">{todays.tags.slice(0, 3).map((t) => catalog.tags[t] ?? t).join(" · ") || "Algogym original"}</p>
+                <p className="mt-1.5 text-[14px] text-ag-text-muted">{todays.tags.slice(0, 3).map((t) => catalog.tags[t] ?? t).join(", ") || "Algogym original"}</p>
                 <Link href={`/problems/${todays.slug}`} className={cn("mt-5 inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-[14px] font-semibold text-black transition-colors hover:bg-white/90", focusRing)}>
                   {solved.some((p) => p.id === todays.id) ? "Solve again" : "Solve now"} <ArrowRight className="size-4" aria-hidden />
                 </Link>
@@ -135,25 +135,25 @@ export default async function MyPrepPage() {
 
             {/* Recent submissions */}
             <section aria-labelledby="recent" className={card}>
-              <h2 id="recent" className="border-b border-white/10 px-5 py-4 text-[15px] font-semibold text-[#f0f0f0]">Recent submissions</h2>
+              <h2 id="recent" className="border-b border-white/10 px-5 py-4 text-[15px] font-semibold text-ag-text">Recent submissions</h2>
               {subs.data.length === 0 ? (
                 <div className="px-5 py-10 text-center">
-                  <p className="text-[15px] text-[#f0f0f0]">No submissions yet</p>
-                  <p className="mt-1 text-[14px] text-[#a1a4a5]">Submit a solution and it shows up here with its verdict.</p>
-                  {todays && <Link href={`/problems/${todays.slug}`} className={cn("mt-4 inline-flex rounded-sm text-[14px] font-medium text-white underline-offset-4 hover:underline", focusRing)}>Start with today&rsquo;s problem ›</Link>}
+                  <p className="text-[15px] text-ag-text">No submissions yet</p>
+                  <p className="mt-1 text-[14px] text-ag-text-muted">Submit a solution and it shows up here with its verdict.</p>
+                  {todays && <Link href={`/problems/${todays.slug}`} className={cn("mt-4 inline-flex rounded-sm text-[14px] font-medium text-white underline-offset-4 hover:underline", focusRing)}>Solve today&rsquo;s problem</Link>}
                 </div>
               ) : (
                 <ul className="divide-y divide-white/[0.06]">
                   {subs.data.map((s) => {
                     const p = byId.get(s.problem_id);
-                    const [label, tone] = s.status === "done" ? (VERDICT[s.verdict ?? ""] ?? [s.verdict ?? "Done", "text-[#a1a4a5]"]) : s.status === "error" ? ["Didn't run", "text-[#a1a4a5]"] : ["Judging…", "text-[#a1a4a5]"];
+                    const [label, tone] = s.status === "done" ? (VERDICT[s.verdict ?? ""] ?? [s.verdict ?? "Done", "text-ag-text-muted"]) : s.status === "error" ? ["Didn't run", "text-ag-text-muted"] : ["Judging…", "text-ag-text-muted"];
                     return (
                       <li key={s.id}>
                         <Link href={p ? `/problems/${p.slug}` : "/problems"} className={cn("flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-white/[0.03]", focusRing)}>
-                          <span className="min-w-0 flex-1 truncate text-[14px] text-[#f0f0f0]">{p?.title ?? "Problem"}</span>
+                          <span className="min-w-0 flex-1 truncate text-[14px] text-ag-text">{p?.title ?? "Problem"}</span>
                           <span className={cn("w-28 shrink-0 text-[13px] font-medium", tone)}>{label}</span>
-                          <span className="hidden w-20 shrink-0 text-[13px] text-[#a1a4a5] sm:block">{LANG[s.lang] ?? s.lang}</span>
-                          <span className="w-20 shrink-0 text-right text-[13px] text-[#86888a]">{ago(s.created_at)}</span>
+                          <span className="hidden w-20 shrink-0 text-[13px] text-ag-text-muted sm:block">{LANG[s.lang] ?? s.lang}</span>
+                          <span className="w-20 shrink-0 text-right text-[13px] text-ag-text-faint">{ago(s.created_at)}</span>
                         </Link>
                       </li>
                     );
@@ -166,8 +166,8 @@ export default async function MyPrepPage() {
           <div className="space-y-3">
             {/* Activity */}
             <section aria-labelledby="activity" className={cn(card, "p-5")}>
-              <h2 id="activity" className="text-[15px] font-semibold text-[#f0f0f0]">Activity</h2>
-              <p className="mt-1 text-[13px] text-[#a1a4a5]">Problems solved, last 12 weeks</p>
+              <h2 id="activity" className="text-[15px] font-semibold text-ag-text">Activity</h2>
+              <p className="mt-1 text-[13px] text-ag-text-muted">Problems solved, last 12 weeks</p>
               <div className="mt-4 grid grid-flow-col grid-rows-7 gap-1" role="img" aria-label={`${solvedRows.length} problems solved in total; ${days.size} active days`}>
                 {cells.map((d) => {
                   const n = dayCounts.get(d) ?? 0;
@@ -178,14 +178,14 @@ export default async function MyPrepPage() {
 
             {/* Continue */}
             <section aria-labelledby="continue" className={cn(card, "p-5")}>
-              <h2 id="continue" className="text-[15px] font-semibold text-[#f0f0f0]">Pick up where you left off</h2>
+              <h2 id="continue" className="text-[15px] font-semibold text-ag-text">Pick up where you left off</h2>
               {attempted.length === 0 ? (
-                <p className="mt-2 text-[14px] text-[#a1a4a5]">Problems you&rsquo;ve tried but not solved yet will wait for you here.</p>
+                <p className="mt-2 text-[14px] text-ag-text-muted">Problems you&rsquo;ve tried but not solved yet will wait for you here.</p>
               ) : (
                 <ul className="mt-3 space-y-1">
                   {attempted.map((p) => (
                     <li key={p.id}>
-                      <Link href={`/problems/${p.slug}`} className={cn("flex items-center justify-between gap-3 rounded-lg px-2 py-2 text-[14px] text-[#d4d4d8] hover:bg-white/[0.04] hover:text-white", focusRing)}>
+                      <Link href={`/problems/${p.slug}`} className={cn("flex items-center justify-between gap-3 rounded-lg px-2 py-2 text-[14px] text-ag-text hover:bg-white/[0.04] hover:text-white", focusRing)}>
                         <span className="truncate">{p.title}</span>
                         <DifficultyChip level={p.difficulty} />
                       </Link>
@@ -203,10 +203,10 @@ export default async function MyPrepPage() {
                 { href: "/pricing", label: "Plans", hint: "Free and Pro", icon: BookOpen },
               ].map(({ href, label, hint, icon: Icon }) => (
                 <Link key={href} href={href} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-white/[0.04]", focusRing)}>
-                  <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03]"><Icon className="size-4 text-[#d4d4d8]" aria-hidden /></span>
+                  <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03]"><Icon className="size-4 text-ag-text" aria-hidden /></span>
                   <span>
-                    <span className="block text-[14px] font-medium text-[#f0f0f0]">{label}</span>
-                    <span className="block text-[12.5px] text-[#a1a4a5]">{hint}</span>
+                    <span className="block text-[14px] font-medium text-ag-text">{label}</span>
+                    <span className="block text-[12.5px] text-ag-text-muted">{hint}</span>
                   </span>
                 </Link>
               ))}
