@@ -3,9 +3,9 @@ import Link from "next/link";
 import { AppShell } from "@/components/shell/shells";
 import { ButtonLink } from "@/components/shell/ui";
 import { parseFilters } from "@/lib/interview-items";
-import { listInterviewItems, listInterviewSheets } from "../../../server/interview-items";
-import { InterviewBrowser } from "./interview-browser";
-import { SheetIndex } from "./sheet-index";
+import { listInterviewItems, listInterviewSheets } from "../../../../server/interview-items";
+import { InterviewBrowser } from "../interview-browser";
+import { SheetIndex } from "../sheet-index";
 
 export const metadata: Metadata = {
   title: "Interview prep: company, role, HR and SQL questions · Algogym",

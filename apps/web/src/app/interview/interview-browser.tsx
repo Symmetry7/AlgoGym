@@ -12,7 +12,7 @@ const titleCase = (slug: string) => slug.split("-").map((w) => w[0]?.toUpperCase
 
 export const control = cn(
   "h-11 w-full rounded-ag-control border border-ag-border-strong bg-ag-surface-2 px-3 font-ui text-sm text-ag-text",
-  "placeholder:text-ag-text-faint",
+  "placeholder:text-ag-text-faint active:border-ag-text-muted disabled:cursor-not-allowed disabled:opacity-50",
   focusRing,
 );
 
