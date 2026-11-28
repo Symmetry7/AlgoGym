@@ -42,13 +42,13 @@ const components: Components = {
 
 export function LessonBody({ lesson }: { lesson: Lesson }): ReactNode {
   return (
-    <div className="text-[16px] leading-[1.75] text-ag-text-muted">
+    <div className="text-pretty text-[16px] leading-[1.75] text-ag-text-muted">
       {lesson.blocks.map((block, i) =>
         block.kind === "diagram" ? (
           <ArchDiagram key={i} diagram={lesson.diagrams[block.id]} />
         ) : (
           // Prose keeps a reading measure; diagrams take the article's full width.
-          <div key={i} className="max-w-[700px]">
+          <div key={i} className="max-w-[66ch]">
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
               {block.text}
             </ReactMarkdown>

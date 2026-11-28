@@ -60,7 +60,7 @@ export default async function SystemDesignLesson({ params }: Props) {
                   Lesson {index + 1} of {total}
                 </span>
               </nav>
-              <h1 className="mt-4 text-[34px] font-semibold leading-[1.1] tracking-[-0.025em] text-ag-text [overflow-wrap:break-word] sm:text-[44px]">{lesson.title}</h1>
+              <h1 className="mt-4 text-balance text-[34px] font-semibold leading-[1.1] tracking-[-0.025em] text-ag-text [overflow-wrap:break-word] sm:text-[44px]">{lesson.title}</h1>
               <p className="mt-4 text-pretty text-[18px] leading-relaxed text-ag-text-muted">{lesson.summary}</p>
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-ag-text-faint">
                 <span>{lesson.minutes} min read</span>

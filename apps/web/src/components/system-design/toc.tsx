@@ -10,15 +10,22 @@ export function Toc({ items }: { items: { id: string; text: string }[] }) {
 
   useEffect(() => {
     const headings = items.map((i) => document.getElementById(i.id)).filter((h): h is HTMLElement => h !== null);
-    const io = new IntersectionObserver(
-      (entries) => {
-        const top = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (top) setCurrent(top.target.id);
-      },
-      { rootMargin: "-80px 0px -65% 0px" },
-    );
-    headings.forEach((h) => io.observe(h));
-    return () => io.disconnect();
+    // The current section is the last heading above a line a third of the way down the screen.
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight / 3;
+      setCurrent(headings.filter((h) => h.getBoundingClientRect().top < line).at(-1)?.id ?? null);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
   }, [items]);
 
   return (
@@ -33,7 +40,7 @@ export function Toc({ items }: { items: { id: string; text: string }[] }) {
                 href={`#${item.id}`}
                 aria-current={on ? "location" : undefined}
                 className={cn(
-                  "-ml-px block rounded-r-md border-l py-1.5 pl-3.5 pr-2 text-[13px] leading-snug active:opacity-80",
+                  "-ml-px block border-l py-1.5 pl-3.5 pr-2 text-[13px] leading-snug active:opacity-80",
                   focusRing,
                   on ? "border-ag-text text-ag-text" : "border-transparent text-ag-text-faint hover:text-ag-text-muted",
                 )}

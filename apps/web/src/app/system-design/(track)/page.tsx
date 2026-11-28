@@ -58,8 +58,8 @@ export default async function SystemDesignTrack() {
       <div className="mx-auto w-full max-w-[1120px] px-4 pb-24 pt-12 sm:px-6 md:pt-20">
         <header className="max-w-[640px]">
           <h1 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-ag-text [overflow-wrap:break-word] sm:text-[56px]">System design</h1>
-          <p className="mt-5 text-pretty text-[18px] leading-relaxed text-ag-text-muted">
-            {lessons.length} short lessons, from one server to a design you can defend in a 45-minute round.
+          <p className="mt-5 text-balance text-[18px] leading-relaxed text-ag-text-muted">
+            {lessons.length} short lessons, from one server to a design you can defend in a 45&#8209;minute round.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <NextLessonLink lessons={lessons.map(({ slug, title }) => ({ slug, title }))} className={primaryAction} />

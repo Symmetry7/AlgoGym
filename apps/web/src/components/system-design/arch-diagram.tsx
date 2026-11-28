@@ -22,8 +22,8 @@ export function ArchDiagram({ diagram }: { diagram: Diagram }) {
   const props = { diagram, active, paused, uid };
 
   return (
-    <figure className="not-prose my-10 rounded-[20px] border border-ag-border bg-ag-surface-1 p-4 sm:p-6" aria-labelledby={`${uid}-title`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <figure className="my-10 text-pretty rounded-[20px] border border-ag-border bg-ag-surface-1 p-3 sm:p-6" aria-labelledby={`${uid}-title`}>
+      <div className="flex flex-wrap items-start justify-between gap-3 px-1 pt-1 sm:p-0">
         <figcaption id={`${uid}-title`} className="text-[15px] font-semibold text-ag-text">{diagram.title}</figcaption>
         <button
           type="button"
@@ -43,7 +43,7 @@ export function ArchDiagram({ diagram }: { diagram: Diagram }) {
       </div>
 
       {diagram.steps.length > 0 && (
-        <div className="mt-5 border-t border-ag-border pt-4">
+        <div className="mt-5 border-t border-ag-border px-1 pt-4 sm:px-0">
           <div role="group" aria-label="Walk through the flow" className="flex flex-wrap gap-2">
             {[null, ...diagram.steps.map((_, i) => i)].map((i) => {
               const on = step === i;
@@ -70,7 +70,7 @@ export function ArchDiagram({ diagram }: { diagram: Diagram }) {
         </div>
       )}
 
-      <details className="group mt-3">
+      <details className="group mt-3 px-1 pb-1 sm:p-0">
         <summary className={cn("inline-flex cursor-pointer list-none items-center rounded-md text-[13px] text-ag-text-faint hover:text-ag-text-muted active:opacity-80 [&::-webkit-details-marker]:hidden", focusRing)}>
           <span className="group-open:hidden">Read the diagram as text</span>
           <span className="hidden group-open:inline">Hide the text version</span>

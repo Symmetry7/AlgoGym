@@ -11,8 +11,8 @@ export type Layout = { width: number; height: number; font: number; icon: boolea
 
 const SIZES = {
   // main = spacing along the flow, cross = across it; node w/h are on-screen width and height.
-  wide: { main: 216, cross: 100, w: 144, h: 52, pad: 20, font: 11.5, icon: true },
-  tall: { main: 108, cross: 140, w: 120, h: 48, pad: 12, font: 12.5, icon: false },
+  wide: { main: 216, cross: 100, w: 148, h: 54, pad: 16, font: 12.5, icon: true },
+  tall: { main: 104, cross: 124, w: 116, h: 48, pad: 8, font: 13, icon: false },
 } as const;
 const PORT_GAP = 10;
 const RADIUS = 10;
@@ -92,7 +92,15 @@ export function layoutDiagram(diagram: Diagram, orientation: Orientation): Layou
   for (const list of faces.values()) list.sort((p, q) => p.rank - q.rank || p.edge - q.edge);
   const offset = (node: DiagramNode, other: DiagramNode, edge: number) => {
     const list = faces.get(`${node.id}:${faceOf(node, other)}`)!;
-    return (list.findIndex((f) => f.edge === edge) - (list.length - 1) / 2) * PORT_GAP;
+    // Centre the fan on the link whose far end sits straight across, if there is one, so that link stays straight.
+    const crossOf = (n: DiagramNode) => (n.x !== node.x ? n.y : n.x);
+    const aligned = list.findIndex((f) => {
+      const e = diagram.edges[f.edge];
+      const far = byId.get(e.from === node.id ? e.to : e.from)!;
+      return crossOf(far) === (other.x !== node.x ? node.y : node.x);
+    });
+    const middle = aligned >= 0 ? aligned : (list.length - 1) / 2;
+    return (list.findIndex((f) => f.edge === edge) - middle) * PORT_GAP;
   };
 
   const edges: PlacedEdge[] = diagram.edges.map((e, index) => {
