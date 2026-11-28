@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dailyPick, frequencyBars, hrefWith, monthGrid, parseCatalogFilters, queryCatalog, tagCounts, type CatalogProblem } from "./problem-catalog";
+import { askedFrequency, dailyPick, frequencyBars, hrefWith, monthGrid, parseCatalogFilters, queryCatalog, solveProgress, tagCounts, timeAgo, topCompanies, type CatalogProblem } from "./problem-catalog";
 
 const p = (over: Partial<CatalogProblem>): CatalogProblem => ({
   id: over.slug ?? "x", slug: "x", title: "X", difficulty: "Easy", source: "algogym", sourceUrl: null, isPro: false,
@@ -80,5 +80,33 @@ describe("monthGrid and dailyPick", () => {
     expect(dailyPick("2026-11-27", pool)).toBe(dailyPick("2026-11-27", pool));
     expect(new Set(["2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05"].map((d) => dailyPick(d, pool))).size).toBeGreaterThan(1);
     expect(dailyPick("2026-11-27", [])).toBeNull();
+  });
+});
+
+describe("askedFrequency, topCompanies and solveProgress", () => {
+  it("uses the chosen company's frequency, else the highest", () => {
+    expect(askedFrequency(all[0])).toBe(100);
+    expect(askedFrequency(all[0], "amazon")).toBe(90);
+    expect(askedFrequency(all[0], "meta")).toBe(0);
+    expect(askedFrequency(all[2])).toBe(0);
+    expect(topCompanies(all[0])).toEqual(["google", "amazon"]);
+    expect(topCompanies(all[0], new Map([["amazon", 0], ["google", 1]]))).toEqual(["amazon", "google"]);
+  });
+  it("counts only solvable problems, per difficulty", () => {
+    const r = solveProgress(all, new Set(["widest-banner", "lc-two-sum"]));
+    expect(r).toMatchObject({ solved: 1, total: 2 });
+    expect(r.by.Hard).toEqual({ solved: 1, total: 1 });
+    expect(r.by.Easy).toEqual({ solved: 0, total: 1 });
+  });
+});
+
+describe("timeAgo", () => {
+  const now = new Date("2026-11-28T12:00:00Z");
+  it("reads naturally at each scale", () => {
+    expect(timeAgo("2026-11-28T11:59:30Z", now)).toBe("just now");
+    expect(timeAgo("2026-11-28T11:55:00Z", now)).toBe("5 minutes ago");
+    expect(timeAgo("2026-11-28T09:00:00Z", now)).toBe("3 hours ago");
+    expect(timeAgo("2026-11-27T10:00:00Z", now)).toBe("yesterday");
+    expect(timeAgo("2026-09-01T10:00:00Z", now)).toBe("1 Sept");
   });
 });
