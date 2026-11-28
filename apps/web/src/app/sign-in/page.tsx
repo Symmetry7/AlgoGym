@@ -30,7 +30,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         <div aria-hidden className="absolute inset-x-0 top-0 h-1/2 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,var(--ag-light-5),transparent_70%)]" />
         <div className="relative w-full max-w-[340px] text-center">
           <div className="mx-auto flex items-center justify-center gap-2.5">
-            <Mascot className="size-10" />
+            <Mascot className="h-9 w-auto" />
             <span className="font-display text-[28px] leading-none text-white">Algogym</span>
           </div>
           <h2 className="mt-6 text-[34px] font-semibold leading-tight tracking-[-0.025em] text-white">Get started with Algogym</h2>

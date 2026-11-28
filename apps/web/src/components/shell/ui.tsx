@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Mascot } from "@/components/brand/mascot";
 
 /* Primitives from docs/DESIGN.md §5. */
 
@@ -91,7 +92,8 @@ export function DifficultyChip({ level }: { level: keyof typeof difficultyColor 
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={cn("rounded-sm font-display text-[26px] leading-none text-ag-text", focusRing, className)}>
+    <Link href="/" className={cn("inline-flex items-center gap-2 rounded-sm font-display text-[26px] leading-none text-ag-text", focusRing, className)}>
+      <Mascot className="h-[0.95em] w-auto shrink-0" />
       Algogym
     </Link>
   );
