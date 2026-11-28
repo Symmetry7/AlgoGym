@@ -229,7 +229,7 @@ export function Workspace({ data, statement }: { data: WorkspaceData; statement:
               <div className="mt-4 rounded-2xl border border-ag-border bg-ag-surface-2 p-5 text-center">
                 <Lock className="mx-auto text-ag-pro" aria-hidden />
                 <p className="mt-3 text-[15px] text-ag-text">This problem is part of Pro.</p>
-                <p className="mt-1 text-sm text-ag-text-muted">Pro unlocks the full statement, the editor and the editorial.</p>
+                <p className="mt-1 text-sm text-ag-text-muted">With Pro you get the full statement, the editor and the editorial.</p>
                 <ButtonLink href="/pricing" size="sm" className="mt-4">See Pro</ButtonLink>
               </div>
             ) : (
