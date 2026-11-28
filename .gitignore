@@ -48,3 +48,7 @@ skills-lock.json
 artifacts/deploy-*/
 artifacts/deploy-*.zip
 artifacts/*-qa/
+
+# Raw pages cached by scripts/data/fetch-hynts.mjs
+data/raw/
+__pycache__/

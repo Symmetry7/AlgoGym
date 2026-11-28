@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { answerParts, filterItems, filterOptions, parseFilters, type InterviewItem } from "./interview-items";
+import {
+  answerParts, filterItems, filterOptions, filterSheetQuestions, groupByCategory, groupSheets, isSheetSection, parseFilters, sheetQuestionHref,
+  type InterviewItem, type InterviewSheet, type SheetQuestion,
+} from "./interview-items";
 
 const item = (over: Partial<InterviewItem>): InterviewItem => ({
   id: over.question ?? "x", kind: "hr", question: "Q", answer_md: "A", tags: [], companies: [], roles: [],
@@ -51,5 +54,29 @@ describe("answerParts", () => {
   it("splits prose and sql blocks", () => {
     expect(answerParts("Use a subquery.\n```sql\nSELECT 1;\n```")).toEqual([{ type: "text", value: "Use a subquery." }, { type: "code", value: "SELECT 1;" }]);
     expect(answerParts("Plain answer.")).toEqual([{ type: "text", value: "Plain answer." }]);
+  });
+});
+
+describe("question sheets", () => {
+  const sq = (over: Partial<SheetQuestion>): SheetQuestion => ({
+    id: over.title ?? "x", position: 1, title: "Q", difficulty: null, category: null, subcategory: null, level: null, practice: null, answer: null, ...over,
+  });
+  it("opens practice problems and our answers inside Algogym, and nothing else", () => {
+    expect(sheetQuestionHref(sq({ practice: { slug: "pair-sum", title: "Pair Sum" } }))).toBe("/problems/pair-sum");
+    expect(sheetQuestionHref(sq({ answer: { kind: "hr", question: "Tell me about yourself" } }))).toBe("/interview?kind=hr&q=Tell+me+about+yourself#answers");
+    expect(sheetQuestionHref(sq({}))).toBeNull();
+  });
+  it("groups sheets by section in display order and drops empty sections", () => {
+    const sheet = (section: InterviewSheet["section"], slug: string, position: number): InterviewSheet => ({ section, slug, title: slug, group_name: null, item_count: 1, position });
+    const groups = groupSheets([sheet("role", "b", 2), sheet("company", "google", 1), sheet("role", "a", 1)]);
+    expect(groups.map((g) => [g.section, g.sheets.map((s) => s.slug)])).toEqual([["company", ["google"]], ["role", ["a", "b"]]]);
+    expect(isSheetSection("role")).toBe(true);
+    expect(isSheetSection("playlists")).toBe(false);
+  });
+  it("filters by search and difficulty, and groups consecutive categories", () => {
+    const qs = [sq({ title: "Closures", category: "JS", difficulty: "Easy" }), sq({ title: "Event loop", category: "JS", difficulty: "Hard" }), sq({ title: "Box model", category: "CSS", difficulty: "Easy" })];
+    expect(filterSheetQuestions(qs, { difficulty: "Easy" }).map((q) => q.title)).toEqual(["Closures", "Box model"]);
+    expect(filterSheetQuestions(qs, { q: "css" }).map((q) => q.title)).toEqual(["Box model"]);
+    expect(groupByCategory(qs).map((g) => [g.category, g.questions.length])).toEqual([["JS", 2], ["CSS", 1]]);
   });
 });
