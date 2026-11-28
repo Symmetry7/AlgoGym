@@ -31,7 +31,7 @@ export function LogoMarquee({ companies }: { companies: Company[] }) {
   const half = Math.ceil(companies.length / 2);
   return (
     <section aria-labelledby="logos" className="py-16 md:py-24">
-      <h2 id="logos" className="mx-auto max-w-[460px] px-4 text-center text-[18px] leading-[1.5] text-ag-text-muted">
+      <h2 id="logos" className="mx-auto max-w-[460px] px-4 text-center text-[18px] leading-[1.5] text-[#a1a4a5]">
         Students and developers practise the problems asked at these companies.
       </h2>
       <div className="mt-12 space-y-6">

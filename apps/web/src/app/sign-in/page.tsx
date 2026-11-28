@@ -25,9 +25,9 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
     <div className="flex min-h-dvh bg-black font-ui antialiased">
       {/* Left: brand panel (desktop) */}
       <aside className="relative m-3 hidden w-[46%] max-w-[720px] overflow-hidden rounded-[28px] lg:flex lg:flex-col lg:items-center lg:justify-end lg:px-12 lg:pb-16">
-        <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,var(--ag-auth-1)_0%,var(--ag-auth-2)_18%,var(--ag-auth-3)_42%,var(--ag-auth-4)_66%,var(--ag-auth-5)_100%)]" />
+        <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,#a7f3d0_0%,#22c55e_18%,#0f6b3f_42%,#06281a_66%,#050806_100%)]" />
         <div aria-hidden className="absolute inset-0 opacity-[0.35] mix-blend-overlay" style={{ backgroundImage: GRAIN }} />
-        <div aria-hidden className="absolute inset-x-0 top-0 h-1/2 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,var(--ag-light-5),transparent_70%)]" />
+        <div aria-hidden className="absolute inset-x-0 top-0 h-1/2 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(255,255,255,0.35),transparent_70%)]" />
         <div className="relative w-full max-w-[340px] text-center">
           <div className="mx-auto flex items-center justify-center gap-2.5">
             <Mascot className="size-10" />
@@ -37,7 +37,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <p className="mt-3 text-pretty text-[16px] leading-relaxed text-white/75">Three quick steps to a prep plan built for the company you want.</p>
           <ol className="mt-9 space-y-3 text-left">
             {STEPS.map((s, i) => (
-              <li key={s} className={cn("flex items-center gap-3.5 rounded-xl px-5 py-4 text-[15px]", i === 0 ? "bg-white text-black" : "bg-ag-auth-step text-white/80")}>
+              <li key={s} className={cn("flex items-center gap-3.5 rounded-xl px-5 py-4 text-[15px]", i === 0 ? "bg-white text-black" : "bg-white/[0.07] text-white/80 backdrop-blur-0")}>
                 <span className={cn("grid size-6 shrink-0 place-items-center rounded-full text-[12px] font-semibold", i === 0 ? "bg-black text-white" : "bg-white/15 text-white")}>{i + 1}</span>
                 {s}
               </li>

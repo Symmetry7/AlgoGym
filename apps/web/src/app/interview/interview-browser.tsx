@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Copy, ExternalLink, Search } from "lucide-react";
+import { Check, ChevronDown, Copy, Search } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { SegmentedTabs } from "@/components/shell/segmented-tabs";
 import { Button, DifficultyChip, focusRing } from "@/components/shell/ui";
@@ -10,13 +10,13 @@ import { cn } from "@/lib/utils";
 const KIND_LABEL = { hr: "HR", sql: "SQL" } as const;
 const titleCase = (slug: string) => slug.split("-").map((w) => w[0]?.toUpperCase() + w.slice(1)).join(" ");
 
-const control = cn(
+export const control = cn(
   "h-11 w-full rounded-ag-control border border-ag-border-strong bg-ag-surface-2 px-3 font-ui text-sm text-ag-text",
   "placeholder:text-ag-text-faint",
   focusRing,
 );
 
-function FilterSelect({ label, value, onChange, options, allLabel }: {
+export function FilterSelect({ label, value, onChange, options, allLabel }: {
   label: string;
   value: string | undefined;
   onChange: (v: string | undefined) => void;
@@ -69,17 +69,12 @@ function Answer({ item }: { item: InterviewItem }) {
           ? "Replace the bracketed parts with your own true details before you use this answer."
           : "The tables and columns are illustrative. Adapt them to the schema you're given."}
       </p>
-      {item.reference_url?.startsWith("https://") && (
-        <a href={item.reference_url} target="_blank" rel="noreferrer" className={cn("inline-flex items-center gap-1 text-[13px] text-ag-text-muted underline underline-offset-4 hover:text-ag-text", focusRing)}>
-          Reference <ExternalLink size={12} aria-hidden />
-        </a>
-      )}
     </div>
   );
 }
 
-function Row({ item }: { item: InterviewItem }) {
-  const [open, setOpen] = useState(false);
+function Row({ item, defaultOpen = false }: { item: InterviewItem; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const panel = useId();
   return (
     <li className="border-b border-ag-border last:border-b-0">
@@ -128,7 +123,7 @@ export function InterviewBrowser({ items, initial }: { items: InterviewItem[]; i
   const searchId = useId();
 
   return (
-    <section aria-label="Questions" className="mt-10">
+    <section aria-label="Questions" className="mt-6">
       <SegmentedTabs
         label="Question type"
         value={f.kind}
@@ -171,7 +166,8 @@ export function InterviewBrowser({ items, initial }: { items: InterviewItem[]; i
 
       {shown.length ? (
         <ul className="mt-3 overflow-hidden rounded-ag-card border border-ag-border bg-ag-surface-1">
-          {shown.map((item) => <Row key={item.id} item={item} />)}
+          {/* A link from a question sheet lands on one item: open it. */}
+          {shown.map((item) => <Row key={item.id} item={item} defaultOpen={shown.length === 1} />)}
         </ul>
       ) : (
         <div className="mt-3 rounded-ag-card border border-ag-border bg-ag-surface-1 px-6 py-14 text-center">

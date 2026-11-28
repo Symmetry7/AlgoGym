@@ -11,8 +11,8 @@ import { GoogleMark } from "./GoogleMark";
 
 export type AuthMode = "login" | "signup" | "reset";
 
-const field = cn("h-12 w-full rounded-xl border border-transparent bg-white/[0.06] px-4 text-[15px] text-ag-text placeholder:text-ag-text-faint transition-colors duration-ag-hover hover:bg-white/[0.08] focus:border-white/30 focus:bg-white/[0.08] focus:outline-none");
-const label = "mb-2 block text-[14px] font-medium text-ag-text";
+const field = cn("h-12 w-full rounded-xl border border-transparent bg-white/[0.06] px-4 text-[15px] text-[#f0f0f0] placeholder:text-[#7c7e80] transition-colors duration-ag-hover hover:bg-white/[0.08] focus:border-white/30 focus:bg-white/[0.08] focus:outline-none");
+const label = "mb-2 block text-[14px] font-medium text-[#e4e4e7]";
 
 /** Email/password (login, sign-up, reset) and Google (Supabase OAuth, server-side PKCE). */
 export function SignInForm({ next, initialMode = "login", initialError }: { next: string; initialMode?: AuthMode; initialError?: string }) {
@@ -70,15 +70,15 @@ export function SignInForm({ next, initialMode = "login", initialError }: { next
 
   return (
     <div className="w-full max-w-[400px]">
-      <h1 className="text-center text-[28px] font-semibold tracking-[-0.02em] text-ag-text">{heading}</h1>
-      <p className="mt-2 text-center text-[15px] text-ag-text-muted">{sub}</p>
+      <h1 className="text-center text-[28px] font-semibold tracking-[-0.02em] text-[#f0f0f0]">{heading}</h1>
+      <p className="mt-2 text-center text-[15px] text-[#a1a4a5]">{sub}</p>
 
       {mode !== "reset" && (
         <>
           <button type="button" onClick={google} disabled={busy !== null} className={cn("mt-9 inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-white/15 bg-transparent text-[15px] font-semibold text-white transition-colors duration-ag-hover hover:border-white/30 hover:bg-white/[0.04] disabled:opacity-60", focusRing)}>
             <GoogleMark /> Continue with Google
           </button>
-          <div className="my-7 flex items-center gap-3 text-[13px] text-ag-text-faint" role="separator">
+          <div className="my-7 flex items-center gap-3 text-[13px] text-[#86888a]" role="separator">
             <span className="h-px flex-1 bg-white/10" /> Or <span className="h-px flex-1 bg-white/10" />
           </div>
         </>
@@ -105,15 +105,15 @@ export function SignInForm({ next, initialMode = "login", initialError }: { next
           <div>
             <div className="flex items-center justify-between">
               <label htmlFor="password" className={label}>Password</label>
-              {mode === "login" && <button type="button" onClick={() => switchMode("reset")} className={cn("mb-2 rounded-sm text-[13px] text-ag-text-muted hover:text-white", focusRing)}>Forgot password?</button>}
+              {mode === "login" && <button type="button" onClick={() => switchMode("reset")} className={cn("mb-2 rounded-sm text-[13px] text-[#a1a4a5] hover:text-white", focusRing)}>Forgot password?</button>}
             </div>
             <div className="relative">
               <input id="password" name="password" type={showPassword ? "text" : "password"} required minLength={mode === "signup" ? 8 : 1} maxLength={128} autoComplete={mode === "signup" ? "new-password" : "current-password"} placeholder="Enter your password" className={cn(field, "pr-12")} aria-describedby={mode === "signup" ? "password-hint" : undefined} />
-              <button type="button" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className={cn("absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-ag-text-muted hover:text-white", focusRing)}>
+              <button type="button" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className={cn("absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-[#a1a4a5] hover:text-white", focusRing)}>
                 {showPassword ? <EyeOff className="size-[18px]" aria-hidden /> : <Eye className="size-[18px]" aria-hidden />}
               </button>
             </div>
-            {mode === "signup" && <p id="password-hint" className="mt-2 text-[13px] text-ag-text-muted">Must be at least 8 characters.</p>}
+            {mode === "signup" && <p id="password-hint" className="mt-2 text-[13px] text-[#a1a4a5]">Must be at least 8 characters.</p>}
           </div>
         )}
 
@@ -127,14 +127,14 @@ export function SignInForm({ next, initialMode = "login", initialError }: { next
         </button>
       </form>
 
-      <p className="mt-7 text-center text-[14px] text-ag-text-muted">
+      <p className="mt-7 text-center text-[14px] text-[#a1a4a5]">
         {mode === "login" ? "Don't have an account? " : "Already have an account? "}
         <button type="button" onClick={() => switchMode(mode === "login" ? "signup" : "login")} className={cn("rounded-sm font-semibold text-white underline-offset-4 hover:underline", focusRing)}>
           {mode === "login" ? "Sign up" : "Log in"}
         </button>
       </p>
-      <p className="mt-6 text-center text-[12px] leading-relaxed text-ag-text-faint">
-        By continuing you agree to our <Link href="/privacy" className="underline underline-offset-2 hover:text-ag-text-muted">Privacy Policy</Link>.
+      <p className="mt-6 text-center text-[12px] leading-relaxed text-[#86888a]">
+        By continuing you agree to our <Link href="/privacy" className="underline underline-offset-2 hover:text-[#a1a4a5]">Privacy Policy</Link>.
       </p>
     </div>
   );

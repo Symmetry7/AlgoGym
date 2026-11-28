@@ -20,25 +20,6 @@
   --ag-medium: #f59e0b;
   --ag-hard: #ef4444;
   --ag-pro: #eab308;
-  /* White light at fixed strengths, for spotlights and hairline glows. */
-  --ag-light-1: rgba(255, 255, 255, 0.03);
-  --ag-light-2: rgba(255, 255, 255, 0.06);
-  --ag-light-3: rgba(255, 255, 255, 0.08);
-  --ag-light-4: rgba(255, 255, 255, 0.13);
-  --ag-light-5: rgba(255, 255, 255, 0.35);
-  --ag-accent-glow: rgba(34, 197, 94, 0.08);
-  /* Sign-in brand panel: emerald falling to black, and its solid step chips. */
-  --ag-auth-1: #a7f3d0;
-  --ag-auth-2: #22c55e;
-  --ag-auth-3: #0f6b3f;
-  --ag-auth-4: #06281a;
-  --ag-auth-5: #050806;
-  --ag-auth-step: #0f2a1d;
-  /* Glass button. */
-  --ag-glass-top: rgba(255, 255, 255, 0.1);
-  --ag-glass-bottom: rgba(255, 255, 255, 0.04);
-  --ag-glass-edge: rgba(255, 255, 255, 0.14);
-  --ag-glass-highlight: rgba(255, 255, 255, 0.12);
 
   --ag-radius-control: 10px;
   --ag-radius-card: 16px;
@@ -67,13 +48,10 @@
 
 /* Dark glass button (marketing hero). */
 .ag-glass-button {
-  background: linear-gradient(180deg, var(--ag-glass-top), var(--ag-glass-bottom));
-  border: 1px solid var(--ag-glass-edge);
-  box-shadow: inset 0 1px 0 var(--ag-glass-highlight); /* one edge, no soft drop shadow (Hallmark F24) */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.4);
 }
-.ag-glass-button:active { transform: translateY(1px); }
-/* Hallmark Floor 4: no sideways page scroll, without clipping sticky children. */
-html, body { overflow-x: clip; }
 
 /* Endless horizontal scroll (logo marquee, testimonials). The track holds the list twice. */
 @keyframes ag-marquee { to { transform: translateX(-50%); } }

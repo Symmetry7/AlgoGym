@@ -78,7 +78,7 @@ export function Pill({ children, className }: { children: ReactNode; className?:
 
 export function SoonBadge() {
   return (
-    <span className="rounded-full bg-ag-accent-soft px-2 py-0.5 font-ui text-[12px] font-medium text-ag-accent">Soon</span>
+    <span className="rounded-full bg-ag-accent-soft px-2 py-0.5 font-ui text-[11px] font-medium uppercase tracking-wide text-ag-accent">Soon</span>
   );
 }
 

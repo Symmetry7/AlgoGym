@@ -1,4 +1,4 @@
-// Interview Prep items (HR and SQL, migrated in M6) and the filters on /interview.
+// Interview Prep: HR and SQL items with Algogym answers (M6), the question sheets, and the filters on /interview.
 
 export type InterviewKind = "hr" | "sql";
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -83,4 +83,79 @@ export function answerParts(md: string): { type: "text" | "code"; value: string 
   }
   if (last < md.length) parts.push({ type: "text", value: md.slice(last).trim() });
   return parts.filter((p) => p.value);
+}
+
+// ── Question sheets (interview_sheets / interview_catalog, metadata only; DECISIONS.md 2026-11-28) ──────────
+
+export const SHEET_SECTIONS = ["company", "role", "topic", "dsa-sheet", "pattern", "system-design", "sql", "hr"] as const;
+export type SheetSection = (typeof SHEET_SECTIONS)[number];
+export const SECTION_LABEL: Record<SheetSection, string> = {
+  company: "Company DSA sheets",
+  role: "By role",
+  topic: "By topic",
+  "dsa-sheet": "DSA sheets",
+  pattern: "DSA patterns",
+  "system-design": "System design",
+  sql: "SQL",
+  hr: "HR and behavioural",
+};
+export const isSheetSection = (s: string): s is SheetSection => (SHEET_SECTIONS as readonly string[]).includes(s);
+
+export interface InterviewSheet {
+  section: SheetSection;
+  slug: string;
+  title: string;
+  group_name: string | null;
+  item_count: number;
+  position: number;
+}
+
+export interface SheetQuestion {
+  id: string;
+  position: number;
+  title: string;
+  difficulty: Difficulty | null;
+  category: string | null;
+  subcategory: string | null;
+  level: "HLD" | "LLD" | null;
+  /** The Algogym original to practise this question with. */
+  practice: { slug: string; title: string } | null;
+  /** The Algogym-written HR or SQL answer, when this question is one of them. */
+  answer: { kind: InterviewKind; question: string } | null;
+}
+
+/** Sheets grouped by section in display order; each section's sheets in source order. Empty sections are dropped. */
+export function groupSheets(sheets: InterviewSheet[]) {
+  return SHEET_SECTIONS.map((section) => ({
+    section,
+    label: SECTION_LABEL[section],
+    sheets: sheets.filter((s) => s.section === section).sort((a, b) => a.position - b.position),
+  })).filter((g) => g.sheets.length);
+}
+
+/** Where a sheet question opens inside Algogym, or null when it's a question to prepare on your own. Never an external URL. */
+export function sheetQuestionHref(q: SheetQuestion): string | null {
+  if (q.practice) return `/problems/${q.practice.slug}`;
+  if (q.answer) return `/interview?${new URLSearchParams({ kind: q.answer.kind, q: q.answer.question })}#answers`;
+  return null;
+}
+
+export function filterSheetQuestions(qs: SheetQuestion[], f: { q?: string; difficulty?: Difficulty }) {
+  const q = f.q?.trim().toLowerCase();
+  return qs.filter(
+    (x) =>
+      (!f.difficulty || x.difficulty === f.difficulty) &&
+      (!q || x.title.toLowerCase().includes(q) || (x.category ?? "").toLowerCase().includes(q) || (x.subcategory ?? "").toLowerCase().includes(q)),
+  );
+}
+
+/** Consecutive questions with the same category, in order (sheets list their questions block by block). */
+export function groupByCategory(qs: SheetQuestion[]) {
+  const groups: { category: string | null; questions: SheetQuestion[] }[] = [];
+  for (const q of qs) {
+    const last = groups[groups.length - 1];
+    if (last && last.category === q.category) last.questions.push(q);
+    else groups.push({ category: q.category, questions: [q] });
+  }
+  return groups;
 }
