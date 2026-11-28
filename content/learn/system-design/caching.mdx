@@ -1,0 +1,103 @@
+---
+track: system-design
+order: 4
+topic: caching
+title: Caching
+summary: 'Keep hot data close and in memory. Where caches sit, cache-aside versus write-through, how entries expire, and the bugs caches cause when you are careless.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'In cache-aside, what happens on a cache miss?'
+    options: ["The request fails", "The app reads from the database, returns the result and stores it in the cache", "The cache reads from the database by itself", "The app waits for the next write"]
+    answer: 1
+    why: 'In cache-aside the application owns the logic: check the cache, fall back to the database on a miss, then fill the cache so the next read is a hit.'
+  - question: 'A user updates their profile name but keeps seeing the old one for 10 minutes. What is the most likely cause?'
+    options: ["The database lost the write", "The cached copy wasn''t deleted on update, and its TTL is 10 minutes", "The CDN is down", "The load balancer is caching"]
+    answer: 1
+    why: 'The write went to the database, but the stale entry stayed in the cache until it expired. Delete (or update) the cache key when the data changes.'
+  - question: 'A very popular key expires and 5,000 requests miss at the same moment, all hitting the database. What is this called, and one fix?'
+    options: ["Cache stampede; let one request rebuild the value while the others wait or get the old value", "Cache warming; add more RAM", "Write-back; switch to write-through", "Eviction; use LFU"]
+    answer: 0
+    why: 'This is a stampede (or thundering herd). A lock so only one request recomputes, serving slightly stale data meanwhile, or random jitter on TTLs all stop the pile-up.'
+  - question: 'Your cache holds 1 GB and is full. Which policy evicts the entry nobody has asked for in the longest time?'
+    options: ["FIFO", "LRU", "Random", "TTL"]
+    answer: 1
+    why: 'Least recently used removes the entry whose last access is oldest. It suits most workloads, where recently read data is likely to be read again.'
+diagrams:
+  cache-aside:
+    title: 'Cache-aside in front of a database'
+    description: 'Static files are served by a CDN close to the user. API requests reach an app server, which checks a Redis cache first. On a hit it answers from memory; on a miss it reads the database and writes the result into Redis with an expiry time.'
+    nodes:
+      - { id: user, label: Browser, x: 0, y: 1, kind: client }
+      - { id: cdn, label: CDN edge, sub: 'images, JS, CSS', x: 1, y: 0, kind: edge }
+      - { id: app, label: App server, x: 1, y: 1, kind: service }
+      - { id: redis, label: Redis, sub: 'TTL 5 min', x: 2, y: 0, kind: cache, accent: true }
+      - { id: db, label: Database, x: 2, y: 2, kind: store }
+    edges:
+      - { from: user, to: cdn, label: static }
+      - { from: user, to: app, label: API }
+      - { from: app, to: redis, label: 'get, set' }
+      - { from: app, to: db, label: query }
+    steps:
+      - { label: Hit, text: 'The app asks Redis for the key and finds it. The answer comes back in under a millisecond and the database never sees the request.', edges: [1, 2] }
+      - { label: Miss, text: 'Redis doesn''t have the key. The app queries the database (several milliseconds), returns the result and stores it in Redis with a 5-minute expiry, so the next read is a hit.', edges: [1, 2, 3] }
+      - { label: Static, text: 'Images and scripts never reach the app at all: the CDN serves them from a server near the user.', edges: [0] }
+---
+
+## The idea
+
+A cache keeps a copy of data somewhere faster than where it really lives, usually in memory and usually closer to the user. A Redis lookup takes well under a millisecond; the database query it replaces might take 5 to 50 ms and use up a connection the database can't spare. Most products read the same small slice of data over and over, so a modest cache absorbs most of the read traffic.
+
+Caching works when data is **read much more than it is written** and **a little staleness is acceptable**. Say both conditions out loud when you add one.
+
+## Where caches sit
+
+From the user inwards:
+
+1. **Browser cache**, controlled by `Cache-Control` headers.
+2. **CDN**: servers in many cities that keep copies of images, scripts and even whole pages near users. A user in Chennai gets the file from a Chennai or Bengaluru edge instead of from your origin in Mumbai or abroad.
+3. **Application cache**: Redis or Memcached shared by all app servers, holding query results, sessions and computed values.
+4. **Database cache**: the database's own memory buffer for hot pages and indexes.
+
+<ArchDiagram id="cache-aside" />
+
+## Reading and writing
+
+**Cache-aside (lazy loading)** is the default. The app checks the cache; on a miss it reads the database and fills the cache. Only data that is actually requested gets cached, and if the cache dies the app still works, just slower.
+
+When data changes, you have choices:
+
+| Strategy | On a write | Trade-off |
+| --- | --- | --- |
+| Invalidate (delete the key) | Write the database, then delete the cache key | Simple and safe; the next read pays for a miss |
+| Write-through | Write the cache and the database together | Reads are always warm; every write is slower |
+| Write-back (write-behind) | Write the cache now, the database later | Fast writes; data is lost if the cache dies first |
+
+With cache-aside, deleting the key after writing the database is usually better than updating it, because two concurrent updates can otherwise leave the older value in the cache.
+
+## Expiry and eviction
+
+- **TTL (time to live)**: every entry expires after a set time, say 5 minutes. It caps how stale data can get, even if an invalidation is missed. Pick it per data type: seconds for stock levels, hours for a user's profile picture.
+- **Eviction**: when memory is full, something has to go. **LRU** (least recently used) is the usual choice; **LFU** (least frequently used) suits workloads with a stable set of very hot keys.
+
+## Problems caches cause
+
+- **Stale data.** A missed invalidation shows old data until the TTL runs out. Keep TTLs as a safety net.
+- **Stampede.** A hot key expires and thousands of requests miss together and flood the database. Fixes: let one request rebuild the value (a short lock), serve the old value while it rebuilds, or add random jitter to TTLs so keys don't expire together.
+- **Hot keys.** One key, such as the live score of a cricket final, gets more traffic than one cache node can serve. Copy it to several nodes or keep a tiny in-process cache on each app server for a second or two.
+- **Cold start.** An empty cache after a restart sends all traffic to the database. Warm the most important keys first.
+
+## What interviewers look for
+
+- **A reason to cache.** The read-to-write ratio and the latency you are saving, from your estimates.
+- **Placement.** CDN for static files and the app cache for queries, with the CDN mentioned early for anything media-heavy.
+- **A clear write path.** What happens to the cache when data changes, and why that choice.
+- **Failure thinking.** Stampedes, hot keys and what happens if the cache cluster goes down.
+
+## Common mistakes
+
+- **Caching everything** without a hit-rate goal. A cache with a 20% hit rate adds a network hop for little gain.
+- **Treating the cache as the source of truth.** It can be emptied at any time; the database must still hold the data.
+- **No TTLs**, so one missed invalidation means stale data forever.
+- **Caching per-user data with a shared key**, so one user sees another's data. Include the user ID in the key.

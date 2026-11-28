@@ -1,0 +1,137 @@
+---
+track: system-design
+order: 10
+topic: url-shortener
+title: 'Worked design: a URL shortener'
+summary: 'Every earlier lesson applied to one classic question, end to end: requirements, estimates, the API, generating short codes, storage, caching redirects and counting clicks.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'How many distinct 7-character codes can you make from a–z, A–Z and 0–9?'
+    options: ["About 78,000", "About 8 crore", "About 3.5 lakh crore (62⁷ ≈ 3.5 × 10¹²)", "Exactly 10 lakh"]
+    answer: 2
+    why: '62 characters in each of 7 positions gives 62⁷ ≈ 3.5 trillion codes, enough for decades at crores of new links a day.'
+  - question: 'Why hand each app server a block of IDs (say 1,000 at a time) from a central counter instead of asking for one ID per request?'
+    options: ["Blocks are more secure", "It turns one network call per link into one per thousand links, and servers never hand out the same ID", "It makes codes shorter", "Counters can only count in thousands"]
+    answer: 1
+    why: 'Each server owns a disjoint range, so there are no collisions and no coordination on the hot path. A crashed server only wastes the unused part of its block.'
+  - question: 'The product team wants accurate click analytics. Which redirect status should you return?'
+    options: ["301 Moved Permanently", "302 Found (temporary)", "404 Not Found", "200 with the page content"]
+    answer: 1
+    why: 'Browsers cache a 301 and skip your server on later clicks, so you never see them. A 302 sends every click through you, at the cost of more traffic.'
+  - question: 'Redirects outnumber new links about 100 to 1. Where should most redirects be answered?'
+    options: ["The primary database", "A cache such as Redis, in front of the database", "The analytics pipeline", "A message queue"]
+    answer: 1
+    why: 'A code''s target never changes, so it caches perfectly. Hot codes are served from memory in under a millisecond and the database sees only misses.'
+diagrams:
+  shortener:
+    title: 'A URL shortener: create and redirect'
+    description: 'Clients reach the service through a load balancer. To create a link, the app takes the next ID from its pre-allocated block, encodes it in base 62 and stores the code and long URL in the database. To redirect, the app looks the code up in Redis, falling back to the database, returns a 302, and publishes a click event to a queue that an analytics worker consumes.'
+    nodes:
+      - { id: client, label: Browser, x: 0, y: 1, kind: client }
+      - { id: lb, label: Load balancer, x: 1, y: 1, kind: edge }
+      - { id: app, label: Link service, sub: 'stateless, x4', x: 2, y: 1, kind: service, accent: true }
+      - { id: ids, label: ID allocator, sub: 'blocks of 1,000', x: 2, y: 0, kind: service }
+      - { id: cache, label: Redis, sub: 'code -> URL', x: 3, y: 0, kind: cache }
+      - { id: db, label: Links DB, sub: 'sharded by code', x: 3, y: 1, kind: store }
+      - { id: q, label: Click events, x: 3, y: 2, kind: queue }
+      - { id: worker, label: Analytics, sub: 'counts per day', x: 4, y: 2, kind: worker }
+    edges:
+      - { from: client, to: lb, label: HTTPS }
+      - { from: lb, to: app }
+      - { from: app, to: ids, label: new block }
+      - { from: app, to: db, label: INSERT }
+      - { from: app, to: cache, label: GET code }
+      - { from: app, to: q, label: click, async: true }
+      - { from: q, to: worker, async: true }
+    steps:
+      - { label: Create, text: 'POST /links reaches a link server. It takes the next ID from the block it already holds (asking the allocator only when the block runs out), encodes it in base 62 and inserts the code and URL.', edges: [0, 1, 2, 3] }
+      - { label: Redirect, text: 'GET /aZ3kQ9x looks the code up in Redis. A hit returns a 302 to the long URL in a few milliseconds; a miss reads the database and fills the cache.', edges: [0, 1, 4] }
+      - { label: Count, text: 'Each redirect publishes a small click event. The worker aggregates them into daily counts, so the redirect never waits for analytics.', edges: [5, 6] }
+---
+
+## The question
+
+"Design a service like a link shortener: give it a long URL, get back a short one that redirects." It is a favourite opening question because it is small enough to finish and touches IDs, storage, caching and analytics. This lesson walks through it the way the first lesson recommended.
+
+## 1. Requirements
+
+**Functional**
+
+- Create a short link for a long URL, optionally with a custom alias.
+- Redirect a short link to its long URL.
+- Show the creator a click count per day.
+- Links can expire. (Editing a link's target is out of scope.)
+
+**Non-functional**
+
+- Redirects must be fast (a few milliseconds of our time) and highly available: a broken short link in a printed poster can't be fixed.
+- Codes should be short and not guessable in sequence, so people can't walk through everyone's links.
+- Read-heavy: links are created once and clicked many times.
+
+## 2. Estimates
+
+Assume 1 crore (10⁷) new links a day and 100 redirects per link over its life.
+
+| What | Rough number |
+| --- | --- |
+| Creates per second | 10⁷ / 10⁵ s = 100, so about 300 at peak |
+| Redirects per second | 100 × 100 = 10,000, so about 30,000 at peak |
+| Storage per link | about 500 bytes (code, URL, owner, timestamps) |
+| Storage per year | 10⁷ × 365 × 500 B ≈ 1.8 TB |
+| Codes needed in 10 years | about 3.7 × 10¹⁰ |
+
+Read to write is about 100 to 1, so caching redirects is the centre of the design. Storage of a few terabytes a year fits one large database for a while, but planning to shard by code is sensible.
+
+## 3. API
+
+```
+POST /links        { "url": "https://...", "alias": "optional", "expiresAt": "optional" }
+                   → 201 { "code": "aZ3kQ9x", "shortUrl": "https://sho.rt/aZ3kQ9x" }
+GET  /{code}       → 302 Location: https://...   (404 if unknown, 410 if expired)
+GET  /links/{code}/stats?from=...&to=...   → daily click counts
+```
+
+## 4. Generating codes
+
+Base 62 (`a–z`, `A–Z`, `0–9`) with 7 characters gives 62⁷ ≈ 3.5 × 10¹², about a hundred times the codes we need in ten years. Three ways to produce them:
+
+| Approach | How | Trade-off |
+| --- | --- | --- |
+| Hash the URL | First 7 characters of a hash of the long URL | Collisions must be detected and retried; the same URL always maps to one code |
+| Random code | 7 random base-62 characters, retry on a clash | Simple and unguessable; needs a uniqueness check on insert |
+| Counter + base 62 | A unique number encoded in base 62 | No collisions; needs a distributed counter, and plain counters are guessable |
+
+A strong answer: a **counter with block allocation**. An allocator service (backed by the database) hands each link server a block of 1,000 IDs; the server assigns IDs from its block locally and asks for a new block when it runs out. To stop codes from looking sequential, pass the number through a reversible scramble (a fixed bit permutation) before base-62 encoding. Custom aliases go through a uniqueness check on insert.
+
+## 5. The design
+
+<ArchDiagram id="shortener" />
+
+- **Storage.** One table: `code` (primary key), `long_url`, `owner_id`, `created_at`, `expires_at`. Every redirect is a lookup by primary key, so a key-value store fits as well as SQL does. Shard by `code` when one machine fills; codes are uniformly spread, so hash sharding balances well.
+- **Cache.** A code's target never changes, so Redis can cache it with a long TTL. With 30,000 redirects a second at peak and most clicks on recent links, a cache of a few GB serves the large majority from memory.
+- **Redirect status.** **302** (temporary) sends every click through us, so we can count it and expire links. A **301** is cached by browsers and would hide later clicks.
+- **Analytics.** The redirect publishes a click event and returns at once. Workers aggregate events into per-day counts per code. Counting is eventually consistent, which is fine for a dashboard.
+- **Expiry.** Check `expires_at` on redirect (return 410), and delete old rows in a nightly batch.
+
+## 6. Deep dives to offer
+
+- **Abuse**: rate-limit link creation per user and IP, and check new URLs against a malware or phishing list before accepting them.
+- **Hot links**: a code shared by a celebrity can get a burst of traffic; it is one cache key, so replicate it or serve it from a CDN edge.
+- **Availability**: replicate the database and run the link service in two zones; redirects keep working from cache and replicas if the primary is briefly down.
+
+## What interviewers look for
+
+- **Estimates that drive design**: the 100:1 read ratio leads to the cache, and the code count leads to 7 base-62 characters.
+- **A collision-free ID scheme** with its trade-offs, not just "hash the URL".
+- **301 versus 302** with the analytics consequence.
+- **Analytics off the hot path**, through a queue.
+- **Abuse and expiry** handled, not forgotten.
+
+## Common mistakes
+
+- **Hashing the URL and ignoring collisions.**
+- **Writing click counts to the database inside the redirect**, turning every read into a write.
+- **Using 301 and then promising click analytics.**
+- **Sequential codes** that let anyone enumerate every link.

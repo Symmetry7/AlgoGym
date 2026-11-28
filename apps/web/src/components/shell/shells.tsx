@@ -10,6 +10,7 @@ import { focusRing, Logo } from "./ui";
 export const APP_NAV: NavItem[] = [
   { href: "/my-prep", label: "My Prep" },
   { href: "/problems", label: "Problems" },
+  { href: "/system-design", label: "System Design" },
   { href: "/interview", label: "Interview" },
   { href: "/pricing", label: "Pricing" },
 ];

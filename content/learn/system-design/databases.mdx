@@ -1,0 +1,100 @@
+---
+track: system-design
+order: 5
+topic: databases
+title: 'Databases: SQL, NoSQL, indexes and replicas'
+summary: 'How to pick a database for a design, why an index turns a full scan into a few page reads, and how replicas spread reads while one primary takes the writes.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'An orders table has 5 crore rows. Queries filter by user_id and are slow. What is the first fix?'
+    options: ["Move to NoSQL", "Add an index on user_id", "Add more app servers", "Cache the whole table"]
+    answer: 1
+    why: 'Without an index the database scans every row. A B-tree index on user_id finds a user''s rows in a handful of page reads, even with crores of rows.'
+  - question: 'A payment system moves money between two accounts. Which property matters most?'
+    options: ["Flexible schema", "ACID transactions, so both updates happen or neither does", "Very fast writes at any cost", "Storing JSON documents"]
+    answer: 1
+    why: 'Debiting one account without crediting the other is unacceptable. A relational database''s transactions guarantee all-or-nothing updates.'
+  - question: 'A user posts a comment, refreshes, and the comment is missing for a second. Reads go to an async replica. What is happening?'
+    options: ["The write failed", "Replication lag: the replica hasn''t received the write yet", "The index is corrupt", "The cache is too big"]
+    answer: 1
+    why: 'Asynchronous replicas trail the primary by milliseconds to seconds. Read the user''s own recent writes from the primary (read-your-writes) to hide it.'
+  - question: 'What does an index cost you?'
+    options: ["Nothing", "Extra storage and slower writes, since every insert or update must also update the index", "Slower reads", "It stops transactions working"]
+    answer: 1
+    why: 'Each index is another structure to keep in step on every write. Add indexes for the queries you actually run, not for every column.'
+diagrams:
+  replicas:
+    title: 'One primary for writes, replicas for reads'
+    description: 'The app sends every write to the primary database. The primary streams its change log to two read replicas. Most reads go to the replicas; reads that must see the user''s latest write go to the primary.'
+    nodes:
+      - { id: app, label: App servers, x: 0, y: 1, kind: service }
+      - { id: primary, label: Primary, sub: 'all writes', x: 1, y: 1, kind: store, accent: true }
+      - { id: r1, label: Replica 1, sub: reads, x: 2, y: 0, kind: store }
+      - { id: r2, label: Replica 2, sub: reads, x: 2, y: 2, kind: store }
+    edges:
+      - { from: app, to: primary, label: write }
+      - { from: primary, to: r1, label: 'WAL', async: true }
+      - { from: primary, to: r2, label: 'WAL', async: true }
+      - { from: app, to: r1, label: read }
+      - { from: app, to: r2, label: read }
+    steps:
+      - { label: Write, text: 'An INSERT goes to the primary, the only node that accepts writes. It commits and replies to the app.', edges: [0] }
+      - { label: Replicate, text: 'The primary ships its write-ahead log to each replica, which replays the change a few milliseconds later. Until then, the replicas are slightly behind.', edges: [1, 2] }
+      - { label: Read, text: 'Reads are spread over the replicas, so adding a replica adds read capacity. Writes still all go through the one primary.', edges: [3, 4] }
+---
+
+## The idea
+
+Nearly every design has a database box, and the interviewer will ask what goes in it. You need three things: a reason for the kind of database you pick, indexes for the queries you run, and a plan for when one machine can't keep up with reads.
+
+## SQL or NoSQL
+
+**Relational databases** (PostgreSQL, MySQL) store rows in tables with a fixed schema, join tables in queries and offer **ACID transactions**: a group of changes either all happens or none does. They are the right default for most products, especially anything with money, inventory or relationships between entities.
+
+**NoSQL** is a family, not one thing:
+
+| Kind | Examples | Good at |
+| --- | --- | --- |
+| Key-value | Redis, DynamoDB | Lookups by one key at very high rates |
+| Document | MongoDB | Records with a flexible or nested shape |
+| Wide-column | Cassandra, ScyllaDB | Huge write volumes spread over many machines, such as event logs |
+| Graph | Neo4j | Many-hop relationships, such as "friends of friends" |
+
+Choose NoSQL for a specific reason you can name: write volume beyond one machine, a key-only access pattern, or data with no stable shape. "It scales better" is not a reason on its own; a well-indexed Postgres on one strong machine handles thousands of transactions a second, which is more than most products ever need.
+
+## Indexes
+
+Without an index, `SELECT * FROM orders WHERE user_id = 42` reads every row. With a **B-tree index** on `user_id`, the database walks a shallow tree (three or four levels even for crores of rows) and reads only the matching rows.
+
+- A **composite index** on `(user_id, created_at)` serves "this user's orders, newest first" in one pass. Column order matters: it also helps queries on `user_id` alone, but not on `created_at` alone.
+- Every index costs disk space and slows every write that touches its columns. Index the queries you run.
+- Check with `EXPLAIN`: a "sequential scan" on a big table is the smell.
+
+## Replication
+
+One primary accepts all writes and streams its change log to one or more **replicas**. Replicas serve reads and stand by to take over if the primary fails.
+
+<ArchDiagram id="replicas" />
+
+- **Asynchronous replication** (the common default) doesn't wait for replicas, so writes stay fast, but replicas lag behind by milliseconds or, under load, seconds. If the primary dies, the last few writes may be lost.
+- **Synchronous replication** waits for at least one replica to confirm each write. Nothing confirmed is lost, but every write pays an extra round trip.
+
+**Replication lag** causes the classic bug: a user saves something, the next read goes to a replica that hasn't caught up, and their change seems to vanish. The fix is **read-your-writes**: send a user's reads to the primary for a short time after they write, or route by a version number.
+
+Replicas multiply **read** capacity only. All writes still go through one primary, so a write-heavy system eventually needs sharding, the next lesson.
+
+## What interviewers look for
+
+- **A justified choice.** SQL by default; a named access pattern or scale need for anything else.
+- **A schema sketch.** The main tables, their keys and the indexes your key queries need.
+- **Read scaling.** Caches and replicas, with replication lag acknowledged.
+- **Durability.** What a confirmed write means, and what is lost if the primary dies.
+
+## Common mistakes
+
+- **Choosing MongoDB or Cassandra "for scale"** for a product doing 50 writes a second.
+- **No indexes in the design**, or an index on every column.
+- **Forgetting replication lag**, and promising that every read sees the latest write.
+- **Joins across services.** Once data lives in separate databases, you can't join it in SQL; plan the read path instead.

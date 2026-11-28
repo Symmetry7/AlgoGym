@@ -1,0 +1,98 @@
+---
+track: system-design
+order: 6
+topic: sharding
+title: Sharding and partitioning
+summary: 'When writes or data outgrow one database, split the rows across machines. How to choose a shard key, hash versus range splits, hot shards, and what you give up.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'A chat app shards messages. Most queries are "messages in conversation X, newest first". Which shard key fits best?'
+    options: ["message_id", "conversation_id", "created_at", "sender''s country"]
+    answer: 1
+    why: 'Sharding by conversation_id keeps each conversation on one shard, so the common query touches one machine. message_id would scatter a conversation across every shard.'
+  - question: 'You shard by created_at month. What goes wrong?'
+    options: ["Nothing", "All new writes land on the current month''s shard, so one shard is hot while the rest sit idle", "Old data is deleted", "Queries become impossible"]
+    answer: 1
+    why: 'Range sharding on a time key sends every write to the newest range. It is fine for archiving, bad for spreading write load.'
+  - question: 'With 4 shards chosen by hash(key) mod 4, you add a fifth. Roughly how much data has to move?'
+    options: ["None", "About 20%", "About 80%", "All of it"]
+    answer: 2
+    why: 'Changing the modulus from 4 to 5 changes the shard for about 4 in 5 keys. Consistent hashing, or many small fixed partitions mapped onto machines, cuts that to roughly the share the new shard should own.'
+  - question: 'What becomes harder after sharding?'
+    options: ["Single-row lookups by the shard key", "Joins and transactions that span shards", "Adding indexes", "Reading from replicas"]
+    answer: 1
+    why: 'A query or transaction that needs rows from several shards has to talk to several machines and stitch results together, so design the key so common operations stay on one shard.'
+diagrams:
+  shards:
+    title: 'Routing by a hash of the shard key'
+    description: 'App servers send each query to a routing layer. The router hashes the shard key, here the user ID, and looks up which of three shards owns that hash range. Each shard is a separate database holding a third of the users, with its own replica.'
+    nodes:
+      - { id: app, label: App servers, x: 0, y: 1, kind: service }
+      - { id: router, label: Shard router, sub: 'hash(user_id)', x: 1, y: 1, kind: edge, accent: true }
+      - { id: s1, label: Shard A, sub: 'hash 0-33%', x: 2, y: 0, kind: store }
+      - { id: s2, label: Shard B, sub: 'hash 33-66%', x: 2, y: 1, kind: store }
+      - { id: s3, label: Shard C, sub: 'hash 66-100%', x: 2, y: 2, kind: store }
+      - { id: map, label: Shard map, sub: 'range -> shard', x: 1, y: 0, kind: cache }
+    edges:
+      - { from: app, to: router, label: user 42 }
+      - { from: router, to: map, label: lookup }
+      - { from: router, to: s1 }
+      - { from: router, to: s2, label: 'B owns it' }
+      - { from: router, to: s3 }
+    steps:
+      - { label: Route, text: 'A request for user 42 reaches the router. It hashes the user ID and checks the shard map: that hash falls in shard B''s range.', edges: [0, 1] }
+      - { label: Query, text: 'The query runs on shard B alone. Shards A and C never see it, which is why a good shard key keeps common queries on one machine.', edges: [0, 3] }
+---
+
+## The idea
+
+Replicas spread reads, but every write still lands on one primary, and one machine has a limit on disk, memory and write throughput. **Sharding** (horizontal partitioning) splits the rows of a table across several databases. Each shard holds part of the data and takes part of the writes.
+
+It is powerful and expensive: cross-shard queries, rebalancing and operations all get harder. In an interview, reach for it when your estimates say one primary can't keep up, and say why.
+
+## Choosing the shard key
+
+The shard key decides which shard owns a row. A good key:
+
+- **Matches the main access pattern**, so common queries hit one shard. For a chat app, `conversation_id`; for a store's orders, often `user_id`.
+- **Spreads load evenly.** Many distinct values, none dominating.
+- **Doesn't change.** Moving a row between shards because its key changed is painful.
+
+<ArchDiagram id="shards" />
+
+## Hash or range
+
+| Split | How | Strength | Weakness |
+| --- | --- | --- | --- |
+| Hash | hash(key) picks the shard | Even spread of data and writes | Range queries ("orders from last week") hit every shard |
+| Range | Key ranges, such as A to F | Range scans stay on one shard | Hot spots when new keys cluster (time, sequential IDs) |
+| Directory | A lookup table maps each key or tenant to a shard | Full control, easy to move one big customer | The lookup service must be fast and highly available |
+
+**Rebalancing.** With `hash(key) mod N`, adding a shard changes N and remaps most keys. Two standard fixes: **consistent hashing**, where a new shard takes over only its arc of the ring, and **many fixed partitions** (say 1,024) mapped onto a few machines, so growing means moving whole partitions, not rehashing rows.
+
+## Hot shards
+
+Even a good key can concentrate load. A celebrity's account, a viral post or one enterprise tenant can make one shard far busier than the rest. Options: split that key further (append a suffix and spread its rows over several shards, merging on read), give the tenant a dedicated shard, or cache its reads aggressively.
+
+## What you give up
+
+- **Cross-shard joins.** Join in the application, or denormalise: store the data you need together on the same shard.
+- **Cross-shard transactions.** Keep each transaction inside one shard by choosing the key well; otherwise you need patterns such as sagas, covered in the queues lesson.
+- **Global uniqueness and IDs.** Auto-increment per shard collides. Use IDs that are unique without coordination: UUIDs, or time-ordered IDs that combine a timestamp, a machine number and a counter.
+- **Operational simplicity.** Backups, schema changes and monitoring now happen N times.
+
+## What interviewers look for
+
+- **Sharding when the numbers demand it**, after indexes, caching and replicas.
+- **A shard key tied to the queries**, with the reason in one sentence.
+- **Awareness of hot keys** and how to rebalance without moving everything.
+- **Honest costs**: what happens to joins, transactions and IDs.
+
+## Common mistakes
+
+- **Sharding at the start** of the design, for a load one database handles easily.
+- **Sharding by a time or sequential key**, which sends every new write to one shard.
+- **Forgetting the read path**: a key that is perfect for writes but makes the main query scatter to every shard.
+- **`mod N` with no rebalancing plan.**

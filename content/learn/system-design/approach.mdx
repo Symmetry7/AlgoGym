@@ -1,0 +1,119 @@
+---
+track: system-design
+order: 1
+topic: approach
+title: How to approach a system-design interview
+summary: 'A repeatable plan for the 45 minutes: pin down requirements, size the problem, sketch the simplest design that works, then deepen the parts that will break first.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'The interviewer says "Design a photo-sharing app." What should you do first?'
+    options: ["Draw the database schema", "Ask which features and what scale matter for this round", "Pick between SQL and NoSQL", "Start with the load balancer"]
+    answer: 1
+    why: 'Every later choice depends on the requirements. Two minutes of questions decide whether you are designing for a college club or for crores of users.'
+  - question: 'A service gets 50 lakh (5 million) requests a day. Roughly how many per second is that on average?'
+    options: ["About 6", "About 60", "About 600", "About 6,000"]
+    answer: 1
+    why: 'A day has 86,400 seconds. 5,000,000 / 86,400 ≈ 58, so roughly 60 a second on average, with peaks two or three times higher.'
+  - question: 'Why sketch the simplest working design before adding caches and queues?'
+    options: ["Interviewers only want simple answers", "It proves the core flow works, and each later addition then has a stated reason", "Caches are never needed in interviews", "It saves you from estimating anything"]
+    answer: 1
+    why: 'A cache or queue should fix a problem you have named, such as read load or slow work. Starting simple gives you that problem to point at.'
+  - question: 'You are 35 minutes in and the interviewer asks about a part you skipped. What is the best response?'
+    options: ["Say it is out of scope", "Restart the design from scratch", "Go into that part, saying which trade-off you would make and why", "Talk about a different part you know better"]
+    answer: 2
+    why: 'Following their lead is the point of the round. A clear trade-off on the part they care about is worth more than polish on a part they don''t.'
+diagrams:
+  first-sketch:
+    title: 'A first sketch for a photo-sharing app'
+    description: 'The smallest design that serves the core flows. The mobile app talks to one API service. The API stores post details in a database and the image files in object storage, and the app downloads images straight from object storage through signed links.'
+    nodes:
+      - { id: app, label: Mobile app, sub: 'upload, feed', x: 0, y: 1, kind: client }
+      - { id: api, label: API service, x: 1, y: 1, kind: service, accent: true }
+      - { id: db, label: Posts DB, sub: 'users, posts', x: 2, y: 0, kind: store }
+      - { id: blob, label: Object store, sub: 'image files', x: 2, y: 2, kind: store }
+    edges:
+      - { from: app, to: api, label: 'REST' }
+      - { from: api, to: db, label: 'SQL' }
+      - { from: api, to: blob, label: 'put' }
+      - { from: app, to: blob, label: 'signed' }
+    steps:
+      - { label: Upload, text: 'The app sends the photo and caption to the API. The API writes the file to object storage and a row (who, when, where the file lives) to the posts table.', edges: [0, 1, 2] }
+      - { label: View, text: 'For the feed, the API returns post rows with signed image links. The app then fetches each image straight from object storage, so large files never pass through the API.', edges: [0, 1, 3] }
+---
+
+## The idea
+
+A system-design round is not a quiz with one right answer. The interviewer wants to watch you turn a vague product into a working design, make trade-offs out loud and change course when the requirements shift. A fixed plan keeps you from freezing or jumping straight into databases.
+
+Use the same five steps every time, and say each one aloud so the interviewer can follow:
+
+1. **Clarify requirements** (about 5 minutes)
+2. **Estimate the scale** (about 5 minutes)
+3. **Sketch the simplest design that works** (about 10 minutes)
+4. **Go deep on two or three parts** (about 20 minutes)
+5. **Wrap up** with bottlenecks and what you'd do next (about 5 minutes)
+
+## Step 1: clarify requirements
+
+Split them into two lists and write both on the board.
+
+- **Functional**: what the system does. For a photo-sharing app: upload a photo with a caption, follow people, see a feed of people you follow. Pick the three or four that matter and say which you are leaving out ("I'll skip comments and stories unless you want them").
+- **Non-functional**: how well it must do it. Who uses it, how many, from where; how fast the feed must load; whether a lost post is acceptable; whether a slightly stale feed is fine.
+
+Good questions sound like *"Is this read-heavy? I'd guess people scroll far more than they post"* or *"Should a new post show up in followers' feeds within seconds, or is a minute fine?"* Each answer removes a branch of the design.
+
+## Step 2: estimate the scale
+
+Numbers turn "it should scale" into decisions. Keep the maths rough and say your assumptions.
+
+Suppose 1 crore (10 million) daily users, each opening the feed 10 times and posting once every 10 days.
+
+| What | Rough number |
+| --- | --- |
+| Feed reads a day | 10 million × 10 = 10⁸ |
+| Feed reads a second | 10⁸ / 10⁵ s ≈ 1,000 on average, 3,000 at peak |
+| New posts a day | 10 million / 10 = 10⁶, about 12 a second |
+| Photo storage a day | 10⁶ × 2 MB = 2 TB, so about 700 TB a year |
+
+Two useful facts fall out at once: reads outnumber writes about 100 to 1, so caching the feed will pay off; and storage grows by terabytes a day, so images belong in object storage, not in the database.
+
+The trick that makes this fast: **a day is about 10⁵ seconds**. One million requests a day is about 12 a second.
+
+## Step 3: sketch the simplest design
+
+Draw the boxes that serve the core flows and nothing more. Trace one request through it out loud.
+
+<ArchDiagram id="first-sketch" />
+
+This design is incomplete on purpose. It has no cache, no queue and one API box. Now you can point at it and say where it breaks: "at 3,000 feed reads a second the database becomes the bottleneck", which is your reason to add the next piece.
+
+## Step 4: go deep
+
+Pick the two or three parts that are hardest for *this* product, or follow the interviewer's hints. For the photo app that's usually:
+
+- **The feed.** Build it when it is read (query the people you follow and merge their posts) or when a post is written (push the post into each follower's precomputed feed)? Writing ahead is fast to read but expensive for accounts with lakhs of followers. Many designs mix both.
+- **The read path.** Cache the hot feeds and post rows; serve images from a CDN.
+- **Storage growth.** How the posts table is partitioned once it outgrows one machine.
+
+For each deep dive, name the options, pick one, and give the reason in one sentence. "I'd use fan-out on write for normal users and fan-out on read for celebrities, because writing to 50 lakh feeds per post is too slow."
+
+## Step 5: wrap up
+
+Spend the last minutes on what would break next and what you would measure: the slowest query, the busiest cache key, the single machine whose failure takes the site down. Mention monitoring and how you'd roll out a change safely. It shows you think past the whiteboard.
+
+## What interviewers look for
+
+- **Structure.** You drive the conversation through clear phases instead of waiting to be asked.
+- **Requirements before solutions.** You ask before you draw, and you write down what is in and out of scope.
+- **Numbers behind decisions.** A rough estimate justifies each component. "We need a cache because…" beats "let's add Redis".
+- **Trade-offs, named.** Every choice has a cost; say it. There is rarely one correct design.
+- **Communication.** You think aloud, check in ("Does this match what you had in mind?") and take hints without getting defensive.
+
+## Common mistakes
+
+- **Jumping to technology names.** "Kafka, Cassandra, Kubernetes" in minute two, before anyone knows what the system does.
+- **Designing for Google scale by default.** If the answer is 50 requests a second, one server and one database are a correct answer. Say so.
+- **Going silent.** Long pauses while you think are fine, but say what you are weighing.
+- **Spending 20 minutes on one box.** Get a whole working sketch first; depth comes after.
