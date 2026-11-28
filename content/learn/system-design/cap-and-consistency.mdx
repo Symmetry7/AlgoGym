@@ -1,0 +1,102 @@
+---
+track: system-design
+order: 9
+topic: cap-and-consistency
+title: CAP and consistency
+summary: 'When copies of data disagree, a system must choose between answering and being correct. CAP in plain terms, the consistency levels you will be asked about, and quorums.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'During a network partition, a bank''s balance service refuses requests on the cut-off side rather than risk showing a wrong balance. Which does it favour?'
+    options: ["Availability", "Consistency", "Partition tolerance alone", "Latency"]
+    answer: 1
+    why: 'It gives up answering on one side (availability) so that every answer it does give is correct (consistency). That is a CP choice.'
+  - question: 'With N = 3 replicas, which setting guarantees a read sees the latest acknowledged write?'
+    options: ["W = 1, R = 1", "W = 2, R = 2", "W = 1, R = 2", "W = 3, R = 0"]
+    answer: 1
+    why: 'When R + W > N, every read set overlaps every write set in at least one replica. 2 + 2 = 4 > 3, so at least one replica in the read has the latest write.'
+  - question: 'A like counter on a post is off by a few for a couple of seconds. Which consistency model is this, and is it acceptable?'
+    options: ["Strong consistency; no", "Eventual consistency; yes, for a like count", "Linearizability; yes", "It is data loss; no"]
+    answer: 1
+    why: 'Replicas converge shortly after writes stop. For likes and view counts a brief disagreement is fine and buys availability and speed.'
+  - question: 'What does PACELC add to CAP?'
+    options: ["A fourth guarantee called durability", "Even with no partition, there is a trade-off between latency and consistency", "That partitions never happen in practice", "That consistency is always free"]
+    answer: 1
+    why: 'Else (no partition), a system still chooses between answering fast from one nearby replica and waiting to coordinate with others for a consistent answer.'
+diagrams:
+  partition:
+    title: 'A partition splits three replicas'
+    description: 'Three replicas of the same data sit in two data centres. A network fault cuts replica C off from A and B. A write arrives at A and reaches B but not C. A read sent to C must either answer with possibly stale data (available) or refuse until the link heals (consistent).'
+    nodes:
+      - { id: writer, label: Writer, sub: 'set x = 5', x: 0, y: 0, kind: client }
+      - { id: reader, label: Reader, sub: 'get x', x: 0, y: 2, kind: client }
+      - { id: a, label: Replica A, sub: 'x = 5', x: 1, y: 0, kind: store, accent: true }
+      - { id: b, label: Replica B, sub: 'x = 5', x: 2, y: 0, kind: store }
+      - { id: c, label: Replica C, sub: 'x = 4 (stale)', x: 1, y: 2, kind: store }
+    edges:
+      - { from: writer, to: a, label: write }
+      - { from: a, to: b, label: replicate, async: true }
+      - { from: reader, to: c, label: read }
+    steps:
+      - { label: Write, text: 'The write lands on A, which copies it to B. The link to C is down, so C still holds the old value 4.', edges: [0, 1] }
+      - { label: Read on C, text: 'A reader reaches C. An AP system answers "4" now and fixes C after the link heals. A CP system refuses (or waits), because it can''t confirm 4 is current.', edges: [2] }
+---
+
+## The idea
+
+Once data is copied to several machines, the copies can disagree for a while: a write reaches one replica before the others, or the network between them breaks. Every distributed database decides what to do in that moment. Interviewers ask about CAP to see whether you can make that choice for a specific feature and explain it.
+
+## CAP in plain terms
+
+- **Consistency (C)**: every read sees the most recent write, as if there were only one copy.
+- **Availability (A)**: every request to a working node gets an answer (not an error).
+- **Partition tolerance (P)**: the system keeps running when the network splits nodes into groups that can't talk.
+
+Networks do fail, so P isn't optional for a system spread over machines. The real statement is: **during a partition, choose C or A.**
+
+<ArchDiagram id="partition" />
+
+- **CP**: refuse or delay requests that can't be answered correctly. Right for balances, seat booking, inventory and anything where a wrong answer costs money.
+- **AP**: answer from whatever copy you can reach and reconcile later. Right for feeds, likes, view counts, shopping-cart contents and presence ("online now").
+
+Choose **per feature**, not per company. The same app can keep payments CP and the activity feed AP.
+
+## Consistency levels
+
+From strongest to weakest, the ones worth naming:
+
+| Level | What the user sees | Example use |
+| --- | --- | --- |
+| Strong (linearizable) | Always the latest write | Wallet balance, seat booking |
+| Read-your-writes | Always their own latest writes; others' may lag | Editing your own profile |
+| Monotonic reads | Never older data after newer data | Scrolling a timeline without items vanishing |
+| Eventual | All copies agree once writes stop, usually within seconds | Like counts, view counts |
+
+Weaker levels are faster and stay available; stronger levels cost coordination between replicas on every operation.
+
+## Quorums
+
+Leaderless stores such as Cassandra and DynamoDB let you tune this per request. With **N** copies, a write waits for **W** acknowledgements and a read asks **R** replicas.
+
+- If **R + W > N**, the read set and write set always overlap, so a read sees the latest write. With N = 3, W = 2 and R = 2 is the usual balanced choice.
+- **W = 1, R = 1** is fastest and most available, but reads can be stale.
+- Larger W makes writes slower and more fragile; larger R does the same for reads.
+
+## PACELC
+
+CAP only talks about partitions. **PACELC** adds the everyday case: if there is a **P**artition, choose **A** or **C**; **E**lse, choose **L**atency or **C**onsistency. Even on a healthy network, waiting for a second replica to confirm costs a round trip. Many systems pick low latency in normal operation and accept brief staleness.
+
+## What interviewers look for
+
+- **A correct statement of CAP**: the choice is C or A during a partition, not "pick any two".
+- **Per-feature decisions** with reasons tied to the cost of a wrong or missing answer.
+- **Concrete mechanisms**: quorums, read-your-writes, leader-based replication.
+- **Latency awareness**: strong consistency across regions means cross-region round trips on every write.
+
+## Common mistakes
+
+- **"We'll choose CA."** A system on more than one machine can't opt out of partitions.
+- **One consistency level for the whole product**, usually the strongest, paying its cost everywhere.
+- **Calling eventual consistency "data loss".** Nothing is lost; copies converge.
+- **Forgetting the user's own writes**, so people can't see what they just posted.

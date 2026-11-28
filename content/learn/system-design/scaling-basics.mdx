@@ -1,0 +1,112 @@
+---
+track: system-design
+order: 2
+topic: scaling-basics
+title: 'Scaling basics: vertical and horizontal'
+summary: 'Two ways to handle more traffic: a bigger machine, or more machines. Why the second needs stateless servers, and the latency numbers that decide where time goes.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'Your single server is at 90% CPU during the evening peak. What is the quickest fix that needs no code change?'
+    options: ["Shard the database", "Move to a machine with more CPU cores (scale up)", "Rewrite the service in another language", "Add a message queue"]
+    answer: 1
+    why: 'Scaling up is a configuration change: same code, bigger box. It buys time while you work on scaling out.'
+  - question: 'You add a second app server behind a load balancer and users start getting logged out at random. What is the likely cause?'
+    options: ["The load balancer is too slow", "Sessions are stored in each server''s memory, so the other server doesn''t know the user", "The database is down", "Cookies don''t work with two servers"]
+    answer: 1
+    why: 'A server that keeps sessions in its own memory is stateful. Move sessions to a shared store such as Redis, or into a signed token, and any server can handle any request.'
+  - question: 'Which is slowest?'
+    options: ["Reading 1 MB from memory", "A Redis GET in the same data centre", "A round trip from Mumbai to a server in the US", "Reading a row from an SSD"]
+    answer: 2
+    why: 'A cross-continent round trip is about 200 ms. A same-data-centre network call is under a millisecond, an SSD read is about a tenth of a millisecond, and 1 MB from memory is a few microseconds.'
+  - question: 'What is the main limit of vertical scaling?'
+    options: ["It needs more code", "It has a ceiling and leaves one machine as a single point of failure", "It cannot use SSDs", "It makes the database slower"]
+    answer: 1
+    why: 'Machines only come so big, the largest cost disproportionately more, and if the one machine dies the whole service is down.'
+diagrams:
+  scale-out:
+    title: 'Scaling out: identical servers, shared state'
+    description: 'Users reach a load balancer that spreads requests across three identical app servers. None of the servers keeps session data in its own memory: sessions live in a shared Redis store, and all business data lives in one database.'
+    nodes:
+      - { id: users, label: Users, x: 0, y: 1, kind: client }
+      - { id: lb, label: Load balancer, x: 1, y: 1, kind: edge }
+      - { id: a1, label: App server 1, x: 2, y: 0, kind: service }
+      - { id: a2, label: App server 2, x: 2, y: 1, kind: service }
+      - { id: a3, label: App server 3, x: 2, y: 2, kind: service }
+      - { id: sess, label: Sessions, sub: Redis, x: 3, y: 0, kind: cache, accent: true }
+      - { id: db, label: Database, x: 3, y: 2, kind: store }
+    edges:
+      - { from: users, to: lb }
+      - { from: lb, to: a1 }
+      - { from: lb, to: a2 }
+      - { from: lb, to: a3 }
+      - { from: a1, to: sess, label: session }
+      - { from: a3, to: db, label: SQL }
+    steps:
+      - { label: Request 1, text: 'A logged-in user''s first request goes to server 1, which looks up the session in Redis rather than in its own memory.', edges: [0, 1, 4] }
+      - { label: Request 2, text: 'Their next request lands on server 3. It finds the same session in the same shared store, so the user stays logged in, and it reads their data from the database.', edges: [0, 3, 5] }
+---
+
+## The idea
+
+When traffic grows past what one machine can serve, you have two moves:
+
+- **Scale up (vertical):** a bigger machine, with more CPU, memory or faster disks. No code changes.
+- **Scale out (horizontal):** more machines doing the same job, with a load balancer in front to share the work.
+
+Most real systems do both: scale up until it gets expensive or risky, then scale out. Interviewers want to hear that you know the limits of each.
+
+## Scaling up
+
+Moving from 4 cores and 16 GB to 32 cores and 256 GB is a few clicks on any cloud provider. It is the right first answer for a young product, and it is the usual answer for a database, which is much harder to split than an app server.
+
+Its limits:
+
+- **A ceiling.** The largest machines are finite, and the price per core climbs steeply near the top.
+- **A single point of failure.** One machine means one crash, one bad deploy or one hardware fault takes everything down.
+- **Downtime to resize.** Moving to a bigger machine usually means a restart.
+
+## Scaling out
+
+Add identical servers and put a load balancer in front. Capacity grows roughly in line with the number of servers, and losing one server costs a third of your capacity instead of all of it.
+
+<ArchDiagram id="scale-out" />
+
+The catch is **state**. If server 1 keeps a user's login session in its own memory, a request that lands on server 2 doesn't know who the user is. The fix is to make app servers **stateless**: anything that must outlive a single request goes to a shared place.
+
+- Sessions go to a shared store such as Redis, or into a signed token (for example a JWT) that the client sends with every request.
+- Uploaded files go to object storage, not the server's local disk.
+- Scheduled jobs run once, from a queue or a scheduler, not on every server.
+
+Once servers are stateless, any of them can handle any request, and adding the fourth or the fortieth is routine. The database then becomes the hard part. Later lessons cover how caching, replicas and sharding take load off it.
+
+## Numbers to know
+
+Design decisions follow from where time goes. These are order-of-magnitude figures, which is all an interview needs:
+
+| Operation | Rough time |
+| --- | --- |
+| Read from main memory | about 100 ns |
+| Read 1 MB sequentially from memory | a few µs |
+| Random read from an SSD | about 100 µs |
+| Network round trip inside one data centre | about 0.5 ms |
+| Redis GET over the network | under 1 ms |
+| Simple indexed database query | 1 to 10 ms |
+| Round trip Mumbai to Delhi | about 30 ms |
+| Round trip India to the US east coast | about 200 ms |
+
+Two conclusions worth saying out loud: memory is about a thousand times faster than an SSD, which is why caches work; and the speed of light makes cross-continent calls slow, which is why CDNs and regional servers exist.
+
+## What interviewers look for
+
+- **A sensible order.** Start with one server, scale up while it's cheap, scale out when you need redundancy or more capacity than one box gives.
+- **Stateless app servers.** You notice session and file state and move it somewhere shared before adding servers.
+- **The database as the next bottleneck.** You don't stop at "add more servers": you say what happens to the database when there are 20 of them.
+- **Latency awareness.** You can say roughly how long a memory read, a disk read and a network hop take, and use that to justify a cache or a region.
+
+## Common mistakes
+
+- **"Just add more servers"** without mentioning the load balancer, session state or the shared database behind them.
+- **Treating the database like an app server.** Copying a database is not the same as adding a stateless server; writes must still agree.
+- **Forgetting failure.** Horizontal scaling is as much about surviving a dead machine as about throughput. Say both.

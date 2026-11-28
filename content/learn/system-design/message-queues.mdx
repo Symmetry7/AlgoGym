@@ -1,0 +1,102 @@
+---
+track: system-design
+order: 7
+topic: message-queues
+title: Message queues and async work
+summary: 'Reply to the user now and do the slow work later. How queues decouple services, absorb spikes and retry failures, and why consumers must be idempotent.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'After an order is placed, the app sends an email, an SMS and updates analytics, and checkout takes 4 seconds. What helps most?'
+    options: ["A bigger database", "Publish an “order placed” event to a queue and do those three jobs in background workers", "Send them in a different order", "Cache the email template"]
+    answer: 1
+    why: 'None of the three needs to finish before the user sees "Order placed". Moving them to workers cuts checkout to the time of the database write.'
+  - question: 'Most queues deliver "at least once". What must a consumer therefore be?'
+    options: ["Fast", "Idempotent: processing the same message twice has the same effect as once", "Written in the same language as the producer", "Stateless"]
+    answer: 1
+    why: 'A worker can crash after doing the work but before acknowledging the message, so it gets delivered again. Record a message or request ID and skip duplicates.'
+  - question: 'A message fails every time it is processed because its data is malformed. What should happen to it?'
+    options: ["Retry it forever", "After a few retries with backoff, move it to a dead-letter queue for a person to inspect", "Delete the whole queue", "Restart the workers"]
+    answer: 1
+    why: 'Endless retries waste workers and can block messages behind it. A dead-letter queue sets it aside and keeps the line moving.'
+  - question: 'When does a log-based system such as Kafka suit better than a classic job queue?'
+    options: ["When each job should go to exactly one worker and then disappear", "When several independent consumers need to read the same stream of events, possibly replaying old ones", "When there are fewer than 10 messages a day", "When you need synchronous replies"]
+    answer: 1
+    why: 'A log keeps events for days, and each consumer group tracks its own position, so analytics, search indexing and notifications can all read the same events independently.'
+diagrams:
+  queue:
+    title: 'An order event, handled in the background'
+    description: 'The checkout service writes the order to the database and publishes an "order placed" message to a queue, then replies to the user. Workers take messages from the queue: one sends the confirmation email and SMS, another updates analytics. Messages that keep failing go to a dead-letter queue.'
+    nodes:
+      - { id: user, label: User, x: 0, y: 1, kind: client }
+      - { id: api, label: Checkout API, x: 1, y: 1, kind: service }
+      - { id: db, label: Orders DB, x: 2, y: 0, kind: store }
+      - { id: q, label: Order events, sub: queue, x: 2, y: 1, kind: queue, accent: true }
+      - { id: notify, label: Notifier, sub: 'email + SMS', x: 3, y: 0, kind: worker }
+      - { id: stats, label: Analytics, x: 3, y: 1, kind: worker }
+      - { id: dlq, label: Dead letters, sub: 'failed 5 times', x: 3, y: 2, kind: queue }
+    edges:
+      - { from: user, to: api, label: 'place' }
+      - { from: api, to: db, label: INSERT }
+      - { from: api, to: q, label: publish, async: true }
+      - { from: q, to: notify, async: true }
+      - { from: q, to: stats, async: true }
+      - { from: q, to: dlq, label: give up, async: true }
+    steps:
+      - { label: Accept, text: 'Checkout saves the order and publishes one small message. It replies to the user straight away; nothing slow happens on this path.', edges: [0, 1, 2] }
+      - { label: Process, text: 'Workers pull messages at their own pace. If the SMS provider is slow, messages wait in the queue instead of slowing checkout down.', edges: [3, 4] }
+      - { label: Fail, text: 'A message that fails five times, with longer waits between tries, moves to the dead-letter queue so it stops blocking the others.', edges: [5] }
+---
+
+## The idea
+
+Some work doesn't need to finish before you reply to the user: sending an email, resizing an uploaded photo, updating a search index, generating an invoice PDF. Put a message describing the work on a **queue**, reply at once, and let **workers** process the queue in the background.
+
+<ArchDiagram id="queue" />
+
+## What a queue buys you
+
+- **Faster responses.** The user waits for the database write, not the email provider.
+- **Absorbing spikes.** When Tatkal booking opens at 10 a.m., requests arrive far faster than downstream systems can process them. The queue grows, workers drain it at a steady rate, and nothing falls over.
+- **Decoupling.** The checkout service doesn't know or care who listens. Adding a new consumer (say, a loyalty-points service) needs no change to checkout.
+- **Retries.** If a worker fails, the message is still in the queue and can be tried again.
+
+## Delivery guarantees
+
+| Guarantee | Meaning | Cost |
+| --- | --- | --- |
+| At most once | Never duplicated, may be lost | Simple; fine for metrics you can afford to drop |
+| At least once | Never lost, may be duplicated | The common default; consumers must handle duplicates |
+| Exactly once | Neither | Only within limited setups, and expensive; usually approximated |
+
+Because of **at least once**, consumers must be **idempotent**. Give each message an ID, record the IDs you've processed (or use a database constraint), and skip repeats. Charging a card twice because a message was redelivered is the bug interviewers are looking for you to prevent.
+
+## Retries and dead letters
+
+Retry failed messages with **exponential backoff** (wait 1 s, 2 s, 4 s, 8 s…) and a little random jitter, so a struggling dependency isn't hammered. After a fixed number of failures, move the message to a **dead-letter queue** and alert someone. A bad message should never block the line.
+
+## Queue or log
+
+- **Job queues** (RabbitMQ, Amazon SQS): each message goes to one worker and is deleted once acknowledged. Good for tasks.
+- **Logs** (Kafka, Redpanda): messages are appended to a partitioned log and kept for days. Each consumer group reads at its own position and can replay. Good for event streams that several systems consume, such as order events feeding notifications, analytics and search.
+
+In a log, order is guaranteed only **within a partition**, so give related events the same partition key (for example the order ID) when their order matters.
+
+## Writing to the database and the queue together
+
+If the app writes the order and then crashes before publishing the event, the email never goes out. If it publishes first and the write fails, a customer gets an email for an order that doesn't exist. The **outbox pattern** fixes this: write the event into an `outbox` table in the same database transaction as the order, and have a separate process publish rows from the outbox to the queue.
+
+## What interviewers look for
+
+- **Spotting async work.** Anything slow, unreliable or not needed for the response moves off the request path.
+- **Idempotent consumers** and a stated delivery guarantee.
+- **Failure handling.** Retries with backoff, a dead-letter queue, and monitoring of queue length.
+- **The right tool.** A job queue for tasks, a log for shared event streams, with a reason.
+
+## Common mistakes
+
+- **Making the user wait on a queue**, such as publishing a job and then polling for its result inside the same request.
+- **Assuming exactly-once delivery** and writing non-idempotent consumers.
+- **Unbounded retries** that loop forever on a bad message.
+- **No one watching queue depth.** A queue that grows all day means workers can't keep up; scale them or alert.

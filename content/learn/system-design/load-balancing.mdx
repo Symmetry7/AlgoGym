@@ -1,0 +1,101 @@
+---
+track: system-design
+order: 3
+topic: load-balancing
+title: Load balancing
+summary: 'How a load balancer picks a server, the difference between layer 4 and layer 7, health checks, and how to avoid the balancer itself becoming the weak point.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'Requests vary a lot: some take 5 ms and some take 2 seconds. Which algorithm spreads load best?'
+    options: ["Round robin", "Least connections", "Random", "Always the first server"]
+    answer: 1
+    why: 'Round robin hands out requests evenly by count, so a server stuck on slow requests keeps getting more. Least connections sends new work to whoever is least busy right now.'
+  - question: 'You want /api/* to go to one group of servers and /images/* to another. What kind of load balancer do you need?'
+    options: ["Layer 4 (TCP)", "Layer 7 (HTTP)", "DNS only", "Any kind can do this"]
+    answer: 1
+    why: 'Only a layer-7 balancer reads the HTTP request, so only it can route on the path, a header or a cookie. A layer-4 balancer sees IP addresses and ports.'
+  - question: 'One app server starts returning errors on every request. What stops users from hitting it?'
+    options: ["Sticky sessions", "Health checks that take it out of rotation", "A bigger load balancer", "Round robin"]
+    answer: 1
+    why: 'The balancer probes each server, for example GET /health every few seconds, and stops sending traffic to a server that fails several checks in a row.'
+  - question: 'Why is consistent hashing used for routing to cache servers?'
+    options: ["It is faster to compute than round robin", "When a server is added or removed, only a small share of keys move to a different server", "It encrypts the keys", "It guarantees equal load at all times"]
+    answer: 1
+    why: 'With plain hash(key) mod N, changing N moves almost every key and empties the caches. Consistent hashing moves only about 1/N of the keys.'
+diagrams:
+  lb:
+    title: 'A load balancer with health checks'
+    description: 'Clients find the service by DNS, which returns the address of a pair of load balancers (one active, one on standby). The active balancer spreads requests across three app servers and checks each one''s health. Server 3 is failing its checks, so it receives no traffic.'
+    nodes:
+      - { id: client, label: Client, x: 0, y: 1, kind: client }
+      - { id: dns, label: DNS, sub: 'api.example.in', x: 0, y: 0, kind: external }
+      - { id: lb, label: LB (active), x: 1, y: 1, kind: edge, accent: true }
+      - { id: standby, label: LB (standby), x: 1, y: 2, kind: edge }
+      - { id: s1, label: Server 1, sub: healthy, x: 2, y: 0, kind: service }
+      - { id: s2, label: Server 2, sub: healthy, x: 2, y: 1, kind: service }
+      - { id: s3, label: Server 3, sub: 'failing checks', x: 2, y: 2, kind: service }
+    edges:
+      - { from: client, to: dns, label: lookup }
+      - { from: client, to: lb, label: HTTPS }
+      - { from: lb, to: s1 }
+      - { from: lb, to: s2 }
+      - { from: lb, to: standby, label: heartbeat, async: true }
+    steps:
+      - { label: Find it, text: 'The client asks DNS for the service''s address and gets the load balancer''s IP, not any app server''s.', edges: [0] }
+      - { label: Spread, text: 'The balancer sends each request to a healthy server. Server 3 failed its last three health checks, so it gets nothing until it passes again.', edges: [1, 2, 3] }
+      - { label: Failover, text: 'The standby balancer watches the active one. If the heartbeats stop, it takes over the shared address within seconds.', edges: [4] }
+---
+
+## The idea
+
+A load balancer sits between clients and a group of servers. It gives clients one address to talk to, picks a server for each request, and stops sending traffic to servers that are unhealthy. That makes it the piece that turns "three servers" into "one service that survives losing a server".
+
+<ArchDiagram id="lb" />
+
+## How it picks a server
+
+| Algorithm | How it works | Good for |
+| --- | --- | --- |
+| Round robin | Each server in turn | Similar requests on identical servers |
+| Weighted round robin | Bigger servers get a larger share | A mix of machine sizes |
+| Least connections | The server with the fewest open requests | Requests of very different lengths |
+| Hash of a key (IP, user ID) | The same key always lands on the same server | Keeping a user on one server, or routing to caches |
+
+**Consistent hashing** deserves a sentence of its own. If you route with `hash(key) mod N`, adding one server changes N and moves almost every key to a new server, which wipes out every cache at once. Consistent hashing places servers and keys on a ring, and each key goes to the next server clockwise. Adding or removing a server moves only the keys in one arc, about 1/N of them.
+
+## Layer 4 or layer 7
+
+- **Layer 4 (transport)** balancers route TCP or UDP connections using IP addresses and ports. They don't read the request, so they are very fast and work for any protocol (databases, game servers, gRPC).
+- **Layer 7 (application)** balancers understand HTTP. They can route `/api` and `/images` to different pools, terminate TLS, add headers, retry a failed request on another server and apply rate limits. They do more work per request.
+
+A common setup uses both: a layer-4 balancer at the edge spreading traffic across a fleet of layer-7 proxies such as NGINX or Envoy.
+
+## Health checks
+
+The balancer probes each server, for example `GET /health` every 5 seconds. After a few failures in a row it takes the server out of rotation, and after a few successes it puts it back. A good health endpoint checks what the server needs to do its job (can it reach the database?) but stays cheap, because it runs constantly.
+
+Health checks also make deploys safe: drain a server (stop new requests, let current ones finish), update it, and let it rejoin when it reports healthy.
+
+## Sticky sessions
+
+A balancer can pin a user to one server with a cookie, which papers over servers that keep session state in memory. It works, but it spreads load unevenly and the user is still logged out if that server dies. Prefer stateless servers (see the previous lesson) and use stickiness only when you must, such as for WebSocket connections.
+
+## Don't make the balancer the weak point
+
+A single load balancer is a single point of failure. Run two: an active one and a standby that takes over the shared address if heartbeats stop. Managed cloud balancers do this for you across availability zones. For several regions, **DNS-based** or **anycast** routing sends each user to the nearest healthy region first.
+
+## What interviewers look for
+
+- **Why it's there.** Spreading load, hiding failed servers and giving one stable address, not just "for scale".
+- **A justified algorithm.** Round robin by default; least connections when request times vary; hashing when locality matters.
+- **L4 versus L7.** You know what each can see and pick one for a reason.
+- **Health checks and redundancy.** You mention how failed servers are removed and how the balancer itself survives failure.
+
+## Common mistakes
+
+- **Drawing one load balancer box** and calling the system highly available.
+- **Using sticky sessions to hide stateful servers** instead of fixing the state.
+- **Health checks that are too deep.** If `/health` fails whenever any dependency is slow, one slow database can take every server out of rotation at once.
+- **Plain modulo hashing for caches**, so every scaling event empties the cache.

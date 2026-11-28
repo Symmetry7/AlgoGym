@@ -1,0 +1,91 @@
+---
+track: system-design
+order: 8
+topic: rate-limiting
+title: Rate limiting
+summary: 'Cap how many requests a client can make so one user, bot or bug can''t take the service down. The common algorithms, where the limiter lives, and how to share counts across servers.'
+status: review
+authors: [algogym]
+reviewers: []
+quiz:
+  - question: 'A limit is 100 requests per minute in fixed windows. A client sends 100 at 10:00:59 and 100 at 10:01:00. What happens?'
+    options: ["The second 100 are rejected", "All 200 are allowed: twice the limit within two seconds", "Only 100 are allowed in total", "The client is banned"]
+    answer: 1
+    why: 'Each burst falls in a different window, so both pass. Sliding-window counters and token buckets don''t have this edge burst.'
+  - question: 'A token bucket holds up to 20 tokens and refills at 5 a second. What does that allow?'
+    options: ["Exactly 5 requests every second, never more", "Bursts of up to 20 requests, then 5 a second on average", "20 requests a second forever", "Nothing until the bucket is full"]
+    answer: 1
+    why: 'A full bucket lets a burst of 20 through at once; after that, requests pass only as fast as tokens refill, 5 a second.'
+  - question: 'You run 10 API servers, each counting requests in its own memory. Why does a 100-per-minute limit not hold?'
+    options: ["Memory is too slow", "A client spread across 10 servers can make up to 1,000 requests, since no server sees the full count", "The load balancer blocks it", "It holds perfectly"]
+    answer: 1
+    why: 'Each server sees only its share. Keep the counters in a shared store such as Redis, updated atomically, so every server checks the same number.'
+  - question: 'Which HTTP response tells a client it has been rate limited, and when to try again?'
+    options: ["500 with no headers", "404 Not Found", "429 Too Many Requests with a Retry-After header", "200 with an empty body"]
+    answer: 2
+    why: '429 is the status for rate limiting, and Retry-After tells a well-behaved client how long to wait instead of retrying immediately.'
+diagrams:
+  limiter:
+    title: 'A shared rate limiter at the gateway'
+    description: 'Every request passes through an API gateway. For each request, the gateway atomically decrements the client''s token count in Redis. If tokens remain, the request goes on to the service; if not, the gateway answers 429 Too Many Requests at once, and the service never sees it.'
+    nodes:
+      - { id: client, label: Client, sub: 'API key abc', x: 0, y: 1, kind: client }
+      - { id: gw, label: API gateway, sub: 'rate limiter', x: 1, y: 1, kind: edge, accent: true }
+      - { id: redis, label: Redis, sub: 'tokens:abc = 3', x: 1, y: 0, kind: cache }
+      - { id: svc, label: Orders API, x: 2, y: 1, kind: service }
+      - { id: reject, label: 429 reply, sub: 'Retry-After: 2', x: 2, y: 2, kind: external }
+    edges:
+      - { from: client, to: gw, label: request }
+      - { from: gw, to: redis, label: take 1 }
+      - { from: gw, to: svc, label: allowed }
+      - { from: gw, to: reject, label: empty }
+    steps:
+      - { label: Allowed, text: 'The gateway takes one token from the client''s bucket in Redis. Tokens were left, so the request goes through to the service.', edges: [0, 1, 2] }
+      - { label: Limited, text: 'The bucket is empty. The gateway replies 429 with Retry-After at once; the service is protected and the client knows when to try again.', edges: [0, 1, 3] }
+---
+
+## The idea
+
+A rate limiter caps how many requests a client may make in a period, such as 100 a minute per API key. It protects the service from abusive bots, scrapers, password-guessing and the honest bug in someone's retry loop, and it keeps one heavy customer from starving everyone else.
+
+The client is identified by whatever is most reliable: an API key or user ID for signed-in traffic, an IP address for anonymous traffic (with care, since many users can share one IP behind a college or office network).
+
+## Algorithms
+
+| Algorithm | How it works | Notes |
+| --- | --- | --- |
+| Fixed window | Count requests per calendar minute; reset at the boundary | Simple; allows a double burst around each boundary |
+| Sliding window log | Store each request's timestamp; count those in the last 60 s | Exact; memory grows with traffic |
+| Sliding window counter | Weighted mix of this window's and the last window's counts | Close to exact with two numbers per client |
+| Token bucket | Tokens refill at a steady rate up to a cap; each request takes one | Allows short bursts, enforces the average; very common |
+| Leaky bucket | Requests queue and leave at a fixed rate | Smooths output; adds waiting |
+
+The **token bucket** is a good default to name. Its two settings map to product language: the bucket size is the burst you tolerate, the refill rate is the sustained limit.
+
+## Where it lives
+
+<ArchDiagram id="limiter" />
+
+- **At the edge** (API gateway, load balancer or CDN): rejects bad traffic before it costs you anything. The usual place.
+- **In each service**, for limits only that service understands, such as "5 OTP requests per phone number per hour".
+- **On the client**: polite, but never trusted. A client can be modified.
+
+With many gateway servers, counters must be **shared**. Keep them in Redis and update them atomically (a Lua script, or `INCR` with an expiry), so a check-and-decrement can't race. A Redis round trip costs well under a millisecond in the same data centre. If Redis is unavailable, decide in advance whether to **fail open** (allow traffic, protecting availability) or **fail closed** (block it, protecting the backend); most public APIs fail open.
+
+## Telling the client
+
+Reply **429 Too Many Requests** with a `Retry-After` header. Many APIs also send headers such as `X-RateLimit-Remaining` so well-behaved clients slow down before they hit the wall. Clients should retry with exponential backoff and jitter, not in a tight loop.
+
+## What interviewers look for
+
+- **Clarifying the limit**: per user, per key, per IP or per endpoint, and what happens when it is exceeded.
+- **A named algorithm with its trade-off**, usually token bucket or sliding window.
+- **Distributed counting**: shared, atomic counters, and a stated fail-open or fail-closed choice.
+- **Placement**: at the edge first, with service-specific limits where needed.
+
+## Common mistakes
+
+- **Per-server counters** behind a load balancer, which multiply the real limit by the number of servers.
+- **Read-then-write counters** without atomicity, so two requests both see "99" and both pass.
+- **Limiting by IP alone**, blocking a whole hostel behind one address while a bot with many IPs walks through.
+- **Returning 500 or 503** instead of 429, so clients can't tell overload from being limited.

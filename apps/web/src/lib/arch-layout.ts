@@ -21,7 +21,13 @@ type Point = [number, number];
 
 /** SVG path through the points with each corner rounded (radius capped by the shorter neighbouring segment). */
 export function roundedPath(points: Point[], radius = RADIUS): string {
-  const pts = points.filter((p, i) => i === 0 || p[0] !== points[i - 1][0] || p[1] !== points[i - 1][1]);
+  // Drop repeated points and points on a straight run: only real corners get rounded.
+  const unique = points.filter((p, i) => i === 0 || p[0] !== points[i - 1][0] || p[1] !== points[i - 1][1]);
+  const pts = unique.filter((p, i) => {
+    if (i === 0 || i === unique.length - 1) return true;
+    const [a, b] = [unique[i - 1], unique[i + 1]];
+    return (p[0] - a[0]) * (b[1] - p[1]) !== (p[1] - a[1]) * (b[0] - p[0]);
+  });
   let d = `M ${pts[0][0]} ${pts[0][1]}`;
   for (let i = 1; i < pts.length - 1; i++) {
     const [px, py] = pts[i - 1];
@@ -70,17 +76,23 @@ export function layoutDiagram(diagram: Diagram, orientation: Orientation): Layou
   });
   const byId = new Map(diagram.nodes.map((n) => [n.id, n]));
 
-  // Spread links that share a node face so they don't sit on top of each other.
+  // Spread links that share a node face so they don't sit on top of each other, ordered by where the
+  // other end sits so they never cross; the middle link of an odd fan stays straight.
   const faceOf = (a: DiagramNode, b: DiagramNode) =>
     a.x !== b.x ? (b.x > a.x ? "end" : "start") : b.y > a.y ? "below" : "above";
-  const faces = new Map<string, number[]>();
-  diagram.edges.forEach((e, i) => {
+  const faces = new Map<string, { edge: number; rank: number }[]>();
+  diagram.edges.forEach((e, edge) => {
     const a = byId.get(e.from)!, b = byId.get(e.to)!;
-    for (const key of [`${a.id}:${faceOf(a, b)}`, `${b.id}:${faceOf(b, a)}`]) faces.set(key, [...(faces.get(key) ?? []), i]);
+    for (const [n, o] of [[a, b], [b, a]]) {
+      const key = `${n.id}:${faceOf(n, o)}`;
+      const rank = n.x !== o.x ? o.y * 10 + o.x : o.x * 10 + o.y;
+      faces.set(key, [...(faces.get(key) ?? []), { edge, rank }]);
+    }
   });
+  for (const list of faces.values()) list.sort((p, q) => p.rank - q.rank || p.edge - q.edge);
   const offset = (node: DiagramNode, other: DiagramNode, edge: number) => {
     const list = faces.get(`${node.id}:${faceOf(node, other)}`)!;
-    return (list.indexOf(edge) - (list.length - 1) / 2) * PORT_GAP;
+    return (list.findIndex((f) => f.edge === edge) - (list.length - 1) / 2) * PORT_GAP;
   };
 
   const edges: PlacedEdge[] = diagram.edges.map((e, index) => {
